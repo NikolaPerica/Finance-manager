@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <Button
+        android:id="@+id/prihod"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/prihod"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/rashod"
+        tools:layout_editor_absoluteX="50dp"
+        tools:layout_editor_absoluteY="166dp" />
+
+    <Button
+        android:id="@+id/rashod"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/rashod"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/prihod"
+        tools:layout_editor_absoluteX="233dp"
+        tools:layout_editor_absoluteY="168dp" />
+
+    <TextView
+        android:id="@+id/stanje"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/prihod"
+        app:layout_constraintEnd_toStartOf="@id/trenutnoStanje"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="@string/trenutno_stanje"
+        tools:layout_editor_absoluteX="76dp"
+        tools:layout_editor_absoluteY="262dp" />
+
+    <TextView
+        android:id="@+id/trenutnoStanje"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/stanje"
+        app:layout_constraintTop_toBottomOf="@id/rashod"
+        tools:text="0" />
+</androidx.constraintlayout.widget.ConstraintLayout>
