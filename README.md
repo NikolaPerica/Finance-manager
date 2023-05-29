@@ -16,27 +16,32 @@ All data will be stored localy on mobile phone, without using internet access.
 
 App will be portected by fingerprint or password login
 
-Database layout:
-"Categories" table:
-Field "id" (INTEGER, primary key) - unique identifier of the category
-Field "name" (TEXT) - name of the category
-Field "type" (TEXT) - category type ("income" or "expenditure")
+## Database layout:
 
-"Transactions" table:
-Field "id" (INTEGER, primary key) - unique identifier of the transaction
-Field "amount" (FLOAT) - transaction amount
-Field "category_id" (INTEGER, foreign key) - reference to the category in the table "Categories"
-Field "type" (TEXT) - type of transaction ("income" or "expenditure")
-Field "note" (TEXT) - note or description of the transaction
-Field "date" (TEXT) - date of transaction
+#### "Categories" table:
 
-Table "Reminders":
-Field "id" (INTEGER, primary key) - unique identifier of the reminder
-Field "name" (TEXT) - name of the reminder/payment
-Field "amount" (FLOAT) - payment amount
-Field "period" (TEXT) - repetition period ("once", "monthly", "quarterly", "semi-annually", "annually")
-Field "date" (TEXT) - date of the first payment
-Field "description" (TEXT) - description of the payment
+Field "id" (INTEGER, primary key) - unique identifier of the category <br>
+Field "name" (TEXT) - name of the category <br>
+Field "type" (TEXT) - category type ("income" or "expenditure") <br>
+
+
+#### "Transactions" table:
+
+Field "id" (INTEGER, primary key) - unique identifier of the transaction<br>
+Field "amount" (FLOAT) - transaction amount<br>
+Field "category_id" (INTEGER, foreign key) - reference to the category in the table "Categories"<br>
+Field "type" (TEXT) - type of transaction ("income" or "expenditure")<br>
+Field "note" (TEXT) - note or description of the transaction<br>
+Field "date" (TEXT) - date of transaction<br>
+
+#### "Reminders" table:
+
+Field "id" (INTEGER, primary key) - unique identifier of the reminder<br>
+Field "name" (TEXT) - name of the reminder/payment<br>
+Field "amount" (FLOAT) - payment amount<br>
+Field "period" (TEXT) - repetition period ("once", "monthly", "quarterly", "semi-annually", "annually")<br>
+Field "date" (TEXT) - date of the first payment<br>
+Field "description" (TEXT) - description of the payment<br>
 
 ## Features
 
