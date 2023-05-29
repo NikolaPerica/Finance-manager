@@ -16,7 +16,27 @@ All data will be stored localy on mobile phone, without using internet access.
 
 App will be portected by fingerprint or password login
 
+Database layout:
+"Categories" table:
+Field "id" (INTEGER, primary key) - unique identifier of the category
+Field "name" (TEXT) - name of the category
+Field "type" (TEXT) - category type ("income" or "expenditure")
 
+"Transactions" table:
+Field "id" (INTEGER, primary key) - unique identifier of the transaction
+Field "amount" (FLOAT) - transaction amount
+Field "category_id" (INTEGER, foreign key) - reference to the category in the table "Categories"
+Field "type" (TEXT) - type of transaction ("income" or "expenditure")
+Field "note" (TEXT) - note or description of the transaction
+Field "date" (TEXT) - date of transaction
+
+Table "Reminders":
+Field "id" (INTEGER, primary key) - unique identifier of the reminder
+Field "name" (TEXT) - name of the reminder/payment
+Field "amount" (FLOAT) - payment amount
+Field "period" (TEXT) - repetition period ("once", "monthly", "quarterly", "semi-annually", "annually")
+Field "date" (TEXT) - date of the first payment
+Field "description" (TEXT) - description of the payment
 
 ## Features
 
