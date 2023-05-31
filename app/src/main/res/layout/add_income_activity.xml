@@ -20,9 +20,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Enter amount"
-        app:layout_constraintTop_toTopOf="@id/text_amount"
+        android:minHeight="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/text_amount"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="@id/text_amount" />
 
     <TextView
         android:id="@+id/text_date"
@@ -37,12 +38,13 @@
         android:id="@+id/edit_date"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Select date"
-        android:focusable="false"
         android:clickable="true"
-        app:layout_constraintTop_toTopOf="@id/text_date"
+        android:focusable="false"
+        android:hint="Select date"
+        android:minHeight="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/text_date"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="@id/text_date" />
 
     <TextView
         android:id="@+id/text_note"
@@ -58,9 +60,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Enter note"
-        app:layout_constraintTop_toTopOf="@id/text_note"
+        android:minHeight="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/text_note"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="@id/text_note" />
 
     <TextView
         android:id="@+id/text_category"
@@ -75,9 +78,10 @@
         android:id="@+id/spinner_category"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="@id/text_category"
+        android:minHeight="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/text_category"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="@id/text_category" />
 
     <Button
         android:id="@+id/btn_save"

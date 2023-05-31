@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         rashod.setOnClickListener {
-            Toast.makeText(applicationContext, "Rashod stisnut", Toast.LENGTH_SHORT).show()
+            //Toast.makeText(applicationContext, "Rashod stisnut", Toast.LENGTH_SHORT).show()
             stanjeRacuna.text="0"
             val intent = Intent(this, AddExpenseActivity::class.java)
             startActivity(intent)
