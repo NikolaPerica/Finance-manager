@@ -7,96 +7,99 @@
     android:layout_margin="10dp">
 
     <TextView
-        android:id="@+id/iznos"
+        android:id="@+id/text_amount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/unesite_iznos"
+        android:text="Amount"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/unosIznos"
-        tools:layout_editor_absoluteX="16dp"
-        tools:layout_editor_absoluteY="53dp" />
+        app:layout_constraintEnd_toStartOf="@id/edit_amount" />
 
     <EditText
-        android:id="@+id/unosIznos"
-        android:layout_width="250dp"
+        android:id="@+id/edit_amount"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        app:layout_constraintBottom_toTopOf="@id/kategorija"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/iznos" />
+        android:hint="Enter amount"
+        app:layout_constraintTop_toTopOf="@id/text_amount"
+        app:layout_constraintStart_toEndOf="@id/text_amount"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
-        android:id="@+id/kategorija"
-        app:layout_constraintTop_toBottomOf="@id/unosIznos"
-        app:layout_constraintBottom_toTopOf="@id/kategorijaOdabir"
-        app:layout_constraintStart_toStartOf="parent"
+        android:id="@+id/text_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/odaberite_kategoriju"
-        tools:layout_editor_absoluteX="16dp"
-        tools:layout_editor_absoluteY="108dp" />
+        android:text="Date"
+        app:layout_constraintTop_toBottomOf="@id/edit_amount"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/edit_date" />
+
+    <EditText
+        android:id="@+id/edit_date"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Select date"
+        android:focusable="false"
+        android:clickable="true"
+        app:layout_constraintTop_toTopOf="@id/text_date"
+        app:layout_constraintStart_toEndOf="@id/text_date"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/text_note"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Note"
+        app:layout_constraintTop_toBottomOf="@id/edit_date"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/edit_note" />
+
+    <EditText
+        android:id="@+id/edit_note"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Enter note"
+        app:layout_constraintTop_toTopOf="@id/text_note"
+        app:layout_constraintStart_toEndOf="@id/text_note"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/text_category"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Category"
+        app:layout_constraintTop_toBottomOf="@id/edit_note"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/spinner_category" />
 
     <Spinner
-        android:id="@+id/kategorijaOdabir"
-        android:layout_width="wrap_content"
+        android:id="@+id/spinner_category"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:spinnerMode="dropdown"
-        app:layout_constraintBottom_toTopOf="@id/datum"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/kategorija">
-
-    </Spinner>
-
-    <TextView
-        android:id="@+id/datum"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/odaberite_datum"
-        app:layout_constraintTop_toBottomOf="@id/kategorijaOdabir"
-        app:layout_constraintBottom_toTopOf="@id/napomena"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteX="16dp"
-        tools:layout_editor_absoluteY="165dp" />
-
-    <DatePicker
-        android:id="@+id/datepicker"
-        app:layout_constraintTop_toBottomOf="@id/datum"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/napomena"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:datePickerMode="spinner"
-        android:calendarViewShown="false"
-        />
-
-    <TextView
-        android:id="@+id/napomena"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/unesite_napomenu"
-        app:layout_constraintTop_toBottomOf="@id/datepicker"
-        app:layout_constraintBottom_toTopOf="@id/unosNapomena"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteX="16dp"
-        tools:layout_editor_absoluteY="165dp" />
-
-    <EditText
-        android:id="@+id/unosNapomena"
-        android:layout_width="250dp"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        app:layout_constraintBottom_toTopOf="@+id/dodajPrihod"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/napomena" />
+        app:layout_constraintTop_toTopOf="@id/text_category"
+        app:layout_constraintStart_toEndOf="@id/text_category"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
-        android:id="@+id/dodajPrihod"
-        android:text="@string/dodaj_prihod"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/unosNapomena"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/btn_save"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="Save"
+        app:layout_constraintTop_toBottomOf="@id/spinner_category"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add_income_category"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_add"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

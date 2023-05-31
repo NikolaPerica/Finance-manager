@@ -5,6 +5,8 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import com.example.financemanager.data.TransactionType.*
+
 
 @Dao
 interface CategoryDao {
@@ -19,4 +21,10 @@ interface CategoryDao {
 
     @Delete
     fun deleteCategory(category: Category)
+
+    @Query("SELECT * FROM categories WHERE type = :transactionType")
+    fun getCategoriesByType(transactionType: TransactionType): List<Category>
+
+
+
 }
