@@ -22,8 +22,9 @@ interface CategoryDao {
     @Delete
     fun deleteCategory(category: Category)
 
-    @Query("SELECT * FROM categories WHERE type = :transactionType")
-    fun getCategoriesByType(transactionType: TransactionType): List<Category>
+    @Query("SELECT * FROM categories WHERE type = :type")
+    fun getCategoriesByType(type: TransactionType): List<Category>
+
 
 
 

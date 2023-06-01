@@ -15,8 +15,10 @@ import com.example.financemanager.data.TransactionType
 import com.example.financemanager.databinding.AddExpenseActivityBinding
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.content.SharedPreferences
+import android.preference.PreferenceManager
 import android.widget.Toast
-import androidx.preference.PreferenceManager
+import androidx.lifecycle.lifecycleScope
+//import androidx.preference.PreferenceManager
 import com.example.financemanager.data.CategoryDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -27,9 +29,10 @@ import java.util.Calendar
 import java.util.Locale
 
 class AddExpenseActivity : AppCompatActivity() {
+    private lateinit var binding: AddExpenseActivityBinding
     private lateinit var categoryDao: CategoryDao
     private lateinit var db: AppDatabase
-    private lateinit var binding: AddExpenseActivityBinding
+  //  private lateinit var binding: AddExpenseActivityBinding
 
 //    val edit_date =findViewById<EditText>(R.id.edit_date)
 //    val btn_save=findViewById<Button>(R.id.btn_save)
@@ -37,7 +40,10 @@ class AddExpenseActivity : AppCompatActivity() {
 //    val edit_amount=findViewById<EditText>(R.id.edit_amount)
 //    val edit_note=findViewById<EditText>(R.id.edit_note)
 //    val fab_add_expense_category=findViewById<FloatingActionButton>(R.id.fab_add_expense_category)
-    
+    private lateinit var btn_save: Button
+    private lateinit var fab_add_expense_category: FloatingActionButton
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         Toast.makeText(applicationContext, "OnCreateEntered", Toast.LENGTH_SHORT).show()
 
@@ -50,14 +56,18 @@ class AddExpenseActivity : AppCompatActivity() {
             "dark" -> setTheme(R.style.Theme_FinanceManagerDark)
             else -> setTheme(R.style.Theme_FinanceManager)
         }
-        val btn_save=findViewById<Button>(R.id.btn_save)
-        val fab_add_expense=findViewById<FloatingActionButton>(R.id.fab_add_expense_category)
+
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.add_expense_activity)
+        binding = AddExpenseActivityBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        //setContentView(R.layout.add_expense_activity)
         db = AppDatabase.getDatabase(applicationContext)
 
         val database = AppDatabase.getDatabase(this)
         categoryDao = database.categoryDao()
+        btn_save = findViewById(R.id.btn_save)
+        fab_add_expense_category = findViewById(R.id.fab_add_expense_category)
+
         val edit_date =findViewById<EditText>(R.id.edit_date)
         // Set up the date EditText
         edit_date.setOnClickListener {
@@ -67,7 +77,14 @@ class AddExpenseActivity : AppCompatActivity() {
         // Fetch expense categories from the database and populate the spinner
         fetchExpenseCategories()
 
-        fab_add_expense?.setOnClickListener{
+
+        // Save button click listener
+        btn_save?.setOnClickListener {
+            saveExpense()
+        }
+        fab_add_expense_category?.setOnClickListener{
+            Toast.makeText(applicationContext, "FAB expense pressed", Toast.LENGTH_SHORT).show()
+
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Enter category name")
 
@@ -77,7 +94,12 @@ class AddExpenseActivity : AppCompatActivity() {
             builder.setPositiveButton("Add") { dialog, which ->
                 val text = input.text.toString()
                 val category = Category(0, text, TransactionType.EXPENSE)
-                db.categoryDao().insertCategory(category)
+
+                // Perform database operation on a background thread
+                GlobalScope.launch(Dispatchers.IO) {
+                    db.categoryDao().insertCategory(category)
+                }
+
                 finish()
             }
 
@@ -86,10 +108,6 @@ class AddExpenseActivity : AppCompatActivity() {
             }
 
             builder.show()
-        }
-        // Save button click listener
-        btn_save?.setOnClickListener {
-            saveExpense()
         }
     }
 
@@ -142,7 +160,9 @@ class AddExpenseActivity : AppCompatActivity() {
 
         // Save the expense as a transaction to the database
         val transaction = Transaction(0, amount, date, note, selectedCategory, TransactionType.EXPENSE)
-        db.transactionDao().insertTransaction(transaction)
+        lifecycleScope.launch(Dispatchers.IO) {
+            db.transactionDao().insertTransaction(transaction)
+        }
         finish()
     }
 
