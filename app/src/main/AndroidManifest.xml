@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,12 +16,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FinanceManager"
         tools:targetApi="31">
+        <activity
+            android:name=".ActivityLogin"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".AddExpenseActivity"
-            android:theme="@style/Theme.FinanceManager">
-        </activity>
-
+            android:theme="@style/Theme.FinanceManager"></activity>
         <activity
             android:name=".MainActivity"
             android:exported="true">
