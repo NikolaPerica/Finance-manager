@@ -1,5 +1,12 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Finance Manager</string>
     <string name="prihod">Prihod</string>
     <string name="rashod">Rashod</string>
+    <string name="trenutno_stanje">Trenutno stanje</string>
+    <string name="unesite_iznos">Unesite iznos</string>
+    <string name="odaberite_kategoriju">Odaberite kategoriju</string>
+    <string name="previous">Previous</string>
+    <string name="dodaj_prihod">Dodaj prihod</string>
+    <string name="unesite_napomenu">Unesite napomenu</string>
+    <string name="odaberite_datum">Odaberite datum</string>
 </resources>
