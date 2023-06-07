@@ -2,22 +2,22 @@ package com.example.financemanager
 
 import android.content.Intent
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.financemanager.data.AppDatabase
 import com.example.financemanager.data.TransactionType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.NumberFormat
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.Locale
+import java.util.Date
 
 class MainActivity : AppCompatActivity() {
     private lateinit var db: AppDatabase
@@ -28,8 +28,13 @@ class MainActivity : AppCompatActivity() {
         val prihod=findViewById<Button>(R.id.prihod)
         val rashod=findViewById<Button>(R.id.rashod)
         val stanjeRacuna=findViewById<TextView>(R.id.trenutnoStanje)
+        val stanje=findViewById<TextView>(R.id.stanje)
         val selectedDate = getCurrentDateAsString()
         db = AppDatabase.getDatabase(applicationContext)
+        val date= Date()
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy")
+        val formattedDate = dateFormat.format(date)
+        stanje.append(formattedDate)
         lifecycleScope.launch {
             val transactions = withContext(Dispatchers.IO) {
                 db.transactionDao().getTransactionsByDate(selectedDate)
@@ -42,9 +47,6 @@ class MainActivity : AppCompatActivity() {
                     transaction.amount
                 }
             }
-
-            //val euroFormat = NumberFormat.getCurrencyInstance(Locale("en", "EUR"))
-            //val formattedAmount = euroFormat.format(totalAmount)
 
             stanjeRacuna.text = "${totalAmount} \u20AC"
 

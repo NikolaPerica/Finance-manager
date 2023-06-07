@@ -38,7 +38,7 @@
         app:layout_constraintTop_toBottomOf="@id/prihod"
         app:layout_constraintEnd_toStartOf="@id/trenutnoStanje"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:text="@string/trenutno_stanje"
+        android:text="@string/trenutno_stanje_danas"
         tools:layout_editor_absoluteX="76dp"
         tools:layout_editor_absoluteY="262dp" />
 

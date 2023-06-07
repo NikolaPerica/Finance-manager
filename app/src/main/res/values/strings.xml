@@ -9,4 +9,5 @@
     <string name="dodaj_prihod">Dodaj prihod</string>
     <string name="unesite_napomenu">Unesite napomenu</string>
     <string name="odaberite_datum">Odaberite datum</string>
+    <string name="trenutno_stanje_danas">"Trenutno stanje "</string>
 </resources>
