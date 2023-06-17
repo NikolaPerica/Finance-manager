@@ -23,10 +23,8 @@ class ActivityLogin : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         executor = ContextCompat.getMainExecutor(this)
-        loginImage = findViewById<ImageView>(R.id.loginImage)
-        loginImage.setOnClickListener {
-            showBiometricPrompt()
-        }
+        showBiometricPrompt()
+
 
     }
 
@@ -68,14 +66,8 @@ class ActivityLogin : AppCompatActivity() {
             .setAllowedAuthenticators(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
             .build()
 
-        // Prompt appears when user clicks "Log in".
-        // Consider integrating with the keystore to unlock cryptographic operations,
-        // if needed by your app.
-        val biometricLoginButton =
-            findViewById<ImageView>(R.id.loginImage)
-        biometricLoginButton.setOnClickListener {
             biometricPrompt.authenticate(promptInfo)
-        }
+
     }
 
 

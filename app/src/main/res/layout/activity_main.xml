@@ -24,11 +24,22 @@
         android:layout_height="wrap_content"
         android:text="@string/rashod"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/buttonOpenReports"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toEndOf="@id/prihod"
         tools:layout_editor_absoluteX="233dp"
         tools:layout_editor_absoluteY="168dp" />
+
+    <Button
+        android:id="@+id/buttonOpenReports"
+        app:layout_constraintStart_toEndOf="@id/rashod"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Open Reports" />
+
 
     <TextView
         android:id="@+id/stanje"

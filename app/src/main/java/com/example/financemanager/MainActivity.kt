@@ -28,13 +28,13 @@ class MainActivity : AppCompatActivity() {
         val prihod=findViewById<Button>(R.id.prihod)
         val rashod=findViewById<Button>(R.id.rashod)
         val stanjeRacuna=findViewById<TextView>(R.id.trenutnoStanje)
-        val stanje=findViewById<TextView>(R.id.stanje)
-        val selectedDate = getCurrentDateAsString()
+        val poruka=findViewById<TextView>(R.id.stanje)
         db = AppDatabase.getDatabase(applicationContext)
         val date= Date()
+        val selectedDate = getCurrentDateAsString()
         val dateFormat = SimpleDateFormat("dd/MM/yyyy")
         val formattedDate = dateFormat.format(date)
-        stanje.append(formattedDate)
+        poruka.append(formattedDate)
         lifecycleScope.launch {
             val transactions = withContext(Dispatchers.IO) {
                 db.transactionDao().getTransactionsByDate(selectedDate)
@@ -52,7 +52,11 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-
+        val buttonOpenReports: Button = findViewById(R.id.buttonOpenReports)
+        buttonOpenReports.setOnClickListener {
+            val intent = Intent(this, ReportsActivity::class.java)
+            startActivity(intent)
+        }
 
 
         prihod.setOnClickListener {

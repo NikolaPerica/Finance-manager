@@ -3,7 +3,8 @@ package com.example.financemanager.data
 
 enum class TransactionType {
     INCOME,
-    EXPENSE
+    EXPENSE,
+    ALL
 }
 
 enum class PaymentPeriod {

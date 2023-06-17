@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="16dp">
+
+    <Button
+        android:id="@+id/filterByCategoryButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Filter by category"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/filterByDateButton"
+        app:layout_constraintBottom_toTopOf="@id/recyclerViewTransactions"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp"/>
+    <Button
+        android:id="@+id/filterByDateButton"
+        app:layout_constraintStart_toEndOf="@id/filterByCategoryButton"
+        app:layout_constraintEnd_toStartOf="@id/filterByTypeButton"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/recyclerViewTransactions"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Filter by date"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp"/>
+    <Button
+        android:id="@+id/filterByTypeButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Filter by type"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/recyclerViewTransactions"
+        app:layout_constraintStart_toEndOf="@id/filterByDateButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewTransactions"
+        app:layout_constraintTop_toBottomOf="@id/filterByCategoryButton"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+

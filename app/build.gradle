@@ -9,6 +9,9 @@ plugins {
 android {
     namespace 'com.example.financemanager'
     compileSdk 33
+    dataBinding {
+        enabled = true
+    }
 
     defaultConfig {
         applicationId "com.example.financemanager"
