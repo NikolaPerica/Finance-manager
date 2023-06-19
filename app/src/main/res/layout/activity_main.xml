@@ -4,41 +4,53 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:padding="10dp">
 
     <Button
         android:id="@+id/prihod"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/prihod"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/buttonOpenReports"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/rashod"
-        tools:layout_editor_absoluteX="50dp"
-        tools:layout_editor_absoluteY="166dp" />
+        android:layout_margin="10dp"
+        />
 
     <Button
         android:id="@+id/rashod"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/rashod"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/buttonOpenReports"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/buttonOpenReminders"
         app:layout_constraintStart_toEndOf="@id/prihod"
-        tools:layout_editor_absoluteX="233dp"
-        tools:layout_editor_absoluteY="168dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="10dp"/>
 
     <Button
         android:id="@+id/buttonOpenReports"
-        app:layout_constraintStart_toEndOf="@id/rashod"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_width="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/buttonOpenReminders"
+        app:layout_constraintTop_toBottomOf="@id/prihod"
+        app:layout_constraintBottom_toTopOf="@id/stanje"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Open Reports" />
+        android:text="@string/open_reports"
+        android:layout_margin="10dp"/>
+
+    <Button
+        android:id="@+id/buttonOpenReminders"
+        app:layout_constraintStart_toEndOf="@id/buttonOpenReports"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/rashod"
+        app:layout_constraintBottom_toTopOf="@id/trenutnoStanje"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/open_reminders"
+        android:layout_margin="10dp"/>
 
 
     <TextView
@@ -49,9 +61,7 @@
         app:layout_constraintTop_toBottomOf="@id/prihod"
         app:layout_constraintEnd_toStartOf="@id/trenutnoStanje"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:text="@string/trenutno_stanje_danas"
-        tools:layout_editor_absoluteX="76dp"
-        tools:layout_editor_absoluteY="262dp" />
+        android:text="@string/trenutno_stanje_danas" />
 
     <TextView
         android:id="@+id/trenutnoStanje"
@@ -62,4 +72,5 @@
         app:layout_constraintStart_toEndOf="@id/stanje"
         app:layout_constraintTop_toBottomOf="@id/rashod"
         tools:text="0" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -27,11 +27,13 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions WHERE (date = :date OR :date IS NULL) AND (category = :category OR :category IS NULL) AND (type = :type OR :type IS NULL)")
     fun getFilteredTransactions(date: String?, category: String?, type: String?): List<Transaction>
 
+    @Query("SELECT * FROM transactions WHERE date >= :weekStartDate AND date <= :weekEndDate ")
+    fun getFilteredTransactionsByWeek(weekStartDate: String, weekEndDate: String): List<Transaction>
 
 
 
-
-
+    @Query("SELECT * FROM transactions WHERE date >= :monthStartDate AND date <= :monthEndDate ")
+    fun getFilteredTransactionsByMonth(monthStartDate: String, monthEndDate: String): List<Transaction>
 
 
 

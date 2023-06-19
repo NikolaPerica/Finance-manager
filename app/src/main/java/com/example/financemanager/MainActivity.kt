@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity() {
         val rashod=findViewById<Button>(R.id.rashod)
         val stanjeRacuna=findViewById<TextView>(R.id.trenutnoStanje)
         val poruka=findViewById<TextView>(R.id.stanje)
+        val podsjetnici=findViewById<Button>(R.id.buttonOpenReminders)
         db = AppDatabase.getDatabase(applicationContext)
         val date= Date()
         val selectedDate = getCurrentDateAsString()
@@ -58,6 +59,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        podsjetnici.setOnClickListener {
+            val intent = Intent(this, RemindersActivity::class.java)
+            startActivity(intent)
+        }
 
         prihod.setOnClickListener {
             Toast.makeText(applicationContext, "Prihod stisnut", Toast.LENGTH_SHORT).show()

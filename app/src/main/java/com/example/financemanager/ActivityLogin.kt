@@ -1,6 +1,7 @@
 package com.example.financemanager
 
 //import android.hardware.biometrics.BiometricPrompt
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.widget.ImageView
@@ -25,9 +26,15 @@ class ActivityLogin : AppCompatActivity() {
         executor = ContextCompat.getMainExecutor(this)
         showBiometricPrompt()
 
+        val imageView = findViewById<ImageView>(R.id.loginImage)
+
+        imageView.setOnClickListener {
+            showBiometricPrompt()
+        }
 
     }
 
+    @SuppressLint("SuspiciousIndentation")
     private fun showBiometricPrompt() {
         // Lets the user authenticate using either a Class 3 biometric or
         // their lock screen credential (PIN, pattern, or password).

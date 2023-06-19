@@ -10,4 +10,8 @@
     <string name="unesite_napomenu">Unesite napomenu</string>
     <string name="odaberite_datum">Odaberite datum</string>
     <string name="trenutno_stanje_danas">"Trenutno stanje "</string>
+    <string name="filter_by_month">Filter by month</string>
+    <string name="filter_by_week">Filter by week</string>
+    <string name="open_reports">Open Reports</string>
+    <string name="open_reminders">Open Reminders</string>
 </resources>
