@@ -34,6 +34,12 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions WHERE date >= :monthStartDate AND date <= :monthEndDate ")
     fun getFilteredTransactionsByMonth(monthStartDate: String, monthEndDate: String): List<Transaction>
 
+    @Query("SELECT * FROM transactions WHERE category = :categoryName")
+    fun getTransactionsByCategory(categoryName: String): List<Transaction>
+
+
+
+
 
 
 }

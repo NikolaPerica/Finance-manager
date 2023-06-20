@@ -9,24 +9,30 @@
         android:id="@+id/nameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Reminder Name" />
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_margin="10dp"/>
 
     <TextView
         android:id="@+id/amountTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Amount" />
+        android:textSize="14sp"
+        android:layout_margin="10dp"/>
 
     <TextView
         android:id="@+id/periodTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Period" />
+        android:textSize="14sp"
+        android:layout_margin="10dp"/>
 
     <Button
         android:id="@+id/deleteButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Delete" />
+        android:text="Delete"
+        android:layout_margin="10dp"/>
 
 </LinearLayout>
+

@@ -12,7 +12,12 @@ class ReminderAdapter(
     private var reminders: List<Reminder>,
     private val clickListener: ReminderClickListener
 ) : RecyclerView.Adapter<ReminderAdapter.ReminderViewHolder>() {
+    private var remindersList: List<Reminder> = reminders
 
+    fun setData(data: List<Reminder>) {
+        remindersList = data
+        notifyDataSetChanged()
+    }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReminderViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(
             R.layout.item_reminder,
@@ -23,17 +28,12 @@ class ReminderAdapter(
     }
 
     override fun onBindViewHolder(holder: ReminderViewHolder, position: Int) {
-        val reminder = reminders[position]
+        val reminder = remindersList[position]
         holder.bind(reminder)
     }
 
     override fun getItemCount(): Int {
-        return reminders.size
-    }
-
-    fun setData(data: List<Reminder>) {
-        reminders = data
-        notifyDataSetChanged()
+        return remindersList.size
     }
 
     inner class ReminderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

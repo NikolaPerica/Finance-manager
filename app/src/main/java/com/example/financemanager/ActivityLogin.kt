@@ -1,14 +1,18 @@
 package com.example.financemanager
 
 //import android.hardware.biometrics.BiometricPrompt
+//import android.hardware.biometrics.BiometricPrompt
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_STRONG
+import android.hardware.biometrics.BiometricManager.Authenticators.DEVICE_CREDENTIAL
+import android.os.Build
 import android.os.Bundle
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
-import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
+import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import java.util.concurrent.Executor
@@ -24,17 +28,18 @@ class ActivityLogin : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         executor = ContextCompat.getMainExecutor(this)
-        //showBiometricPrompt()
-        val intent = Intent(this@ActivityLogin, MainActivity::class.java)
-        startActivity(intent)
+        showBiometricPrompt()
+        //val intent = Intent(this@ActivityLogin, MainActivity::class.java)
+        //startActivity(intent)
         val imageView = findViewById<ImageView>(R.id.loginImage)
 
-        //imageView.setOnClickListener {
-         //   showBiometricPrompt()
-        //}
+        imageView.setOnClickListener {
+           showBiometricPrompt()
+        }
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     @SuppressLint("SuspiciousIndentation")
     private fun showBiometricPrompt() {
         // Lets the user authenticate using either a Class 3 biometric or
@@ -71,7 +76,7 @@ class ActivityLogin : AppCompatActivity() {
         promptInfo = BiometricPrompt.PromptInfo.Builder()
             .setTitle("Biometric login for my app")
             .setSubtitle("Log in using your biometric credential")
-            .setAllowedAuthenticators(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
+            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL)
             .build()
 
             biometricPrompt.authenticate(promptInfo)

@@ -206,6 +206,9 @@ class ReportsActivity : AppCompatActivity() {
                 selectedDate = null
                 selectedCategory = null
                 selectedType = TransactionType.valueOf(transactionTypes[index])
+                if (selectedType == TransactionType.ALL) {
+                    selectedType = null // Set selectedType to null for "ALL" option
+                }
                 loadData()
             }
             .setNegativeButton("Cancel") { dialog, _ ->
@@ -214,6 +217,8 @@ class ReportsActivity : AppCompatActivity() {
         builder.show()
     }
 
+
+
     private fun setupRecyclerView() {
         transactionAdapter = TransactionAdapter()
         binding.recyclerViewTransactions.apply {
@@ -221,8 +226,6 @@ class ReportsActivity : AppCompatActivity() {
             adapter = transactionAdapter
         }
     }
-
-
 
 }
 

@@ -14,6 +14,7 @@
     <string name="filter_by_week">Filter by week</string>
     <string name="open_reports">Open Reports</string>
     <string name="open_reminders">Open Reminders</string>
+    <string name="add_new_reminder">Add New Reminder</string>
     <string-array name="period_types">
         <item>Once</item>
         <item>Monthly</item>

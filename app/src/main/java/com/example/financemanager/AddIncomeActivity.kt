@@ -1,7 +1,6 @@
 package com.example.financemanager
 
 import android.app.DatePickerDialog
-import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.widget.ArrayAdapter
@@ -18,6 +17,7 @@ import com.example.financemanager.data.CategoryDao
 import com.example.financemanager.data.Transaction
 import com.example.financemanager.data.TransactionType
 import com.example.financemanager.databinding.AddIncomeActivityBinding
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -37,6 +37,12 @@ class AddIncomeActivity : AppCompatActivity() {
     private lateinit var edit_amount: EditText
     private lateinit var edit_note: EditText
     private lateinit var fab_add_income_category: FloatingActionButton
+    private lateinit var mainFabIncome: ExtendedFloatingActionButton
+    private lateinit var fabAddIncomeCategory: FloatingActionButton
+    private lateinit var fabRemoveIncomeCategory: FloatingActionButton
+
+    private var isFabIncomeMenuOpen = true
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Toast.makeText(applicationContext, "OnCreateEntered", Toast.LENGTH_SHORT).show()
@@ -56,6 +62,19 @@ class AddIncomeActivity : AppCompatActivity() {
         db = AppDatabase.getDatabase(applicationContext)
         val database = AppDatabase.getDatabase(this)
         categoryDao = database.categoryDao()
+        mainFabIncome = findViewById(R.id.mainFabIncome)
+        fabAddIncomeCategory = findViewById(R.id.fab_add_income_category)
+        fabRemoveIncomeCategory = findViewById(R.id.fab_remove_income_category)
+
+        mainFabIncome.isExtended = false
+        closeFabMenu()
+        mainFabIncome.setOnClickListener {
+            if (isFabIncomeMenuOpen) {
+                closeFabMenu()
+            } else {
+                openFabMenu()
+            }
+        }
 
         // Initialize views
         edit_date = binding.editDate
@@ -104,6 +123,20 @@ class AddIncomeActivity : AppCompatActivity() {
 
             builder.show()
         }
+        fabRemoveIncomeCategory.setOnClickListener {
+            showDeleteCategoryDialog()
+        }
+    }
+    private fun openFabMenu() {
+        fabAddIncomeCategory.show()
+        fabRemoveIncomeCategory.show()
+        isFabIncomeMenuOpen = true
+    }
+
+    private fun closeFabMenu() {
+        fabAddIncomeCategory.hide()
+        fabRemoveIncomeCategory.hide()
+        isFabIncomeMenuOpen = false
     }
 
     private fun showDatePickerDialog() {
@@ -147,4 +180,96 @@ class AddIncomeActivity : AppCompatActivity() {
 
         finish()
     }
+    private suspend fun checkIfCategoryUsed(categoryName: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            val transactions = db.transactionDao().getTransactionsByCategory(categoryName)
+            transactions.isNotEmpty()
+        }
+    }
+
+
+
+    private suspend fun getCategoriesFromDatabase(): List<Category> {
+        return withContext(Dispatchers.IO) {
+            categoryDao.getCategoriesByType(TransactionType.INCOME)
+        }
+    }
+
+
+    private fun showDeleteCategoryDialog() {
+        lifecycleScope.launch {
+            val categoriesList = getCategoriesFromDatabase()
+
+            val categoryNames = categoriesList.map { it.name }.toTypedArray()
+
+            val dialog = AlertDialog.Builder(this@AddIncomeActivity)
+                .setTitle("Delete Category")
+                .setItems(categoryNames) { _, position ->
+                    val selectedCategory = categoriesList[position]
+                    val selectedCategoryName = selectedCategory.name
+
+                    lifecycleScope.launch {
+                        val isCategoryUsed = checkIfCategoryUsed(selectedCategoryName)
+
+                        if (isCategoryUsed) {
+                            showErrorDialog("Cannot delete category as it is used in transactions.")
+                        } else {
+                            showConfirmationDialog(selectedCategory)
+                        }
+                    }
+                }
+                .setNegativeButton("Cancel", null)
+                .create()
+
+            dialog.show()
+        }
+    }
+
+    private fun deleteCategory(category: Category) {
+        lifecycleScope.launch {
+            val isCategoryUsed = checkIfCategoryUsed(category.name)
+
+            if (isCategoryUsed) {
+                showErrorDialog("Cannot delete category as it is used in transactions.")
+            } else {
+                withContext(Dispatchers.IO) {
+                    db.categoryDao().deleteCategory(category)
+                }
+                Toast.makeText(this@AddIncomeActivity, "Category deleted", Toast.LENGTH_SHORT).show()
+                fetchIncomeCategories()
+            }
+        }
+    }
+
+    private fun showErrorDialog(message: String) {
+        val errorDialog = AlertDialog.Builder(this@AddIncomeActivity)
+            .setTitle("Error")
+            .setMessage(message)
+            .setPositiveButton("OK", null)
+            .create()
+
+        errorDialog.show()
+    }
+
+
+
+
+
+    private fun showConfirmationDialog(category: Category) {
+        val confirmationDialog = AlertDialog.Builder(this)
+            .setTitle("Delete Category")
+            .setMessage("Are you sure you want to delete the category '${category.name}'?")
+            .setPositiveButton("Delete") { _, _ ->
+                // Delete the category from the categories table
+                deleteCategory(category)
+            }
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        confirmationDialog.show()
+    }
+
+
+
 }
+//data class Category(val id: Int, val name: String)
