@@ -19,6 +19,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Date
 
+
 class MainActivity : AppCompatActivity() {
     private lateinit var db: AppDatabase
     @RequiresApi(Build.VERSION_CODES.O)
@@ -30,7 +31,8 @@ class MainActivity : AppCompatActivity() {
         val stanjeRacuna=findViewById<TextView>(R.id.trenutnoStanje)
         val poruka=findViewById<TextView>(R.id.stanje)
         val podsjetnici=findViewById<Button>(R.id.buttonOpenReminders)
-        db = AppDatabase.getDatabase(applicationContext)
+
+        db = AppDatabase.getDatabase(this)
         val date= Date()
         val selectedDate = getCurrentDateAsString()
         val dateFormat = SimpleDateFormat("dd/MM/yyyy")

@@ -1,31 +1,46 @@
 package com.example.financemanager
 
+import android.app.DatePickerDialog
 import android.os.Bundle
-import android.widget.Button
+import android.view.LayoutInflater
+import android.widget.ArrayAdapter
+import android.widget.EditText
+import android.widget.Spinner
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.example.financemanager.data.AppDatabase
 import com.example.financemanager.data.Reminder
+import com.example.financemanager.databinding.ActivityRemindersBinding
+import com.example.financemanager.databinding.DialogAddReminderBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class RemindersActivity : AppCompatActivity(), ReminderAdapter.ReminderClickListener {
     private lateinit var appDatabase: AppDatabase
     private lateinit var reminderAdapter: ReminderAdapter
     private lateinit var remindersRecyclerView: RecyclerView
+    private lateinit var binding: ActivityRemindersBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_reminders)
-        val addReminderButton = findViewById<Button>(R.id.addReminderButton)
+        binding = ActivityRemindersBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         appDatabase = AppDatabase.getDatabase(this)
+        remindersRecyclerView = binding.remindersRecyclerView
+        val addReminderButton = binding.addReminderButton
 
         reminderAdapter = ReminderAdapter(emptyList(), this)
         remindersRecyclerView.adapter = reminderAdapter
 
         loadReminders()
+
         addReminderButton.setOnClickListener {
             showAddReminderDialog()
         }
@@ -41,8 +56,70 @@ class RemindersActivity : AppCompatActivity(), ReminderAdapter.ReminderClickList
     }
 
     private fun showAddReminderDialog() {
-        // Implement your logic to show the dialog for adding a new reminder
+        val dialogBinding = DialogAddReminderBinding.inflate(LayoutInflater.from(this))
+
+        // Initialize dialog views
+        val nameEditText: EditText = dialogBinding.nameEditText
+        val amountEditText: EditText = dialogBinding.amountEditText
+        val periodTypeSpinner: Spinner = dialogBinding.periodTypeSpinner
+        val dateEditText: EditText = dialogBinding.dateEditText
+
+        // Set up the period type spinner with array resource
+        val periodTypes = resources.getStringArray(R.array.period_types)
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, periodTypes)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        periodTypeSpinner.adapter = adapter
+
+        // Set up the date picker dialog for the date selection
+        val calendar = Calendar.getInstance()
+        val datePickerDialog = DatePickerDialog(
+            this,
+            { _, year, monthOfYear, dayOfMonth ->
+                val selectedCalendar = Calendar.getInstance()
+                selectedCalendar.set(year, monthOfYear, dayOfMonth)
+
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val selectedDate = dateFormat.format(selectedCalendar.time)
+                dateEditText.setText(selectedDate)
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
+
+        // Set click listener for the date edit text to show the date picker dialog
+        dateEditText.setOnClickListener {
+            datePickerDialog.show()
+        }
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Add New Reminder")
+            .setView(dialogBinding.root)
+            .setPositiveButton("Add") { _, _ ->
+                val name = nameEditText.text.toString().trim()
+                val amount = amountEditText.text.toString().toDouble()
+                val periodType = periodTypeSpinner.selectedItem.toString()
+                val date = dateEditText.text.toString()
+
+                if (name.isNotEmpty() && amount >= 0) {
+                    val newReminder = Reminder(name = name, amount = amount, periodType = periodType, date = date)
+
+                    // Save the new reminder to the database
+                    lifecycleScope.launch {
+                        withContext(Dispatchers.IO) {
+                            appDatabase.reminderDao().insertReminder(newReminder)
+                        }
+                        // Refresh the reminder list
+                        loadReminders()
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialog.show()
     }
+
 
     override fun onReminderClick(reminder: Reminder) {
         // Handle click on a reminder item

@@ -24,13 +24,14 @@ class ActivityLogin : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         executor = ContextCompat.getMainExecutor(this)
-        showBiometricPrompt()
-
+        //showBiometricPrompt()
+        val intent = Intent(this@ActivityLogin, MainActivity::class.java)
+        startActivity(intent)
         val imageView = findViewById<ImageView>(R.id.loginImage)
 
-        imageView.setOnClickListener {
-            showBiometricPrompt()
-        }
+        //imageView.setOnClickListener {
+         //   showBiometricPrompt()
+        //}
 
     }
 

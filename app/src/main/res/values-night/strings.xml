@@ -9,4 +9,10 @@
     <string name="dodaj_prihod">Dodaj prihod</string>
     <string name="unesite_napomenu">Unesite napomenu</string>
     <string name="odaberite_datum">Odaberite datum</string>
+    <string-array name="period_types">
+        <item>Once</item>
+        <item>Monthly</item>
+        <item>Quarterly</item>
+        <item>Annually</item>
+    </string-array>
 </resources>

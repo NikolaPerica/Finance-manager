@@ -1,4 +1,5 @@
 package com.example.financemanager.data
+
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
@@ -25,10 +26,13 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "app_database"
-                ).build()
+                ).fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 return instance
             }
         }
+
+
     }
 }

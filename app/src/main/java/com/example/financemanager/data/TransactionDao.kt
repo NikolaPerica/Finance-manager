@@ -31,7 +31,6 @@ interface TransactionDao {
     fun getFilteredTransactionsByWeek(weekStartDate: String, weekEndDate: String): List<Transaction>
 
 
-
     @Query("SELECT * FROM transactions WHERE date >= :monthStartDate AND date <= :monthEndDate ")
     fun getFilteredTransactionsByMonth(monthStartDate: String, monthEndDate: String): List<Transaction>
 

@@ -10,5 +10,5 @@ data class Reminder(
     val name: String,
     val amount: Double,
     val periodType: String,
-    val period: Int
+    val date: String
 )
