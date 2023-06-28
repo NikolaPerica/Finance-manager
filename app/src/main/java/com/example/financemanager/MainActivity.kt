@@ -1,5 +1,6 @@
 package com.example.financemanager
 
+import DateCheckWorker
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -31,7 +32,7 @@ class MainActivity : AppCompatActivity() {
         val stanjeRacuna=findViewById<TextView>(R.id.trenutnoStanje)
         val poruka=findViewById<TextView>(R.id.stanje)
         val podsjetnici=findViewById<Button>(R.id.buttonOpenReminders)
-
+        DateCheckWorker.scheduleDailyCheck(this)
         db = AppDatabase.getDatabase(this)
         val date= Date()
         val selectedDate = getCurrentDateAsString()
@@ -79,6 +80,7 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun getCurrentDateAsString(): String {
         val currentDate = LocalDate.now()
