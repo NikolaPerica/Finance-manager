@@ -1,5 +1,6 @@
 package com.example.financemanager.data
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -37,7 +38,8 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions WHERE category = :categoryName")
     fun getTransactionsByCategory(categoryName: String): List<Transaction>
 
-
+    @Query("SELECT * FROM transactions")
+    fun getAllTransactionsLiveData(): LiveData<List<Transaction>>
 
 
 

@@ -1,5 +1,6 @@
 package com.example.financemanager.data
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -25,9 +26,8 @@ interface CategoryDao {
     @Query("SELECT * FROM categories WHERE type = :type")
     fun getCategoriesByType(type: TransactionType): List<Category>
 
-
-
-
+    @Query("SELECT * FROM categories")
+    fun getAllCategoriesLiveData(): LiveData<List<Category>>
 
 
 }

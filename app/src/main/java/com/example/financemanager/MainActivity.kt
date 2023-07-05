@@ -56,6 +56,12 @@ class MainActivity : AppCompatActivity() {
 
         }
 
+        val buttonOpenGraphs: Button = findViewById(R.id.buttonOpenGraphs)
+        buttonOpenGraphs.setOnClickListener {
+            val intent = Intent(this, GraphActivity::class.java)
+            startActivity(intent)
+        }
+
         val buttonOpenReports: Button = findViewById(R.id.buttonOpenReports)
         buttonOpenReports.setOnClickListener {
             val intent = Intent(this, ReportsActivity::class.java)
