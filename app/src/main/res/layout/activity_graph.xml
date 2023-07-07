@@ -6,9 +6,40 @@
     android:padding="16dp"
     tools:context=".GraphActivity">
 
+    <LinearLayout
+        android:id="@+id/optionsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Graph Type:" />
+
+        <Spinner
+            android:id="@+id/graphTypeSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:entries="@array/graph_types" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Grouping Option:" />
+
+        <Spinner
+            android:id="@+id/groupingOptionSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:entries="@array/grouping_options" />
+
+    </LinearLayout>
+
     <com.anychart.AnyChartView
         android:id="@+id/chartView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_below="@id/optionsLayout" />
 
 </RelativeLayout>

@@ -21,4 +21,20 @@
         <item>Quarterly</item>
         <item>Annually</item>
     </string-array>
+    <string name="graph_type_prompt">Select Graph Type</string>
+    <string-array name="graph_types">
+        <item>Line</item>
+        <item>Column</item>
+        <!-- Add more graph types if needed -->
+    </string-array>
+
+    <string name="grouping_option_prompt">Select Grouping Option</string>
+    <string-array name="grouping_options">
+        <item>Category</item>
+        <item>Year</item>
+        <item>Month</item>
+        <item>Date</item>
+        <item>Income</item>
+        <item>Expense</item>
+    </string-array>
 </resources>
