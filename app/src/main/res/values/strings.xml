@@ -25,6 +25,7 @@
     <string-array name="graph_types">
         <item>Line</item>
         <item>Column</item>
+        <item>Pie</item>
         <!-- Add more graph types if needed -->
     </string-array>
 
