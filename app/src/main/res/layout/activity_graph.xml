@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,39 +6,65 @@
     tools:context=".GraphActivity">
 
     <LinearLayout
-        android:id="@+id/optionsLayout"
+        android:id="@+id/graphsLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Graph Type:" />
+            android:text="@string/graph_type"
+            android:layout_weight="1"
+            android:textAppearance="@style/TextAppearance.AppCompat.Subhead" />
 
         <Spinner
             android:id="@+id/graphTypeSpinner"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
             android:entries="@array/graph_types" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/groupLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp"
+        android:layout_below="@+id/graphsLayout">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="Grouping Option:" />
+            android:text="@string/grouping_option"
+            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+             />
 
         <Spinner
             android:id="@+id/groupingOptionSpinner"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:entries="@array/grouping_options" />
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:entries="@array/grouping_options"
+            />
 
     </LinearLayout>
 
     <com.anychart.AnyChartView
         android:id="@+id/chartView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/optionsLayout" />
+        android:layout_height="0dp"
+        android:layout_below="@id/groupLayout"
+        android:layout_above="@+id/legendView" />
+
+    <com.anychart.AnyChartView
+        android:id="@+id/legendView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" />
 
 </RelativeLayout>

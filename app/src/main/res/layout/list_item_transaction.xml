@@ -3,31 +3,34 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:padding="8dp">
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textViewValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="@android:style/TextAppearance.Large"/>
+        style="@style/TextAppearance.MaterialComponents.Headline6"
+        android:layout_marginEnd="8dp" />
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textViewDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="@android:style/TextAppearance.Medium"/>
+        style="@style/TextAppearance.MaterialComponents.Body2"
+        android:layout_marginEnd="8dp" />
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textViewCategory"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="@android:style/TextAppearance.Small"/>
+        style="@style/TextAppearance.MaterialComponents.Caption"
+        android:layout_marginEnd="8dp" />
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textViewNote"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="@android:style/TextAppearance.Small"/>
+        style="@style/TextAppearance.MaterialComponents.Caption" />
 
 </LinearLayout>

@@ -96,7 +96,7 @@ class RemindersActivity : AppCompatActivity(), ReminderAdapter.ReminderClickList
         }
 
         val dialog = AlertDialog.Builder(this)
-            .setTitle("Add New Reminder")
+           // .setTitle("Add New Reminder")
             .setView(dialogBinding.root)
             .setPositiveButton("Add") { _, _ ->
                 val name = nameEditText.text.toString().trim()

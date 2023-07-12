@@ -7,7 +7,6 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Spinner
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -45,7 +44,7 @@ class AddIncomeActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Toast.makeText(applicationContext, "OnCreateEntered", Toast.LENGTH_SHORT).show()
+      //  Toast.makeText(applicationContext, "OnCreateEntered", Toast.LENGTH_SHORT).show()
 
         val preferences = PreferenceManager.getDefaultSharedPreferences(this)
         val theme = preferences.getString("preference_key_theme", "light")
@@ -97,7 +96,7 @@ class AddIncomeActivity : AppCompatActivity() {
             saveIncome()
         }
         fab_add_income_category?.setOnClickListener{
-            Toast.makeText(applicationContext, "FAB income pressed", Toast.LENGTH_SHORT).show()
+           // Toast.makeText(applicationContext, "FAB income pressed", Toast.LENGTH_SHORT).show()
 
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Enter category name")
@@ -235,7 +234,7 @@ class AddIncomeActivity : AppCompatActivity() {
                 withContext(Dispatchers.IO) {
                     db.categoryDao().deleteCategory(category)
                 }
-                Toast.makeText(this@AddIncomeActivity, "Category deleted", Toast.LENGTH_SHORT).show()
+               // Toast.makeText(this@AddIncomeActivity, "Category deleted", Toast.LENGTH_SHORT).show()
                 fetchIncomeCategories()
             }
         }

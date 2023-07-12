@@ -8,7 +8,6 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Spinner
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -42,7 +41,7 @@ class AddExpenseActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Toast.makeText(applicationContext, "OnCreateEntered", Toast.LENGTH_SHORT).show()
+     //   Toast.makeText(applicationContext, "OnCreateEntered", Toast.LENGTH_SHORT).show()
 
         val preferences = PreferenceManager.getDefaultSharedPreferences(this)
         val theme = preferences.getString("preference_key_theme", "light")
@@ -93,7 +92,7 @@ class AddExpenseActivity : AppCompatActivity() {
             saveExpense()
         }
         fab_add_expense_category?.setOnClickListener{
-            Toast.makeText(applicationContext, "FAB expense pressed", Toast.LENGTH_SHORT).show()
+          //  Toast.makeText(applicationContext, "FAB expense pressed", Toast.LENGTH_SHORT).show()
 
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Enter category name")
@@ -246,7 +245,7 @@ class AddExpenseActivity : AppCompatActivity() {
                 withContext(Dispatchers.IO) {
                     db.categoryDao().deleteCategory(category)
                 }
-                Toast.makeText(this@AddExpenseActivity, "Category deleted", Toast.LENGTH_SHORT).show()
+              //  Toast.makeText(this@AddExpenseActivity, "Category deleted", Toast.LENGTH_SHORT).show()
                 fetchExpenseCategories()
             }
         }

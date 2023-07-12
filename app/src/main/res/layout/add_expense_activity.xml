@@ -4,121 +4,130 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_margin="10dp">
+    android:padding="16dp">
 
     <TextView
         android:id="@+id/text_amount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
         android:text="Amount"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/edit_amount" />
+        app:layout_constraintEnd_toStartOf="@id/edit_amount"
+        android:gravity="center_vertical"
+        />
 
     <EditText
         android:id="@+id/edit_amount"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Enter amount"
-        app:layout_constraintTop_toTopOf="@id/text_amount"
+        android:layout_height="48dp"
+        android:hint="@string/enter_amount"
         app:layout_constraintStart_toEndOf="@id/text_amount"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/text_amount" />
 
     <TextView
         android:id="@+id/text_date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
         android:text="Date"
         app:layout_constraintTop_toBottomOf="@id/edit_amount"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/edit_date" />
+        app:layout_constraintEnd_toStartOf="@id/edit_date"
+        android:gravity="center_vertical"/>
 
     <EditText
         android:id="@+id/edit_date"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Select date"
+        android:layout_height="48dp"
+        android:hint="@string/select_date"
         android:focusable="false"
         android:clickable="true"
-        app:layout_constraintTop_toTopOf="@id/text_date"
         app:layout_constraintStart_toEndOf="@id/text_date"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/text_date" />
 
     <TextView
         android:id="@+id/text_note"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
         android:text="Note"
         app:layout_constraintTop_toBottomOf="@id/edit_date"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/edit_note" />
+        app:layout_constraintEnd_toStartOf="@id/edit_note"
+        android:gravity="center_vertical"/>
 
     <EditText
         android:id="@+id/edit_note"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Enter note"
-        app:layout_constraintTop_toTopOf="@id/text_note"
+        android:layout_height="48dp"
+        android:hint="@string/enter_note"
         app:layout_constraintStart_toEndOf="@id/text_note"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/text_note"
+        />
 
     <TextView
         android:id="@+id/text_category"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Select Category"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:text="@string/select_category"
         app:layout_constraintTop_toBottomOf="@id/edit_note"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/spinner_category" />
+        app:layout_constraintEnd_toStartOf="@id/spinner_category"
+        android:gravity="center_vertical"/>
 
     <Spinner
         android:id="@+id/spinner_category"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="@id/text_category"
+        android:layout_height="48dp"
         app:layout_constraintStart_toEndOf="@id/text_category"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/text_category"
+        android:padding="15dp"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_save"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Save"
-        app:layout_constraintTop_toBottomOf="@id/spinner_category"
+        style="@style/Widget.MaterialComponents.Button"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/spinner_category" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/mainFab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
         app:icon="@drawable/ic_expand"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:padding="5dp"
-         />
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- FAB Button 1 -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_expense_category"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="3dp"
+        android:layout_marginTop="3dp"
         android:src="@drawable/ic_add"
-        app:layout_constraintStart_toStartOf="@+id/mainFab"
-        app:layout_constraintBottom_toTopOf="@+id/fab_remove_expense_category"
-        android:padding="5dp"
-        />
+        app:layout_constraintBottom_toTopOf="@id/mainFab"
+        app:layout_constraintStart_toStartOf="@id/mainFab"
+        android:contentDescription="@string/add_expense_category" />
 
-    <!-- FAB Button 2 -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_remove_expense_category"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="3dp"
         android:src="@drawable/ic_remove"
-        app:layout_constraintStart_toStartOf="@+id/mainFab"
-        app:layout_constraintBottom_toTopOf="@+id/mainFab"
-        android:padding="5dp"
-        />
+        app:layout_constraintBottom_toTopOf="@id/fab_add_expense_category"
+        app:layout_constraintStart_toStartOf="@id/mainFab"
+        android:contentDescription="@string/remove_expense_category" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

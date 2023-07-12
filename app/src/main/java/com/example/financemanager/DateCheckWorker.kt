@@ -1,7 +1,9 @@
-
+package com.example.financemanager
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -10,7 +12,6 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.example.financemanager.R
 import com.example.financemanager.data.AppDatabase
 import com.example.financemanager.data.Reminder
 import com.example.financemanager.data.ReminderDao
@@ -27,6 +28,7 @@ class DateCheckWorker(
 ) : CoroutineWorker(context, workerParams) {
 
     private lateinit var reminderDao: ReminderDao
+    private lateinit var notificationManager: NotificationManagerCompat
 
     override suspend fun doWork(): Result = withContext(Dispatchers.Default) {
         val currentDate = getCurrentDate()
@@ -91,9 +93,23 @@ class DateCheckWorker(
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .build()
 
-        val notificationManager = NotificationManagerCompat.from(applicationContext)
-        notificationManager.notify(notificationId, notification)
+        try {
+            if (hasNotificationPermission()) {
+                notificationManager.notify(notificationId, notification)
+            } else {
+                // Handle the case where the app doesn't have notification permission
+                // You can show a toast, log an error, or perform appropriate error handling
+            }
+        } catch (e: SecurityException) {
+            // Handle the security exception
+            // You can show a toast, log an error, or perform appropriate error handling
+        }
     }
+
+    private fun hasNotificationPermission(): Boolean {
+        return applicationContext.checkSelfPermission(Manifest.permission.ACCESS_NOTIFICATION_POLICY) == PackageManager.PERMISSION_GRANTED
+    }
+
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -106,6 +122,13 @@ class DateCheckWorker(
             notificationManager.createNotificationChannel(channel)
         }
     }
+
+  /*  private fun hasNotificationPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            applicationContext,
+            Manifest.permission.ACCESS_NOTIFICATION_POLICY
+        ) == PackageManager.PERMISSION_GRANTED
+    }*/
 
     companion object {
         private const val WORK_TAG = "date_check_worker"
@@ -130,5 +153,6 @@ class DateCheckWorker(
     init {
         val reminderDatabase = AppDatabase.getDatabase(context.applicationContext)
         reminderDao = reminderDatabase.reminderDao()
+        notificationManager = NotificationManagerCompat.from(applicationContext)
     }
 }

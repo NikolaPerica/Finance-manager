@@ -5,83 +5,92 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
-    android:padding="10dp">
+    android:padding="10dp"
+    android:layout_margin="10dp">
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/prihod"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/prihod"
+        style="@style/Widget.MaterialComponents.Button"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/buttonOpenReports"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/rashod"
-        android:layout_margin="10dp"
+        android:layout_margin="8dp"
         />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/rashod"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/rashod"
+        style="@style/Widget.MaterialComponents.Button"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/buttonOpenReminders"
+
         app:layout_constraintStart_toEndOf="@id/prihod"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_margin="10dp"/>
+        android:layout_margin="8dp"
+        />
 
-    <Button
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonOpenReports"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/open_reports"
+        style="@style/Widget.MaterialComponents.Button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/buttonOpenReminders"
         app:layout_constraintTop_toBottomOf="@id/prihod"
         app:layout_constraintBottom_toTopOf="@id/buttonOpenGraphs"
+        android:layout_margin="8dp"
+        />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonOpenReminders"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/open_reports"
-        android:layout_margin="10dp"/>
-
-    <Button
-        android:id="@+id/buttonOpenReminders"
+        android:text="@string/open_reminders"
+        style="@style/Widget.MaterialComponents.Button"
         app:layout_constraintStart_toEndOf="@id/buttonOpenReports"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/rashod"
         app:layout_constraintBottom_toTopOf="@id/buttonOpenGraphs"
+        android:layout_margin="8dp"
+        />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonOpenGraphs"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/open_reminders"
-        android:layout_margin="10dp"/>
-
-    <Button
-        android:id="@+id/buttonOpenGraphs"
+        android:text="@string/open_graphs"
+        style="@style/Widget.MaterialComponents.Button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/buttonOpenReports"
-        app:layout_constraintBottom_toTopOf="@id/trenutnoStanje"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Open graphs"
-        android:layout_margin="10dp"/>
-
+        app:layout_constraintBottom_toTopOf="@id/latest"
+        android:layout_margin="8dp"
+        />
 
     <TextView
-        android:id="@+id/stanje"
+        android:id="@+id/latest"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="@string/latest_transactions"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/prihod"
-        app:layout_constraintEnd_toStartOf="@id/trenutnoStanje"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:text="@string/trenutno_stanje_danas" />
+        app:layout_constraintTop_toBottomOf="@+id/buttonOpenGraphs" />
 
-    <TextView
-        android:id="@+id/trenutnoStanje"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/latestTransactions"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/latest"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/stanje"
-        app:layout_constraintTop_toBottomOf="@id/rashod"
-        tools:text="0" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

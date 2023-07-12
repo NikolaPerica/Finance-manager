@@ -1,6 +1,7 @@
 package com.example.financemanager.data
 
 import android.content.Context
+import androidx.lifecycle.LiveData
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -11,6 +12,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun categoryDao(): CategoryDao
     abstract fun transactionDao(): TransactionDao
     abstract fun reminderDao(): ReminderDao
+    val transactionsLiveData: LiveData<List<Transaction>> = transactionDao().getAllTransactionsLiveData()
+
 
     companion object {
         @Volatile

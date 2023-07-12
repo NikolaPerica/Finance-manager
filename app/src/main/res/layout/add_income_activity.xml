@@ -4,16 +4,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_margin="10dp">
+    android:layout_margin="20dp"
+    android:padding="20dp">
 
     <TextView
         android:id="@+id/text_amount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Amount"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:text="@string/amount"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/edit_amount" />
+        app:layout_constraintEnd_toStartOf="@id/guideline"
+        android:gravity="center_vertical"
+        />
 
     <EditText
         android:id="@+id/edit_amount"
@@ -22,17 +25,20 @@
         android:hint="Enter amount"
         android:minHeight="48dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/text_amount"
-        app:layout_constraintTop_toTopOf="@id/text_amount" />
+        app:layout_constraintStart_toEndOf="@id/guideline"
+        app:layout_constraintTop_toTopOf="@id/text_amount"
+        />
 
     <TextView
         android:id="@+id/text_date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
         android:text="Date"
         app:layout_constraintTop_toBottomOf="@id/edit_amount"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/edit_date" />
+        app:layout_constraintEnd_toStartOf="@id/guideline"
+        android:gravity="center_vertical"
+        />
 
     <EditText
         android:id="@+id/edit_date"
@@ -43,17 +49,20 @@
         android:hint="Select date"
         android:minHeight="48dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/text_date"
-        app:layout_constraintTop_toTopOf="@id/text_date" />
+        app:layout_constraintStart_toEndOf="@id/guideline"
+        app:layout_constraintTop_toTopOf="@id/text_date"
+        />
 
     <TextView
         android:id="@+id/text_note"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
         android:text="Note"
         app:layout_constraintTop_toBottomOf="@id/edit_date"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/edit_note" />
+        app:layout_constraintEnd_toStartOf="@id/guideline"
+        android:gravity="center_vertical"
+        />
 
     <EditText
         android:id="@+id/edit_note"
@@ -62,17 +71,20 @@
         android:hint="Enter note"
         android:minHeight="48dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/text_note"
-        app:layout_constraintTop_toTopOf="@id/text_note" />
+        app:layout_constraintStart_toEndOf="@id/guideline"
+        app:layout_constraintTop_toTopOf="@id/text_note"
+        />
 
     <TextView
         android:id="@+id/text_category"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
         android:text="Select Category"
         app:layout_constraintTop_toBottomOf="@id/edit_note"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/spinner_category" />
+        app:layout_constraintEnd_toStartOf="@id/guideline"
+        android:gravity="center_vertical"
+        />
 
     <Spinner
         android:id="@+id/spinner_category"
@@ -80,28 +92,34 @@
         android:layout_height="wrap_content"
         android:minHeight="48dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/text_category"
-        app:layout_constraintTop_toTopOf="@id/text_category" />
+        app:layout_constraintStart_toEndOf="@id/guideline"
+        app:layout_constraintTop_toTopOf="@id/text_category"
+        android:padding="15dp"
+        />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_save"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Save"
-        app:layout_constraintTop_toBottomOf="@id/spinner_category"
+        style="@style/Widget.MaterialComponents.Button"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/spinner_category" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/mainFabIncome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        app:icon="@drawable/ic_expand"
+        android:icon="@drawable/ic_expand"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:padding="5dp"
-        />
+        app:iconTint="@android:color/white"
+        app:icon="@drawable/ic_expand"
+        app:elevation="6dp"
+        app:cornerRadius="28dp" />
 
     <!-- FAB Button 1 -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -112,7 +130,13 @@
         app:layout_constraintStart_toStartOf="@+id/mainFabIncome"
         app:layout_constraintBottom_toTopOf="@+id/fab_remove_income_category"
         android:padding="5dp"
-        />
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="3dp"
+        app:tint="@android:color/white"
+        app:elevation="6dp"
+        app:borderWidth="0dp"
+        app:cornerRadius="24dp"
+        android:contentDescription="Add income category" />
 
     <!-- FAB Button 2 -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -123,6 +147,19 @@
         app:layout_constraintStart_toStartOf="@+id/mainFabIncome"
         app:layout_constraintBottom_toTopOf="@+id/mainFabIncome"
         android:padding="5dp"
-        />
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="3dp"
+        app:tint="@android:color/white"
+        app:elevation="6dp"
+        app:borderWidth="0dp"
+        app:cornerRadius="24dp"
+        android:contentDescription="Remove income category" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

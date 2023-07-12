@@ -1,85 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:paddingBottom="5dp"
-    android:paddingTop="2dp"
-    android:paddingLeft="5dp"
-    android:paddingRight="5dp">
+    android:orientation="vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="24dp"
+    android:paddingBottom="24dp">
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/filterByCategoryButton"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Filter by category"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/filterByDateButton"
-        app:layout_constraintBottom_toTopOf="@id/recyclerViewTransactions"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="7dp"/>
-    <Button
-        android:id="@+id/filterByDateButton"
-        app:layout_constraintStart_toEndOf="@id/filterByCategoryButton"
-        app:layout_constraintEnd_toStartOf="@id/filterByTypeButton"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/recyclerViewTransactions"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Filter by date"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="7dp"/>
-    <Button
-        android:id="@+id/filterByTypeButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Filter by type"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/recyclerViewTransactions"
-        app:layout_constraintStart_toEndOf="@id/filterByDateButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="7dp"/>
+        android:text="@string/filter_by_category"
+        style="@style/Widget.MaterialComponents.Button"
+        android:layout_marginBottom="16dp" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/filterByDateButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/filter_by_date"
+        style="@style/Widget.MaterialComponents.Button"
+        android:layout_marginBottom="16dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/filterByTypeButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/filter_by_type"
+        style="@style/Widget.MaterialComponents.Button"
+        android:layout_marginBottom="16dp" />
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/filterByWeekButton"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/filter_by_week"
-        app:layout_constraintTop_toBottomOf="@id/filterByCategoryButton"
-        app:layout_constraintBottom_toTopOf="@id/recyclerViewTransactions"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/filterByMonthButton"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="7dp"/>
+        style="@style/Widget.MaterialComponents.Button"
+        android:layout_marginBottom="16dp" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/filterByMonthButton"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/filter_by_month"
-        app:layout_constraintTop_toBottomOf="@id/filterByDateButton"
-        app:layout_constraintBottom_toTopOf="@id/recyclerViewTransactions"
-        app:layout_constraintStart_toEndOf="@id/filterByWeekButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="7dp"/>
+        style="@style/Widget.MaterialComponents.Button"
+        android:layout_marginBottom="16dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/amount"
+            android:textStyle="bold"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/date"
+            android:textStyle="bold"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/category"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/note"
+            android:textStyle="bold"
+            android:textAlignment="center"/>
+
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewTransactions"
-        app:layout_constraintTop_toBottomOf="@id/filterByWeekButton"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_margin="10dp"/>
+        android:layout_weight="1"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
-
+</LinearLayout>

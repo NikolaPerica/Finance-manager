@@ -1,60 +1,51 @@
 package com.example.financemanager
 
-import DateCheckWorker
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.financemanager.data.AppDatabase
-import com.example.financemanager.data.TransactionType
-import kotlinx.coroutines.Dispatchers
+import com.example.financemanager.data.Transaction
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.Date
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var db: AppDatabase
+    private lateinit var adapter: MyTransactionAdapter
+    private lateinit var recyclerView: RecyclerView
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val prihod=findViewById<Button>(R.id.prihod)
         val rashod=findViewById<Button>(R.id.rashod)
-        val stanjeRacuna=findViewById<TextView>(R.id.trenutnoStanje)
-        val poruka=findViewById<TextView>(R.id.stanje)
         val podsjetnici=findViewById<Button>(R.id.buttonOpenReminders)
-        DateCheckWorker.scheduleDailyCheck(this)
+        //DateCheckWorker.scheduleDailyCheck(this)
         db = AppDatabase.getDatabase(this)
-        val date= Date()
-        val selectedDate = getCurrentDateAsString()
-        val dateFormat = SimpleDateFormat("dd/MM/yyyy")
-        val formattedDate = dateFormat.format(date)
-        poruka.append(formattedDate)
+        recyclerView = findViewById(R.id.latestTransactions)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        adapter = MyTransactionAdapter()
+        recyclerView.adapter = adapter
         lifecycleScope.launch {
-            val transactions = withContext(Dispatchers.IO) {
-                db.transactionDao().getTransactionsByDate(selectedDate)
-            }
-
-            val totalAmount = transactions.sumOf { transaction ->
-                if (transaction.type == TransactionType.EXPENSE) {
-                    -transaction.amount
-                } else {
-                    transaction.amount
-                }
-            }
-
-            stanjeRacuna.text = "${totalAmount} \u20AC"
-
+            val transactions: LiveData<List<Transaction>> = db.transactionDao().getAllTransactionsLiveData()
+            //adapter.updateData(transactions)
         }
+        db.transactionsLiveData.observe(this) { transactions ->
+            val transactionList = transactions.sortedByDescending { it.id }
+            adapter.updateData(transactionList)
+        }
+
+
+
 
         val buttonOpenGraphs: Button = findViewById(R.id.buttonOpenGraphs)
         buttonOpenGraphs.setOnClickListener {
@@ -74,7 +65,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         prihod.setOnClickListener {
-            Toast.makeText(applicationContext, "Prihod stisnut", Toast.LENGTH_SHORT).show()
+           // Toast.makeText(applicationContext, "Prihod stisnut", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, AddIncomeActivity::class.java)
             startActivity(intent)
         }

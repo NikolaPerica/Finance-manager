@@ -4,12 +4,9 @@ package com.example.financemanager
 //import android.hardware.biometrics.BiometricPrompt
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_STRONG
-import android.hardware.biometrics.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import android.os.Build
 import android.os.Bundle
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricManager
@@ -49,17 +46,17 @@ class ActivityLogin : AppCompatActivity() {
                 override fun onAuthenticationError(errorCode: Int,
                                                    errString: CharSequence) {
                     super.onAuthenticationError(errorCode, errString)
-                    Toast.makeText(applicationContext,
+                /*    Toast.makeText(applicationContext,
                         "Authentication error: $errString", Toast.LENGTH_SHORT)
-                        .show()
+                        .show()*/
                 }
 
                 override fun onAuthenticationSucceeded(
                     result: BiometricPrompt.AuthenticationResult) {
                     super.onAuthenticationSucceeded(result)
-                    Toast.makeText(applicationContext,
+                   /* Toast.makeText(applicationContext,
                         "Authentication succeeded!", Toast.LENGTH_SHORT)
-                        .show()
+                        .show()*/
                     val intent = Intent(this@ActivityLogin, MainActivity::class.java)
                     startActivity(intent)
                     finish()
@@ -67,14 +64,14 @@ class ActivityLogin : AppCompatActivity() {
 
                 override fun onAuthenticationFailed() {
                     super.onAuthenticationFailed()
-                    Toast.makeText(applicationContext, "Authentication failed",
+                   /* Toast.makeText(applicationContext, "Authentication failed",
                         Toast.LENGTH_SHORT)
-                        .show()
+                        .show()*/
                 }
             })
 
         promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Biometric login for my app")
+            .setTitle("Biometric login for Finance manager")
             .setSubtitle("Log in using your biometric credential")
             .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL)
             .build()
