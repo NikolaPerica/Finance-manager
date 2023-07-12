@@ -12,11 +12,26 @@ import com.example.financemanager.data.TransactionType
 class MyTransactionAdapter : RecyclerView.Adapter<MyTransactionAdapter.TransactionViewHolder>() {
 
     private var transactions: List<Transaction> = emptyList()
+    private var onItemClickListener: ((Transaction) -> Unit)? = null
+
+    interface OnItemClickListener {
+        fun onItemClick(transaction: Transaction)
+    }
 
     inner class TransactionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val textViewName: TextView = itemView.findViewById(R.id.textViewName)
         private val textViewAmount: TextView = itemView.findViewById(R.id.textViewAmount)
         private val textViewCategory: TextView = itemView.findViewById(R.id.textViewCategory)
+
+        init {
+            itemView.setOnClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    val transaction = transactions[position]
+                    onItemClickListener?.invoke(transaction)
+                }
+            }
+        }
 
         fun bind(transaction: Transaction) {
             textViewName.text = transaction.note
@@ -30,15 +45,13 @@ class MyTransactionAdapter : RecyclerView.Adapter<MyTransactionAdapter.Transacti
                 TransactionType.EXPENSE -> {
                     textViewAmount.setTextColor(Color.RED)
                 }
-
                 else -> {}
             }
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TransactionViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.transaction_item, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.transaction_item, parent, false)
         return TransactionViewHolder(view)
     }
 
@@ -56,6 +69,11 @@ class MyTransactionAdapter : RecyclerView.Adapter<MyTransactionAdapter.Transacti
         notifyDataSetChanged()
     }
 
-
-
+    fun setOnItemClickListener(listener: (Transaction) -> Unit) {
+        onItemClickListener = listener
+    }
 }
+
+
+
+

@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.Bundle
 import android.widget.Button
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
@@ -44,6 +45,13 @@ class MainActivity : AppCompatActivity() {
             adapter.updateData(transactionList)
         }
 
+        adapter = MyTransactionAdapter()
+        adapter.setOnItemClickListener { transaction ->
+            showTransactionDialog(transaction)
+        }
+        recyclerView.adapter = adapter
+
+
 
 
 
@@ -76,6 +84,24 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+    }
+
+
+    private fun showTransactionDialog(transaction: Transaction) {
+        // Create and show the dialog with the detailed transaction data
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Transaction Details")
+            .setMessage("Amount: ${transaction.amount}\n" +
+                    "Date: ${transaction.date}\n" +
+                    "Note: ${transaction.note}\n" +
+                    "Category: ${transaction.category}\n" +
+                    "Type: ${transaction.type}")
+            .setPositiveButton("OK") { _, _ ->
+                // Handle OK button click if needed
+            }
+            .create()
+
+        dialog.show()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
