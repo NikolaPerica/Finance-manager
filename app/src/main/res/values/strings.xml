@@ -51,6 +51,12 @@
     <string name="name">Name</string>
     <string name="repeat_interval">Repeat interval</string>
     <string name="latest_transactions">Latest transactions</string>
+    <string name="all">All</string>
+    <string name="expense">Expense</string>
+    <string name="income">Income</string>
+    <string name="choose_type">Choose Type</string>
+    <string name="year">Year</string>
+    <string name="month">Month</string>
     <string-array name="grouping_options">
         <item>Category</item>
         <item>Year</item>

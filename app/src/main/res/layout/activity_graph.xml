@@ -41,7 +41,7 @@
             android:layout_height="wrap_content"
             android:text="@string/grouping_option"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-             />
+            />
 
         <Spinner
             android:id="@+id/groupingOptionSpinner"
@@ -53,12 +53,98 @@
             />
 
     </LinearLayout>
+    <LinearLayout
+        android:id="@+id/typeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_below="@id/groupLayout">
+
+        <TextView
+            android:id="@+id/textChooseType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/choose_type"
+            android:layout_weight="1"
+            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+            />
+
+        <RadioGroup
+            android:id="@+id/transactionTypeRadioGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_toEndOf="@id/textChooseType">
+
+            <RadioButton
+                android:id="@+id/radioIncome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/income" />
+
+            <RadioButton
+                android:id="@+id/radioExpense"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/expense" />
+
+            <RadioButton
+                android:id="@+id/radioAll"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/all" />
+        </RadioGroup>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/monthYearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_below="@id/typeLayout">
+
+        <TextView
+            android:id="@+id/textMonth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/month"
+            android:layout_weight="1"
+            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+            />
+
+        <Button
+            android:id="@+id/datePickerButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select Date"
+            android:layout_centerHorizontal="true"
+             />
+
+        <Button
+            android:id="@+id/resetMonthYear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Reset"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="10dp"/>
+
+    </LinearLayout>
+
+
+
 
     <com.anychart.AnyChartView
         android:id="@+id/chartView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_below="@id/groupLayout"
+        android:layout_below="@id/monthYearLayout"
         android:layout_above="@+id/legendView" />
 
     <com.anychart.AnyChartView

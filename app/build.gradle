@@ -74,4 +74,6 @@ dependencies {
         exclude group: 'org.jetbrains.kotlinx', module: 'kotlinx-coroutines-core-jvm'
     }
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1'
+
+
 }
