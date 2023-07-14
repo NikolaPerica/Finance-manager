@@ -25,8 +25,9 @@ interface TransactionDao {
     @Delete
     fun deleteTransaction(transaction: Transaction)
 
-    @Query("SELECT * FROM transactions WHERE (date = :date OR :date IS NULL) AND (category = :category OR :category IS NULL) AND (type = :type OR :type IS NULL)")
+    @Query("SELECT * FROM transactions WHERE (date = :date OR :date IS NULL) AND (category = :category OR :category IS NULL) AND (type = :type OR :type IS NULL) ORDER BY date DESC")
     fun getFilteredTransactions(date: String?, category: String?, type: String?): List<Transaction>
+
 
     @Query("SELECT * FROM transactions WHERE date >= :weekStartDate AND date <= :weekEndDate ")
     fun getFilteredTransactionsByWeek(weekStartDate: String, weekEndDate: String): List<Transaction>
@@ -41,7 +42,28 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions")
     fun getAllTransactionsLiveData(): LiveData<List<Transaction>>
 
+    @Query("SELECT * FROM transactions ORDER BY note COLLATE NOCASE /*(:sortingOrder)*/")
+    fun getTransactionsSortedByNote(/*sortingOrder: String*/): List<Transaction>
 
+    @Query("SELECT * FROM transactions ORDER BY amount COLLATE NOCASE /*(:sortingOrder)*/")
+    fun getTransactionsSortedByAmount(/*sortingOrder: String*/): List<Transaction>
 
+    @Query("SELECT * FROM transactions ORDER BY date COLLATE NOCASE /*(:sortingOrder)*/")
+    fun getTransactionsSortedByDate(/*sortingOrder: String*/): List<Transaction>
+
+    @Query("SELECT * FROM transactions ORDER BY category COLLATE NOCASE /*(:sortingOrder)*/")
+    fun getTransactionsSortedByCategory(/*sortingOrder: String*/): List<Transaction>
+
+    @Query("SELECT * FROM transactions WHERE date = :date OR :date IS NULL AND category = :categoryName OR :categoryName IS NULL AND type = :type OR :type IS NULL ORDER BY note COLLATE NOCASE")
+    fun getFilteredTransactionsSortedByNote(date: String?, categoryName: String?, type: TransactionType?): List<Transaction>
+
+    @Query("SELECT * FROM transactions WHERE date = :date OR :date IS NULL AND category = :categoryName OR :categoryName IS NULL AND type = :type OR :type IS NULL ORDER BY amount COLLATE NOCASE")
+    fun getFilteredTransactionsSortedByAmount(date: String?, categoryName: String?, type: TransactionType?): List<Transaction>
+
+    @Query("SELECT * FROM transactions WHERE date = :date OR :date IS NULL AND category = :categoryName OR :categoryName IS NULL AND type = :type OR :type IS NULL ORDER BY date COLLATE NOCASE")
+    fun getFilteredTransactionsSortedByDate(date: String?, categoryName: String?, type: TransactionType?): List<Transaction>
+
+    @Query("SELECT * FROM transactions WHERE date = :date OR :date IS NULL AND category = :categoryName OR :categoryName IS NULL AND type = :type OR :type IS NULL ORDER BY category COLLATE NOCASE")
+    fun getFilteredTransactionsSortedByCategory(date: String?, categoryName: String?, type: TransactionType?): List<Transaction>
 
 }

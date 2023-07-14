@@ -55,34 +55,42 @@
         android:orientation="horizontal">
 
         <TextView
+            android:id="@+id/textAmount"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
             android:text="@string/amount"
             android:textStyle="bold"
+            android:clickable="true"
             android:textAlignment="center"/>
 
         <TextView
+            android:id="@+id/textDate"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
             android:text="@string/date"
             android:textStyle="bold"
+            android:clickable="true"
             android:textAlignment="center"/>
 
         <TextView
+            android:id="@+id/textCategory"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
             android:text="@string/category"
+            android:clickable="true"
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/textNote"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
             android:text="@string/note"
             android:textStyle="bold"
+            android:clickable="true"
             android:textAlignment="center"/>
 
     </LinearLayout>

@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.financemanager.data.AppDatabase
 import com.example.financemanager.data.Category
+import com.example.financemanager.data.Transaction
 import com.example.financemanager.data.TransactionType
 import com.example.financemanager.databinding.ActivityReportsBinding
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +27,16 @@ class ReportsActivity : AppCompatActivity() {
     private var selectedDate: String? = null
     private var selectedCategory: Category? = null
     private var selectedType: TransactionType? = null
+    private enum class SortingOrder {
+        ASCENDING,
+        DESCENDING
+    }
 
+    private var amountSortingOrder: SortingOrder = SortingOrder.ASCENDING
+    private var dateSortingOrder: SortingOrder = SortingOrder.ASCENDING
+    private var categorySortingOrder: SortingOrder = SortingOrder.ASCENDING
+    private var noteSortingOrder: SortingOrder = SortingOrder.ASCENDING
+    private lateinit var sortedTransactions: List<Transaction>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,15 +61,145 @@ class ReportsActivity : AppCompatActivity() {
 
         binding.filterByWeekButton.setOnClickListener {
             selectWeekAndLoadData()
-
         }
 
         binding.filterByMonthButton.setOnClickListener {
             selectMonthAndLoadData()
         }
 
+        binding.textAmount.setOnClickListener {
+            sortByAmount()
+        }
+
+        binding.textDate.setOnClickListener {
+            sortByDate()
+        }
+
+        binding.textCategory.setOnClickListener {
+            sortByCategory()
+        }
+
+        binding.textNote.setOnClickListener {
+            sortByNote()
+        }
 
         loadData()
+    }
+
+    private fun sortByNote() {
+        lifecycleScope.launch {
+            val currentFilterDate = selectedDate
+            val currentFilterCategory = selectedCategory
+            val currentFilterType = selectedType
+
+            val sortedTransactions = if (noteSortingOrder == SortingOrder.ASCENDING) {
+                withContext(Dispatchers.IO) {
+                    appDatabase.transactionDao().getFilteredTransactionsSortedByNote(
+                        currentFilterDate,
+                        currentFilterCategory?.name,
+                        currentFilterType
+                    )
+                }
+            } else {
+                withContext(Dispatchers.IO) {
+                    appDatabase.transactionDao().getFilteredTransactionsSortedByNote(
+                        currentFilterDate,
+                        currentFilterCategory?.name,
+                        currentFilterType
+                    ).reversed()
+                }
+            }
+
+            transactionAdapter.setData(sortedTransactions)
+            noteSortingOrder = if (noteSortingOrder == SortingOrder.ASCENDING) SortingOrder.DESCENDING else SortingOrder.ASCENDING
+        }
+    }
+
+    private fun sortByAmount() {
+        lifecycleScope.launch {
+            val currentFilterDate = selectedDate
+            val currentFilterCategory = selectedCategory
+            val currentFilterType = selectedType
+
+            val sortedTransactions = if (amountSortingOrder == SortingOrder.ASCENDING) {
+                withContext(Dispatchers.IO) {
+                    appDatabase.transactionDao().getFilteredTransactionsSortedByAmount(
+                        currentFilterDate,
+                        currentFilterCategory?.name,
+                        currentFilterType
+                    )
+                }
+            } else {
+                withContext(Dispatchers.IO) {
+                    appDatabase.transactionDao().getFilteredTransactionsSortedByAmount(
+                        currentFilterDate,
+                        currentFilterCategory?.name,
+                        currentFilterType
+                    ).reversed()
+                }
+            }
+
+            transactionAdapter.setData(sortedTransactions)
+            amountSortingOrder = if (amountSortingOrder == SortingOrder.ASCENDING) SortingOrder.DESCENDING else SortingOrder.ASCENDING
+        }
+    }
+
+    private fun sortByDate() {
+        lifecycleScope.launch {
+            val currentFilterDate = selectedDate
+            val currentFilterCategory = selectedCategory
+            val currentFilterType = selectedType
+
+            val sortedTransactions = if (dateSortingOrder == SortingOrder.ASCENDING) {
+                withContext(Dispatchers.IO) {
+                    appDatabase.transactionDao().getFilteredTransactionsSortedByDate(
+                        currentFilterDate,
+                        currentFilterCategory?.name,
+                        currentFilterType
+                    )
+                }
+            } else {
+                withContext(Dispatchers.IO) {
+                    appDatabase.transactionDao().getFilteredTransactionsSortedByDate(
+                        currentFilterDate,
+                        currentFilterCategory?.name,
+                        currentFilterType
+                    ).reversed()
+                }
+            }
+
+            transactionAdapter.setData(sortedTransactions)
+            dateSortingOrder = if (dateSortingOrder == SortingOrder.ASCENDING) SortingOrder.DESCENDING else SortingOrder.ASCENDING
+        }
+    }
+
+    private fun sortByCategory() {
+        lifecycleScope.launch {
+            val currentFilterDate = selectedDate
+            val currentFilterCategory = selectedCategory
+            val currentFilterType = selectedType
+
+            val sortedTransactions = if (categorySortingOrder == SortingOrder.ASCENDING) {
+                withContext(Dispatchers.IO) {
+                    appDatabase.transactionDao().getFilteredTransactionsSortedByCategory(
+                        currentFilterDate,
+                        currentFilterCategory?.name,
+                        currentFilterType
+                    )
+                }
+            } else {
+                withContext(Dispatchers.IO) {
+                    appDatabase.transactionDao().getFilteredTransactionsSortedByCategory(
+                        currentFilterDate,
+                        currentFilterCategory?.name,
+                        currentFilterType
+                    ).reversed()
+                }
+            }
+
+            transactionAdapter.setData(sortedTransactions)
+            categorySortingOrder = if (categorySortingOrder == SortingOrder.ASCENDING) SortingOrder.DESCENDING else SortingOrder.ASCENDING
+        }
     }
 
 
@@ -72,17 +212,18 @@ class ReportsActivity : AppCompatActivity() {
             val transactions = withContext(Dispatchers.IO) {
                 appDatabase.transactionDao().getFilteredTransactions(date, category, type)
             }
-
+            sortedTransactions = transactions // Initialize sortedTransactions with unsorted transactions
             transactionAdapter.setData(transactions)
         }
     }
+
 
     private fun selectWeekAndLoadData() {
         val calendar = Calendar.getInstance()
 
         val weekStartDatePickerDialog = DatePickerDialog(
             this,
-            { _, year, monthOfYear, dayOfMonth ->
+            { _: DatePicker, year: Int, monthOfYear: Int, dayOfMonth: Int ->
                 val selectedCalendar = Calendar.getInstance()
                 selectedCalendar.set(year, monthOfYear, dayOfMonth)
 
@@ -93,7 +234,6 @@ class ReportsActivity : AppCompatActivity() {
                     val transactions = withContext(Dispatchers.IO) {
                         appDatabase.transactionDao().getFilteredTransactionsByWeek(weekStartDate, weekEndDate)
                     }
-
                     transactionAdapter.setData(transactions)
                 }
             },
@@ -127,7 +267,7 @@ class ReportsActivity : AppCompatActivity() {
 
         val monthYearPickerDialog = DatePickerDialog(
             this,
-            { _, year, monthOfYear, _ ->
+            { _: DatePicker, year: Int, monthOfYear: Int, _ ->
                 val selectedCalendar = Calendar.getInstance()
                 selectedCalendar.set(year, monthOfYear, 1)
 
@@ -142,7 +282,6 @@ class ReportsActivity : AppCompatActivity() {
                     val transactions = withContext(Dispatchers.IO) {
                         appDatabase.transactionDao().getFilteredTransactionsByMonth(monthStartDate, monthEndDate)
                     }
-
                     transactionAdapter.setData(transactions)
                 }
             },
@@ -156,7 +295,6 @@ class ReportsActivity : AppCompatActivity() {
         monthYearPickerDialog.datePicker.calendarViewShown = false
         monthYearPickerDialog.show()
     }
-
 
     private fun Calendar.toFormattedDateString(): String {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -196,7 +334,6 @@ class ReportsActivity : AppCompatActivity() {
         }
     }
 
-
     private fun showTypeFilterDialog() {
         val transactionTypes = TransactionType.values().map { it.name }
 
@@ -217,8 +354,6 @@ class ReportsActivity : AppCompatActivity() {
         builder.show()
     }
 
-
-
     private fun setupRecyclerView() {
         transactionAdapter = TransactionAdapter()
         binding.recyclerViewTransactions.apply {
@@ -226,7 +361,4 @@ class ReportsActivity : AppCompatActivity() {
             adapter = transactionAdapter
         }
     }
-
 }
-
-
