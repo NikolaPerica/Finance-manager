@@ -83,6 +83,10 @@ class ReportsActivity : AppCompatActivity() {
             sortByNote()
         }
 
+        binding.resetFiltersButton.setOnClickListener {
+            resetFilters()
+        }
+
         loadData()
     }
 
@@ -202,6 +206,12 @@ class ReportsActivity : AppCompatActivity() {
         }
     }
 
+    private fun resetFilters() {
+        selectedDate = null
+        selectedCategory = null
+        selectedType = null
+        loadData()
+    }
 
     private fun loadData() {
         val category: String? = selectedCategory?.name
@@ -216,7 +226,6 @@ class ReportsActivity : AppCompatActivity() {
             transactionAdapter.setData(transactions)
         }
     }
-
 
     private fun selectWeekAndLoadData() {
         val calendar = Calendar.getInstance()
@@ -296,6 +305,18 @@ class ReportsActivity : AppCompatActivity() {
         monthYearPickerDialog.show()
     }
 
+    private fun Calendar.getStartOfYear(calendar: Calendar): Calendar {
+        calendar[Calendar.MONTH] = calendar.getActualMinimum(Calendar.MONTH)
+        calendar[Calendar.DAY_OF_MONTH] = calendar.getActualMinimum(Calendar.DAY_OF_MONTH)
+        return calendar
+    }
+
+    private fun Calendar.getEndOfYear(calendar: Calendar): Calendar {
+        calendar[Calendar.MONTH] = calendar.getActualMaximum(Calendar.MONTH)
+        calendar[Calendar.DAY_OF_MONTH] = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+        return calendar
+    }
+
     private fun Calendar.toFormattedDateString(): String {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         return dateFormat.format(time)
@@ -305,8 +326,6 @@ class ReportsActivity : AppCompatActivity() {
         val calendar = Calendar.getInstance()
         val datePickerDialog = DatePickerDialog(this, { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
             selectedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth)
-            selectedCategory = null
-            selectedType = null
             loadData()
         }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
         datePickerDialog.show()
@@ -322,9 +341,7 @@ class ReportsActivity : AppCompatActivity() {
             val builder = AlertDialog.Builder(this@ReportsActivity)
                 .setTitle("Filter by Category")
                 .setItems(categoryNames.toTypedArray()) { _, index ->
-                    selectedDate = null
                     selectedCategory = categories[index]
-                    selectedType = null
                     loadData()
                 }
                 .setNegativeButton("Cancel") { dialog, _ ->
@@ -340,8 +357,6 @@ class ReportsActivity : AppCompatActivity() {
         val builder = AlertDialog.Builder(this)
             .setTitle("Filter by Type")
             .setItems(transactionTypes.toTypedArray()) { _, index ->
-                selectedDate = null
-                selectedCategory = null
                 selectedType = TransactionType.valueOf(transactionTypes[index])
                 if (selectedType == TransactionType.ALL) {
                     selectedType = null // Set selectedType to null for "ALL" option
