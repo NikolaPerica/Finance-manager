@@ -3,7 +3,9 @@ package com.example.financemanager
 import TransactionAdapter
 import android.app.DatePickerDialog
 import android.os.Bundle
+import android.view.View
 import android.widget.DatePicker
+import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -115,6 +117,7 @@ class ReportsActivity : AppCompatActivity() {
             }
 
             transactionAdapter.setData(sortedTransactions)
+            //updateImageViewVisibility(binding.iconNote, noteSortingOrder)
             noteSortingOrder = if (noteSortingOrder == SortingOrder.ASCENDING) SortingOrder.DESCENDING else SortingOrder.ASCENDING
         }
     }
@@ -173,6 +176,7 @@ class ReportsActivity : AppCompatActivity() {
             }
 
             transactionAdapter.setData(sortedTransactions)
+            updateImageViewVisibility(binding.iconDate, dateSortingOrder)
             dateSortingOrder = if (dateSortingOrder == SortingOrder.ASCENDING) SortingOrder.DESCENDING else SortingOrder.ASCENDING
         }
     }
@@ -202,6 +206,7 @@ class ReportsActivity : AppCompatActivity() {
             }
 
             transactionAdapter.setData(sortedTransactions)
+            updateImageViewVisibility(binding.iconCategory, categorySortingOrder)
             categorySortingOrder = if (categorySortingOrder == SortingOrder.ASCENDING) SortingOrder.DESCENDING else SortingOrder.ASCENDING
         }
     }
@@ -211,6 +216,7 @@ class ReportsActivity : AppCompatActivity() {
         selectedCategory = null
         selectedType = null
         loadData()
+        resetImageViewVisibility()
     }
 
     private fun loadData() {
@@ -245,6 +251,8 @@ class ReportsActivity : AppCompatActivity() {
                     }
                     transactionAdapter.setData(transactions)
                 }
+                binding.iconWeek.visibility = View.VISIBLE
+
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
@@ -293,6 +301,7 @@ class ReportsActivity : AppCompatActivity() {
                     }
                     transactionAdapter.setData(transactions)
                 }
+                binding.iconMonth.visibility = View.VISIBLE
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
@@ -327,6 +336,7 @@ class ReportsActivity : AppCompatActivity() {
         val datePickerDialog = DatePickerDialog(this, { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
             selectedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth)
             loadData()
+            binding.iconDate.visibility = View.VISIBLE
         }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
         datePickerDialog.show()
     }
@@ -343,6 +353,8 @@ class ReportsActivity : AppCompatActivity() {
                 .setItems(categoryNames.toTypedArray()) { _, index ->
                     selectedCategory = categories[index]
                     loadData()
+                    binding.iconCategory.visibility = View.VISIBLE
+
                 }
                 .setNegativeButton("Cancel") { dialog, _ ->
                     dialog.dismiss()
@@ -362,6 +374,8 @@ class ReportsActivity : AppCompatActivity() {
                     selectedType = null // Set selectedType to null for "ALL" option
                 }
                 loadData()
+                binding.iconType.visibility = View.VISIBLE
+
             }
             .setNegativeButton("Cancel") { dialog, _ ->
                 dialog.dismiss()
@@ -375,5 +389,19 @@ class ReportsActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(this@ReportsActivity)
             adapter = transactionAdapter
         }
+    }
+
+    private fun resetImageViewVisibility() {
+        binding.iconMonth.visibility = View.INVISIBLE
+        binding.iconDate.visibility = View.INVISIBLE
+        binding.iconCategory.visibility = View.INVISIBLE
+        binding.iconType.visibility = View.INVISIBLE
+        binding.iconWeek.visibility = View.INVISIBLE
+    }
+
+    private fun updateImageViewVisibility(imageView: ImageView, sortingOrder: SortingOrder) {
+        resetImageViewVisibility()
+        imageView.visibility = View.VISIBLE
+
     }
 }

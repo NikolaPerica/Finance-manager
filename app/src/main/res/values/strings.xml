@@ -57,6 +57,8 @@
     <string name="choose_type">Choose Type</string>
     <string name="year">Year</string>
     <string name="month">Month</string>
+    <string name="type">Type</string>
+    <string name="week">week</string>
     <string-array name="grouping_options">
         <item>Category</item>
         <item>Year</item>

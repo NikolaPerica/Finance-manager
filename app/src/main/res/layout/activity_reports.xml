@@ -9,45 +9,130 @@
     android:paddingTop="24dp"
     android:paddingBottom="24dp">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/filterByCategoryButton"
+    <LinearLayout
+        android:id="@+id/categoryLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/filter_by_category"
-        style="@style/Widget.MaterialComponents.Button"
-        android:layout_marginBottom="16dp" />
+        android:orientation="horizontal">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/filterByDateButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/filter_by_date"
-        style="@style/Widget.MaterialComponents.Button"
-        android:layout_marginBottom="16dp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/filterByCategoryButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/filter_by_category"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_marginEnd="8dp" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/filterByTypeButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/filter_by_type"
-        style="@style/Widget.MaterialComponents.Button"
-        android:layout_marginBottom="16dp" />
+        <ImageView
+            android:id="@+id/iconCategory"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_check"
+            android:visibility="invisible"
+            android:contentDescription="@string/category" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/filterByWeekButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/filter_by_week"
-        style="@style/Widget.MaterialComponents.Button"
-        android:layout_marginBottom="16dp" />
+    </LinearLayout>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/filterByMonthButton"
+    <LinearLayout
+        android:id="@+id/dateLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/filter_by_month"
-        style="@style/Widget.MaterialComponents.Button"
-        android:layout_marginBottom="16dp" />
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/filterByDateButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/filter_by_date"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_marginEnd="8dp" />
+
+        <ImageView
+            android:id="@+id/iconDate"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_check"
+            android:visibility="invisible"
+            android:contentDescription="@string/date" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/typeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/filterByTypeButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/filter_by_type"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_marginEnd="8dp" />
+
+        <ImageView
+            android:id="@+id/iconType"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_check"
+            android:visibility="invisible"
+            android:contentDescription="@string/type" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/weekLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/filterByWeekButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/filter_by_week"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_marginEnd="8dp" />
+
+        <ImageView
+            android:id="@+id/iconWeek"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_check"
+            android:visibility="invisible"
+            android:contentDescription="@string/week" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/monthLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/filterByMonthButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/filter_by_month"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_marginEnd="8dp" />
+
+        <ImageView
+            android:id="@+id/iconMonth"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_check"
+            android:visibility="invisible"
+            android:contentDescription="@string/month" />
+
+    </LinearLayout>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/resetFiltersButton"
