@@ -8,6 +8,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.financemanager.R
 import com.example.financemanager.data.Transaction
 import com.example.financemanager.data.TransactionType
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class TransactionAdapter : RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder>() {
     private var transactionList: List<Transaction> = emptyList()
@@ -38,8 +40,9 @@ class TransactionAdapter : RecyclerView.Adapter<TransactionAdapter.TransactionVi
         private val noteTextView: TextView = itemView.findViewById(R.id.textViewNote)
 
         fun bind(transaction: Transaction) {
+            val newDate=changeDateFormatUsingDateTimeFormatter(transaction.date)
             valueTextView.text = transaction.amount.toString()
-            dateTextView.text = transaction.date
+            dateTextView.text = newDate
             categoryTextView.text = transaction.category
             noteTextView.text = transaction.note
 
@@ -58,4 +61,11 @@ class TransactionAdapter : RecyclerView.Adapter<TransactionAdapter.TransactionVi
         }
     }
 
+    fun changeDateFormatUsingDateTimeFormatter(inputDate: String): String {
+        val inputFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val outputFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+
+        val date: LocalDate = LocalDate.parse(inputDate, inputFormat)
+        return outputFormat.format(date)
+    }
 }

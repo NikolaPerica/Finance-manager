@@ -41,7 +41,6 @@ class AddExpenseActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-     //   Toast.makeText(applicationContext, "OnCreateEntered", Toast.LENGTH_SHORT).show()
 
         val preferences = PreferenceManager.getDefaultSharedPreferences(this)
         val theme = preferences.getString("preference_key_theme", "light")
@@ -140,13 +139,6 @@ class AddExpenseActivity : AppCompatActivity() {
         datePickerDialog.show()
     }
 
-   /* private fun fetchExpenseCategories() {
-        val spinner_category=findViewById<Spinner>(R.id.spinner_category)
-        val expenseCategories = db.categoryDao().getCategoriesByType(TransactionType.EXPENSE)
-        val categoryNames = expenseCategories.map { category -> category.name }
-        val adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, ArrayList(categoryNames))
-        spinner_category.adapter = adapter
-    }*/
     private fun fetchExpenseCategories() {
         val spinnerCategory = findViewById<Spinner>(R.id.spinner_category)
         GlobalScope.launch(Dispatchers.Main) {
@@ -158,7 +150,6 @@ class AddExpenseActivity : AppCompatActivity() {
             spinnerCategory.adapter = adapter
         }
     }
-
 
 
     private fun saveExpense() {
@@ -261,10 +252,6 @@ class AddExpenseActivity : AppCompatActivity() {
         errorDialog.show()
     }
 
-
-
-
-
     private fun showConfirmationDialog(category: Category) {
         val confirmationDialog = AlertDialog.Builder(this)
             .setTitle("Delete Category")
@@ -278,7 +265,6 @@ class AddExpenseActivity : AppCompatActivity() {
 
         confirmationDialog.show()
     }
-
 
 
 }

@@ -88,10 +88,13 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun showTransactionDialog(transaction: Transaction) {
+        val dateFormated = changeDateFormatUsingDateTimeFormatter(transaction.date)
+
         // Create and show the dialog with the detailed transaction data
         val dialog = AlertDialog.Builder(this)
             .setTitle("Transaction Details")
             .setMessage("Amount: ${transaction.amount}\n" +
+                    //"Date: ${dateFormated}\n" +
                     "Date: ${transaction.date}\n" +
                     "Note: ${transaction.note}\n" +
                     "Category: ${transaction.category}\n" +
@@ -109,5 +112,13 @@ class MainActivity : AppCompatActivity() {
         val currentDate = LocalDate.now()
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         return currentDate.format(formatter)
+    }
+
+    fun changeDateFormatUsingDateTimeFormatter(inputDate: String): String {
+        val inputFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val outputFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+
+        val date: LocalDate = LocalDate.parse(inputDate, inputFormat)
+        return outputFormat.format(date)
     }
 }
