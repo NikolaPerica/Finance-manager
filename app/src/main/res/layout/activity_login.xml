@@ -1,15 +1,138 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/loginRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center">
+    android:background="@drawable/bg_login_gradient"
+    tools:context=".ActivityLogin">
 
+    <!-- Decorative soft shapes -->
+    <View
+        android:id="@+id/blobTop"
+        android:layout_width="320dp"
+        android:layout_height="320dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="-120dp"
+        android:layout_marginEnd="-140dp"
+        android:background="@drawable/bg_blob" />
 
-    <ImageView
-        android:id="@+id/loginImage"
+    <View
+        android:id="@+id/blobBottom"
+        android:layout_width="260dp"
+        android:layout_height="260dp"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="-120dp"
+        android:layout_marginBottom="80dp"
+        android:background="@drawable/bg_blob" />
+
+    <LinearLayout
+        android:id="@+id/brandBlock"
         android:layout_width="match_parent"
-        android:layout_height="90dp"
-        android:clickable="true"
-        app:srcCompat="@drawable/ic_fingerprint" />
-</LinearLayout>
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|top"
+        android:layout_marginTop="120dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp">
+
+        <FrameLayout
+            android:layout_width="88dp"
+            android:layout_height="88dp"
+            android:background="@drawable/bg_glass_rounded">
+
+            <ImageView
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                app:srcCompat="@drawable/ic_wallet"
+                app:tint="@android:color/white" />
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="@string/app_name"
+            android:textAppearance="@style/TextAppearance.FinanceManager.Display"
+            android:textColor="@android:color/white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:text="@string/login_tagline"
+            android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+            android:textColor="@color/white_70" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/authBlock"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="72dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp">
+
+        <FrameLayout
+            android:layout_width="180dp"
+            android:layout_height="180dp"
+            android:clipChildren="false">
+
+            <View
+                android:id="@+id/pulseRing1"
+                android:layout_width="112dp"
+                android:layout_height="112dp"
+                android:layout_gravity="center"
+                android:alpha="0"
+                android:background="@drawable/bg_pulse_ring" />
+
+            <View
+                android:id="@+id/pulseRing2"
+                android:layout_width="112dp"
+                android:layout_height="112dp"
+                android:layout_gravity="center"
+                android:alpha="0"
+                android:background="@drawable/bg_pulse_ring" />
+
+            <FrameLayout
+                android:id="@+id/fingerprintButton"
+                android:layout_width="112dp"
+                android:layout_height="112dp"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_glass_circle"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:stateListAnimator="@animator/press_scale">
+
+                <ImageView
+                    android:id="@+id/loginImage"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/login_fingerprint_description"
+                    app:srcCompat="@drawable/ic_fingerprint"
+                    app:tint="@android:color/white" />
+            </FrameLayout>
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/loginStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:minHeight="48dp"
+            android:text="@string/login_hint"
+            android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+            android:textColor="@color/white_70" />
+    </LinearLayout>
+</FrameLayout>

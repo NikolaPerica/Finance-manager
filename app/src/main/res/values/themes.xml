@@ -1,9 +1,154 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+
     <style name="Base.Theme.FinanceManager" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/brand_primary</item>
+        <item name="colorOnPrimary">@color/brand_on_primary</item>
+        <item name="colorPrimaryContainer">@color/brand_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/brand_on_primary_container</item>
+        <item name="colorSecondary">@color/brand_primary</item>
+        <item name="colorOnSecondary">@color/brand_on_primary</item>
+        <item name="colorSecondaryContainer">@color/brand_primary_container</item>
+        <item name="colorOnSecondaryContainer">@color/brand_on_primary_container</item>
+        <item name="colorTertiary">@color/gradient_end</item>
+        <item name="colorError">@color/expense</item>
+
+        <item name="android:colorBackground">@color/app_background</item>
+        <item name="colorSurface">@color/app_surface</item>
+        <item name="colorOnSurface">@color/app_on_surface</item>
+        <item name="colorSurfaceVariant">@color/app_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/app_on_surface_variant</item>
+        <item name="colorOutline">@color/app_outline</item>
+        <item name="android:windowBackground">@color/app_background</item>
+
+        <item name="android:statusBarColor">@color/app_background</item>
+        <item name="android:navigationBarColor">@color/app_background</item>
+        <item name="android:windowLightStatusBar">@bool/light_system_bars</item>
+        <item name="android:windowLightNavigationBar">@bool/light_system_bars</item>
+
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.FinanceManager.Small</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.FinanceManager.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.FinanceManager.Large</item>
+
+        <item name="materialButtonStyle">@style/Widget.FinanceManager.Button</item>
+        <item name="textInputStyle">@style/Widget.FinanceManager.TextInputLayout</item>
+        <item name="materialCardViewStyle">@style/Widget.FinanceManager.Card</item>
+        <item name="toolbarStyle">@style/Widget.FinanceManager.Toolbar</item>
+
+        <item name="android:windowAnimationStyle">@style/WindowAnimation.FinanceManager</item>
     </style>
 
     <style name="Theme.FinanceManager" parent="Base.Theme.FinanceManager" />
+
+    <!-- Login sits on a full-bleed gradient, so system bars blend into it. -->
+    <style name="Theme.FinanceManager.Login">
+        <item name="android:windowBackground">@drawable/bg_login_gradient</item>
+        <item name="android:statusBarColor">@color/gradient_start</item>
+        <item name="android:navigationBarColor">@color/gradient_end</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+
+    <!-- Shapes -->
+    <style name="ShapeAppearance.FinanceManager.Small" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">14dp</item>
+    </style>
+
+    <style name="ShapeAppearance.FinanceManager.Medium" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">20dp</item>
+    </style>
+
+    <style name="ShapeAppearance.FinanceManager.Large" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">28dp</item>
+    </style>
+
+    <style name="ShapeAppearance.FinanceManager.Field" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/field_radius</item>
+    </style>
+
+    <!-- Components -->
+    <style name="Widget.FinanceManager.Button" parent="Widget.Material3.Button">
+        <item name="android:minHeight">56dp</item>
+        <item name="cornerRadius">18dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.FinanceManager.Button</item>
+        <item name="android:stateListAnimator">@animator/press_scale</item>
+    </style>
+
+
+    <style name="Widget.FinanceManager.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="shapeAppearance">@style/ShapeAppearance.FinanceManager.Field</item>
+        <item name="boxBackgroundColor">@color/app_surface</item>
+        <item name="boxStrokeColor">@color/brand_primary</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="startIconTint">@color/app_on_surface_variant</item>
+    </style>
+
+    <style name="Widget.FinanceManager.TextInputLayout.Dropdown" parent="Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+        <item name="shapeAppearance">@style/ShapeAppearance.FinanceManager.Field</item>
+        <item name="boxBackgroundColor">@color/app_surface</item>
+        <item name="boxStrokeColor">@color/brand_primary</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="startIconTint">@color/app_on_surface_variant</item>
+    </style>
+
+    <style name="Widget.FinanceManager.Card" parent="Widget.Material3.CardView.Filled">
+        <item name="cardBackgroundColor">@color/app_surface</item>
+        <item name="cardCornerRadius">@dimen/card_radius</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">@color/app_outline_variant</item>
+    </style>
+
+    <style name="Widget.FinanceManager.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="titleTextAppearance">@style/TextAppearance.FinanceManager.ToolbarTitle</item>
+    </style>
+
+    <!-- Typography -->
+    <style name="TextAppearance.FinanceManager.Button" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:letterSpacing">0.01</item>
+    </style>
+
+    <style name="TextAppearance.FinanceManager.ToolbarTitle" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="TextAppearance.FinanceManager.Display" parent="TextAppearance.Material3.DisplaySmall">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <style name="TextAppearance.FinanceManager.Headline" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+
+    <style name="TextAppearance.FinanceManager.Title" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="TextAppearance.FinanceManager.Body" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <style name="TextAppearance.FinanceManager.Label" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:letterSpacing">0.04</item>
+    </style>
+
+    <!-- Activity transitions -->
+    <style name="WindowAnimation.FinanceManager" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/screen_open_enter</item>
+        <item name="android:activityOpenExitAnimation">@anim/screen_open_exit</item>
+        <item name="android:activityCloseEnterAnimation">@anim/screen_close_enter</item>
+        <item name="android:activityCloseExitAnimation">@anim/screen_close_exit</item>
+    </style>
 </resources>
