@@ -5,11 +5,8 @@
     <string name="prihodi">Prihodi</string>
     <string name="rashodi">Rashodi</string>
     <string name="trenutno_stanje">Trenutno stanje</string>
-    <string name="unesite_iznos">Unesite iznos</string>
-    <string name="odaberite_kategoriju">Odaberite kategoriju</string>
     <string name="dodaj_prihod">Dodaj prihod</string>
     <string name="dodaj_rashod">Dodaj rashod</string>
-    <string name="unesite_napomenu">Unesite napomenu</string>
     <string name="odaberite_datum">Odaberite datum</string>
 
     <!-- Login -->
@@ -17,8 +14,10 @@
     <string name="login_hint">Dodirnite otisak prsta za prijavu</string>
     <string name="login_success">Prijava uspješna</string>
     <string name="login_failed">Otisak nije prepoznat. Pokušajte ponovno.</string>
+    <string name="login_unavailable">Na uređaju nije postavljeno zaključavanje zaslona.</string>
+    <string name="login_continue">Nastavi</string>
     <string name="biometric_title">Prijava u Finance Manager</string>
-    <string name="biometric_subtitle">Potvrdite identitet otiskom prsta</string>
+    <string name="biometric_subtitle">Potvrdite identitet otiskom prsta ili PIN-om</string>
     <string name="login_fingerprint_description">Prijava otiskom prsta</string>
 
     <!-- Dashboard -->
@@ -31,6 +30,9 @@
     <string name="empty_subtitle">Dodajte prvi prihod ili rashod i ovdje ćete vidjeti pregled.</string>
     <string name="today">Danas</string>
     <string name="yesterday">Jučer</string>
+    <string name="transaction_deleted">Transakcija je obrisana</string>
+    <string name="undo">Poništi</string>
+    <string name="delete">Obriši</string>
 
     <!-- Transaction form -->
     <string name="novi_prihod">Novi prihod</string>
@@ -47,6 +49,7 @@
     <string name="dodaj">Dodaj</string>
     <string name="odustani">Odustani</string>
     <string name="natrag">Natrag</string>
+    <string name="ok">U redu</string>
     <string name="error_amount">Unesite iznos veći od nule</string>
     <string name="error_category">Odaberite kategoriju</string>
     <string name="error_category_name">Unesite naziv kategorije</string>

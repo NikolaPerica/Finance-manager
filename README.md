@@ -53,21 +53,43 @@ Field "description" (TEXT) - description of the payment<br>
 
 ## Tech Stack
 
-**Mobile:** Kotlin 2.2, Android Views + Material 3, ViewBinding
+**Mobile:** Kotlin 2.4, Jetpack Compose + Material 3, single activity with Navigation Compose
 
-**Database:** SQLite via Room (KSP)
+**Architecture:** ViewModel + StateFlow per screen, a repository over Room
 
-**Build:** Gradle 8.14 (wrapper), Android Gradle Plugin 8.10, version catalog in `gradle/libs.versions.toml`
+**Database:** SQLite via Room 2.8 (KSP), schema exported to `app/schemas`
 
-**Android:** minSdk 28, compileSdk / targetSdk 36 (edge-to-edge)
+**Login:** BiometricPrompt – fingerprint, with the device PIN/pattern/password as fallback
+
+**Build:** Gradle 9.8 (wrapper, Kotlin DSL), Android Gradle Plugin 9.4 with built-in Kotlin, version catalog in `gradle/libs.versions.toml`
+
+**Android:** minSdk 28, compileSdk / targetSdk 37 (edge-to-edge)
+
+## Project layout
+
+```
+app/src/main/java/com/example/financemanager/
+├── MainActivity.kt          single activity, hosts Compose
+├── FinanceApp.kt            Application; creates the database and repository
+├── data/                    Room entities, DAOs, database, FinanceRepository
+└── ui/
+    ├── navigation/          NavHost and type-safe routes
+    ├── login/               biometric login screen
+    ├── dashboard/           balance, totals and transaction list (swipe to delete)
+    ├── transaction/         add income / expense form
+    ├── components/          shared composables and animations
+    └── theme/               colours, typography, shapes
+```
 
 ## Building
 
-Requires JDK 17 or newer and the Android SDK (platform 36). Open the project in a recent
+Requires JDK 17 or newer and the Android SDK (platform 37). Open the project in a recent
 Android Studio, or run:
 
 ```
-./gradlew assembleDebug
+./gradlew assembleDebug        # build the app
+./gradlew testDebugUnitTest    # unit tests
+./gradlew lintDebug            # lint
 ```
 
 

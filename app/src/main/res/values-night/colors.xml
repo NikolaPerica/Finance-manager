@@ -1,24 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="brand_primary">#A5A4FF</color>
-    <color name="brand_on_primary">#1A1766</color>
-    <color name="brand_primary_container">#2E2C80</color>
-    <color name="brand_on_primary_container">#E6E5FF</color>
-
-    <color name="app_background">#0C0D14</color>
-    <color name="app_surface">#161823</color>
-    <color name="app_surface_variant">#1F2230</color>
-    <color name="app_on_surface">#ECEDF3</color>
-    <color name="app_on_surface_variant">#9EA3B5</color>
-    <color name="app_outline">#343849</color>
-    <color name="app_outline_variant">#262A38</color>
-
-    <color name="income">#3DD68C</color>
-    <color name="income_container">#12321F</color>
-    <color name="expense">#FF6B6F</color>
-    <color name="expense_container">#3A1618</color>
-
-    <color name="gradient_start">#4338CA</color>
-    <color name="gradient_center">#6D28D9</color>
-    <color name="gradient_end">#A21CAF</color>
+    <color name="window_background">#0C0D14</color>
 </resources>
