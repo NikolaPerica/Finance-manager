@@ -5,6 +5,7 @@ ksp = "2.3.12"
 
 coreKtx = "1.19.1"
 activityCompose = "1.13.0"
+fragment = "1.9.1"
 composeBom = "2026.09.00"
 lifecycle = "2.11.0"
 navigation = "2.10.2"
@@ -20,6 +21,7 @@ espresso = "3.7.0"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-fragment = { group = "androidx.fragment", name = "fragment", version.ref = "fragment" }
 
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
