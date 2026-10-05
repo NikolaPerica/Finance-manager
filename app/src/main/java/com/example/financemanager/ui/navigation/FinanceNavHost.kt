@@ -1,0 +1,85 @@
+package com.example.financemanager.ui.navigation
+
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import com.example.financemanager.FinanceApp
+import com.example.financemanager.data.FinanceRepository
+import com.example.financemanager.data.TransactionType
+import com.example.financemanager.ui.components.EmphasizedDecelerate
+import com.example.financemanager.ui.dashboard.DashboardScreen
+import com.example.financemanager.ui.dashboard.DashboardViewModel
+import com.example.financemanager.ui.login.LoginScreen
+import com.example.financemanager.ui.transaction.TransactionFormScreen
+import com.example.financemanager.ui.transaction.TransactionFormViewModel
+import kotlinx.serialization.Serializable
+
+@Serializable
+data object LoginRoute
+
+@Serializable
+data object DashboardRoute
+
+@Serializable
+data class TransactionFormRoute(val isIncome: Boolean)
+
+private fun CreationExtras.repository(): FinanceRepository = (this[APPLICATION_KEY] as FinanceApp).repository
+
+@Composable
+fun FinanceNavHost() {
+    val navController = rememberNavController()
+    NavHost(
+        navController = navController,
+        startDestination = LoginRoute,
+        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+        enterTransition = {
+            slideInHorizontally(tween(400, easing = EmphasizedDecelerate)) { it / 4 } + fadeIn(tween(300))
+        },
+        exitTransition = { fadeOut(tween(200)) },
+        popEnterTransition = { fadeIn(tween(300)) },
+        popExitTransition = {
+            slideOutHorizontally(tween(300)) { it / 4 } + fadeOut(tween(200))
+        },
+    ) {
+        composable<LoginRoute>(
+            enterTransition = { fadeIn() },
+            exitTransition = { fadeOut(tween(300)) },
+        ) {
+            LoginScreen(onUnlocked = {
+                navController.navigate(DashboardRoute) {
+                    popUpTo<LoginRoute> { inclusive = true }
+                }
+            })
+        }
+        composable<DashboardRoute>(enterTransition = { fadeIn(tween(400)) }) {
+            DashboardScreen(
+                viewModel = viewModel(factory = viewModelFactory { initializer { DashboardViewModel(repository()) } }),
+                onAddIncome = { navController.navigate(TransactionFormRoute(isIncome = true)) },
+                onAddExpense = { navController.navigate(TransactionFormRoute(isIncome = false)) },
+            )
+        }
+        composable<TransactionFormRoute> { entry ->
+            val type = if (entry.toRoute<TransactionFormRoute>().isIncome) TransactionType.INCOME else TransactionType.EXPENSE
+            TransactionFormScreen(
+                viewModel = viewModel(factory = viewModelFactory { initializer { TransactionFormViewModel(type, repository()) } }),
+                onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
+            )
+        }
+    }
+}
