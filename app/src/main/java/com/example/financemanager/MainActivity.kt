@@ -3,6 +3,7 @@ package com.example.financemanager
 import android.animation.ValueAnimator
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.view.isVisible
@@ -16,6 +17,7 @@ import com.example.financemanager.ui.CROATIAN
 import com.example.financemanager.ui.EmphasizedDecelerate
 import com.example.financemanager.ui.MoneyFormat
 import com.example.financemanager.ui.TransactionAdapter
+import com.example.financemanager.ui.applySystemBarsPadding
 import com.example.financemanager.ui.staggerIn
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,8 +35,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.root.applySystemBarsPadding()
         db = AppDatabase.getDatabase(applicationContext)
 
         binding.greeting.text = getString(greetingForNow())

@@ -5,15 +5,19 @@ import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.animation.ValueAnimator
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import com.example.financemanager.databinding.ActivityLoginBinding
 import com.example.financemanager.ui.EmphasizedDecelerate
+import com.example.financemanager.ui.applySystemBarsPadding
 import com.example.financemanager.ui.shake
 
 class ActivityLogin : AppCompatActivity() {
@@ -25,8 +29,14 @@ class ActivityLogin : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Light icons on the gradient in both light and dark mode.
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
+        )
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.root.applySystemBarsPadding()
 
         biometricPrompt = BiometricPrompt(this, ContextCompat.getMainExecutor(this), authCallback)
         promptInfo = BiometricPrompt.PromptInfo.Builder()

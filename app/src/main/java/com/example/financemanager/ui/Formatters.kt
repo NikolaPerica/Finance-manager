@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-val CROATIAN: Locale = Locale("hr", "HR")
+val CROATIAN: Locale = Locale.forLanguageTag("hr-HR")
 
 /** Formats amounts as Croatian-style euro values, e.g. "1.234,56 €". */
 object MoneyFormat {
@@ -20,7 +20,7 @@ object MoneyFormat {
 
 /** Turns stored "yyyy-MM-dd" dates into friendly labels like "Danas" or "3. lis 2026.". */
 object DateLabels {
-    private val storage = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+    private val storage = SimpleDateFormat("yyyy-MM-dd", Locale.ROOT)
     private val display = SimpleDateFormat("d. MMM yyyy.", CROATIAN)
 
     fun relative(context: Context, date: String): String {

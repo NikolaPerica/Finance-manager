@@ -4,6 +4,7 @@ import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.WindowManager
 import android.widget.ArrayAdapter
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -17,6 +18,7 @@ import com.example.financemanager.data.TransactionType
 import com.example.financemanager.databinding.ActivityTransactionFormBinding
 import com.example.financemanager.databinding.DialogAddCategoryBinding
 import com.example.financemanager.ui.CROATIAN
+import com.example.financemanager.ui.applySystemBarsPadding
 import com.example.financemanager.ui.shake
 import com.example.financemanager.ui.staggerIn
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -40,13 +42,16 @@ abstract class TransactionFormActivity : AppCompatActivity() {
 
     // MaterialDatePicker works in UTC milliseconds, so format in UTC as well.
     private var selectedDateMillis = MaterialDatePicker.todayInUtcMilliseconds()
-    private val storageFormat = utcFormat("yyyy-MM-dd", Locale.US)
+    private val storageFormat = utcFormat("yyyy-MM-dd", Locale.ROOT)
     private val displayFormat = utcFormat("d. MMMM yyyy.", CROATIAN)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         binding = ActivityTransactionFormBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        // Edge-to-edge windows aren't resized for the keyboard, so pad for it ourselves.
+        binding.root.applySystemBarsPadding(includeIme = true)
         db = AppDatabase.getDatabase(applicationContext)
 
         savedInstanceState?.let { selectedDateMillis = it.getLong(KEY_DATE, selectedDateMillis) }

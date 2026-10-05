@@ -53,9 +53,22 @@ Field "description" (TEXT) - description of the payment<br>
 
 ## Tech Stack
 
-**Mobile:** Kotlin
+**Mobile:** Kotlin 2.2, Android Views + Material 3, ViewBinding
 
-**Database:** SQLite
+**Database:** SQLite via Room (KSP)
+
+**Build:** Gradle 8.14 (wrapper), Android Gradle Plugin 8.10, version catalog in `gradle/libs.versions.toml`
+
+**Android:** minSdk 28, compileSdk / targetSdk 36 (edge-to-edge)
+
+## Building
+
+Requires JDK 17 or newer and the Android SDK (platform 36). Open the project in a recent
+Android Studio, or run:
+
+```
+./gradlew assembleDebug
+```
 
 
 ## Authors
