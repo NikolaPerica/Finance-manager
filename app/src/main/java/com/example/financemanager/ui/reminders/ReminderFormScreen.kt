@@ -1,9 +1,8 @@
-package com.example.financemanager.ui.transaction
+package com.example.financemanager.ui.reminders
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,18 +26,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -51,7 +48,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -62,50 +58,43 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financemanager.R
 import com.example.financemanager.data.Category
-import com.example.financemanager.data.TransactionType
+import com.example.financemanager.data.PaymentPeriod
 import com.example.financemanager.ui.components.AddCategoryDialog
 import com.example.financemanager.ui.components.DateField
 import com.example.financemanager.ui.components.DatePickerSheet
 import com.example.financemanager.ui.components.FieldShape
-import com.example.financemanager.ui.components.TransactionTypeBadge
 import com.example.financemanager.ui.components.shakeOn
-import com.example.financemanager.ui.components.staggeredEntrance
-import com.example.financemanager.ui.theme.FinanceTheme
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransactionFormScreen(viewModel: TransactionFormViewModel, onBack: () -> Unit) {
+fun ReminderFormScreen(viewModel: ReminderFormViewModel, onBack: () -> Unit) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
-    val isIncome = viewModel.type == TransactionType.INCOME
-    val snackbar = remember { SnackbarHostState() }
     val currentOnBack by rememberUpdatedState(onBack)
-    val resources = LocalResources.current
-
-    LaunchedEffect(viewModel) {
-        viewModel.events.collect { event ->
-            when (event) {
-                FormEvent.Saved -> currentOnBack()
-                is FormEvent.CategoryAdded -> snackbar.showSnackbar(resources.getString(R.string.category_added, event.name))
-            }
-        }
-    }
-
-    var introPlayed by rememberSaveable { mutableStateOf(false) }
-    val playIntro = !introPlayed
-    LaunchedEffect(Unit) { introPlayed = true }
-
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     var showAddCategory by rememberSaveable { mutableStateOf(false) }
+    val snackbar = remember { SnackbarHostState() }
+    val resources = LocalResources.current
+
+    LaunchedEffect(viewModel) { viewModel.done.collect { currentOnBack() } }
+    LaunchedEffect(viewModel) {
+        viewModel.categoryAdded.collect { snackbar.showSnackbar(resources.getString(R.string.category_added, it)) }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(if (isIncome) R.string.novi_prihod else R.string.novi_rashod)) },
+                title = { Text(stringResource(if (viewModel.isEditing) R.string.edit_reminder else R.string.new_reminder)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = stringResource(R.string.natrag))
+                    }
+                },
+                actions = {
+                    if (viewModel.isEditing) {
+                        IconButton(onClick = viewModel::delete) {
+                            Icon(painterResource(R.drawable.ic_delete), contentDescription = stringResource(R.string.delete))
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
@@ -114,7 +103,7 @@ fun TransactionFormScreen(viewModel: TransactionFormViewModel, onBack: () -> Uni
         bottomBar = {
             Button(
                 onClick = viewModel::save,
-                enabled = !state.isSaving,
+                enabled = state.isLoaded && !state.isSaving,
                 shape = RoundedCornerShape(18.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -140,40 +129,80 @@ fun TransactionFormScreen(viewModel: TransactionFormViewModel, onBack: () -> Uni
         ) {
             val field = Modifier.widthIn(max = 640.dp).fillMaxWidth()
 
-            AmountCard(
-                isIncome = isIncome,
-                amount = state.amount,
-                error = state.amountError,
-                onAmountChange = viewModel::onAmountChange,
-                modifier = field.shakeOn(state.amountShake).staggeredEntrance(0, playIntro, startDelay = 120, step = 50),
+            OutlinedTextField(
+                value = state.name,
+                onValueChange = viewModel::onNameChange,
+                label = { Text(stringResource(R.string.reminder_name)) },
+                placeholder = { Text(stringResource(R.string.reminder_name_hint)) },
+                leadingIcon = { Icon(painterResource(R.drawable.ic_bell), contentDescription = null) },
+                isError = state.nameError,
+                supportingText = if (state.nameError) {
+                    { Text(stringResource(R.string.error_reminder_name)) }
+                } else {
+                    null
+                },
+                singleLine = true,
+                shape = FieldShape,
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Next),
+                modifier = field.shakeOn(state.nameShake),
+            )
+
+            OutlinedTextField(
+                value = state.amount,
+                onValueChange = viewModel::onAmountChange,
+                label = { Text(stringResource(R.string.iznos)) },
+                placeholder = { Text(stringResource(R.string.amount_hint)) },
+                leadingIcon = { Icon(painterResource(R.drawable.ic_wallet), contentDescription = null) },
+                suffix = { Text(stringResource(R.string.currency_symbol)) },
+                isError = state.amountError,
+                supportingText = if (state.amountError) {
+                    { Text(stringResource(R.string.error_amount)) }
+                } else {
+                    null
+                },
+                singleLine = true,
+                shape = FieldShape,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
+                modifier = field.shakeOn(state.amountShake),
             )
 
             DateField(
-                date = state.date,
+                date = state.dueDate,
                 onClick = { showDatePicker = true },
-                modifier = field.staggeredEntrance(1, playIntro, startDelay = 120, step = 50),
+                label = R.string.reminder_due_date,
+                modifier = field,
             )
 
-            Row(
-                modifier = field.staggeredEntrance(2, playIntro, startDelay = 120, step = 50),
-                verticalAlignment = Alignment.Top,
-            ) {
-                CategoryField(
-                    categories = categories,
-                    selected = state.category,
-                    error = state.categoryError,
-                    onSelect = viewModel::onCategoryChange,
-                    modifier = Modifier.weight(1f).shakeOn(state.categoryShake),
+            Column(field) {
+                Text(
+                    stringResource(R.string.reminder_period),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 4.dp, bottom = 4.dp),
                 )
-                Spacer(Modifier.width(12.dp))
-                FilledTonalIconButton(
-                    onClick = { showAddCategory = true },
-                    modifier = Modifier.padding(top = 8.dp).size(56.dp),
-                    shape = FieldShape,
-                ) {
-                    Icon(painterResource(R.drawable.ic_add), contentDescription = stringResource(R.string.nova_kategorija))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    PaymentPeriod.entries.forEach { period ->
+                        FilterChip(
+                            selected = state.period == period,
+                            onClick = { viewModel.onPeriodChange(period) },
+                            label = { Text(stringResource(period.label)) },
+                            leadingIcon = if (state.period == period) {
+                                { Icon(painterResource(R.drawable.ic_check), contentDescription = null, modifier = Modifier.size(18.dp)) }
+                            } else {
+                                null
+                            },
+                        )
+                    }
                 }
             }
+
+            CategoryPicker(
+                categories = categories,
+                selected = state.category,
+                onSelect = viewModel::onCategoryChange,
+                onAddNew = { showAddCategory = true },
+                modifier = field,
+            )
 
             OutlinedTextField(
                 value = state.note,
@@ -183,21 +212,11 @@ fun TransactionFormScreen(viewModel: TransactionFormViewModel, onBack: () -> Uni
                 shape = FieldShape,
                 minLines = 2,
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                modifier = field.staggeredEntrance(3, playIntro, startDelay = 120, step = 50),
+                modifier = field,
             )
         }
     }
 
-    if (showDatePicker) {
-        DatePickerSheet(
-            initial = state.date,
-            onDismiss = { showDatePicker = false },
-            onConfirm = {
-                viewModel.onDateChange(it)
-                showDatePicker = false
-            },
-        )
-    }
     if (showAddCategory) {
         AddCategoryDialog(
             validate = viewModel::validateCategoryName,
@@ -208,101 +227,65 @@ fun TransactionFormScreen(viewModel: TransactionFormViewModel, onBack: () -> Uni
             },
         )
     }
-}
 
-@Composable
-private fun AmountCard(
-    isIncome: Boolean,
-    amount: String,
-    error: Boolean,
-    onAmountChange: (String) -> Unit,
-    modifier: Modifier,
-) {
-    val accent = if (isIncome) FinanceTheme.colors.income else FinanceTheme.colors.expense
-    Column(modifier) {
-        Surface(
-            shape = RoundedCornerShape(24.dp),
-            color = if (isIncome) FinanceTheme.colors.incomeContainer else FinanceTheme.colors.expenseContainer,
-        ) {
-            Column(Modifier.padding(20.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    TransactionTypeBadge(isIncome, size = 32.dp, container = MaterialTheme.colorScheme.surfaceContainer)
-                    Spacer(Modifier.width(10.dp))
-                    Text(stringResource(R.string.iznos), style = MaterialTheme.typography.titleMedium, color = accent)
-                }
-                TextField(
-                    value = amount,
-                    onValueChange = onAmountChange,
-                    placeholder = { Text(stringResource(R.string.amount_hint), style = MaterialTheme.typography.displaySmall) },
-                    suffix = { Text(stringResource(R.string.currency_symbol), style = MaterialTheme.typography.headlineSmall, color = accent) },
-                    textStyle = MaterialTheme.typography.displaySmall,
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        cursorColor = accent,
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-        }
-        AnimatedVisibility(error) {
-            Text(
-                stringResource(R.string.error_amount),
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(start = 16.dp, top = 6.dp),
-            )
-        }
+    if (showDatePicker) {
+        DatePickerSheet(
+            initial = state.dueDate,
+            onDismiss = { showDatePicker = false },
+            onConfirm = {
+                viewModel.onDueDateChange(it)
+                showDatePicker = false
+            },
+        )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CategoryField(
+private fun CategoryPicker(
     categories: List<Category>,
     selected: String,
-    error: Boolean,
     onSelect: (String) -> Unit,
+    onAddNew: () -> Unit,
     modifier: Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = it && categories.isNotEmpty() },
-        modifier = modifier,
-    ) {
+    val none = stringResource(R.string.no_category)
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }, modifier = modifier) {
         OutlinedTextField(
-            value = selected,
+            value = selected.ifBlank { none },
             onValueChange = {},
             readOnly = true,
-            label = { Text(stringResource(R.string.kategorija)) },
+            label = { Text(stringResource(R.string.reminder_category)) },
             leadingIcon = { Icon(painterResource(R.drawable.ic_label), contentDescription = null) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            isError = error,
-            supportingText = when {
-                error -> { { Text(stringResource(R.string.error_category)) } }
-                categories.isEmpty() -> { { Text(stringResource(R.string.no_categories_hint)) } }
-                else -> null
-            },
             shape = FieldShape,
             singleLine = true,
             modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
         )
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            categories.forEach { category ->
+            (listOf("") + categories.map { it.name }).forEach { name ->
                 DropdownMenuItem(
-                    text = { Text(category.name) },
+                    text = { Text(name.ifBlank { none }) },
                     onClick = {
-                        onSelect(category.name)
+                        onSelect(name)
                         expanded = false
                     },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                 )
             }
+            HorizontalDivider()
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.nova_kategorija), color = MaterialTheme.colorScheme.primary) },
+                leadingIcon = {
+                    Icon(painterResource(R.drawable.ic_add), contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                },
+                onClick = {
+                    expanded = false
+                    onAddNew()
+                },
+                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+            )
         }
     }
 }

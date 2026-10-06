@@ -18,6 +18,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.toRoute
 import com.example.financemanager.FinanceApp
 import com.example.financemanager.data.FinanceRepository
@@ -26,6 +27,10 @@ import com.example.financemanager.ui.components.EmphasizedDecelerate
 import com.example.financemanager.ui.dashboard.DashboardScreen
 import com.example.financemanager.ui.dashboard.DashboardViewModel
 import com.example.financemanager.ui.login.LoginScreen
+import com.example.financemanager.ui.reminders.ReminderFormScreen
+import com.example.financemanager.ui.reminders.ReminderFormViewModel
+import com.example.financemanager.ui.reminders.RemindersScreen
+import com.example.financemanager.ui.reminders.RemindersViewModel
 import com.example.financemanager.ui.transaction.TransactionFormScreen
 import com.example.financemanager.ui.transaction.TransactionFormViewModel
 import kotlinx.serialization.Serializable
@@ -38,6 +43,17 @@ data object DashboardRoute
 
 @Serializable
 data class TransactionFormRoute(val isIncome: Boolean)
+
+@Serializable
+data object RemindersRoute
+
+/** [id] of the reminder to edit, or [NEW] for a new one. */
+@Serializable
+data class ReminderFormRoute(val id: Long = NEW) {
+    companion object {
+        const val NEW = -1L
+    }
+}
 
 private fun CreationExtras.repository(): FinanceRepository = (this[APPLICATION_KEY] as FinanceApp).repository
 
@@ -72,6 +88,8 @@ fun FinanceNavHost() {
                 viewModel = viewModel(factory = viewModelFactory { initializer { DashboardViewModel(repository()) } }),
                 onAddIncome = { navController.navigate(TransactionFormRoute(isIncome = true)) },
                 onAddExpense = { navController.navigate(TransactionFormRoute(isIncome = false)) },
+                onOpenReminders = { navController.navigate(RemindersRoute) },
+                onAddReminder = { navController.navigate(ReminderFormRoute()) },
             )
         }
         composable<TransactionFormRoute> { entry ->
@@ -79,6 +97,21 @@ fun FinanceNavHost() {
             TransactionFormScreen(
                 viewModel = viewModel(factory = viewModelFactory { initializer { TransactionFormViewModel(type, repository()) } }),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
+            )
+        }
+        composable<RemindersRoute> {
+            RemindersScreen(
+                viewModel = viewModel(factory = viewModelFactory { initializer { RemindersViewModel(repository()) } }),
+                onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
+                onAdd = { navController.navigate(ReminderFormRoute()) },
+                onEdit = { navController.navigate(ReminderFormRoute(it.id)) },
+            )
+        }
+        composable<ReminderFormRoute> { entry ->
+            val id = entry.toRoute<ReminderFormRoute>().id.takeIf { it != ReminderFormRoute.NEW }
+            ReminderFormScreen(
+                viewModel = viewModel(factory = viewModelFactory { initializer { ReminderFormViewModel(id, repository()) } }),
+                onBack = { if (navController.currentDestination?.hasRoute<ReminderFormRoute>() == true) navController.popBackStack() },
             )
         }
     }

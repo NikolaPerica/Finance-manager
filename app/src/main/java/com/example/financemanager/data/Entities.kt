@@ -4,12 +4,18 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.LocalDate
 
-// Table and column layout must stay as it was in database version 1, so that
-// existing installs keep their data. Change it only together with a Migration.
+// Table and column layout is the database schema: change it only together with a
+// Migration in AppDatabase, so that existing installs keep their data.
 
 enum class TransactionType { INCOME, EXPENSE }
 
-enum class PaymentPeriod { ONCE, MONTHLY, QUARTERLY, YEARLY }
+enum class PaymentPeriod(val months: Int) {
+    ONCE(0),
+    MONTHLY(1),
+    QUARTERLY(3),
+    SEMI_ANNUALLY(6),
+    YEARLY(12),
+}
 
 @Entity(tableName = "categories")
 data class Category(
@@ -35,6 +41,16 @@ data class Reminder(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
     val amount: Double,
-    val periodType: String,
-    val period: Int,
-)
+    val period: PaymentPeriod,
+    /** Date of the first payment; later ones are counted from it so month ends don't drift. */
+    val firstDueDate: LocalDate,
+    /** How many payments have been made so far. */
+    val paidCount: Int = 0,
+    /** Expense category used for the transaction created when the payment is made. */
+    val category: String = "",
+    val note: String = "",
+) {
+    /** When the next payment is due. */
+    val nextDueDate: LocalDate
+        get() = firstDueDate.plusMonths(period.months.toLong() * paidCount)
+}
