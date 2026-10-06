@@ -31,6 +31,8 @@ import com.example.financemanager.ui.reminders.ReminderFormScreen
 import com.example.financemanager.ui.reminders.ReminderFormViewModel
 import com.example.financemanager.ui.reminders.RemindersScreen
 import com.example.financemanager.ui.reminders.RemindersViewModel
+import com.example.financemanager.ui.stats.StatsScreen
+import com.example.financemanager.ui.stats.StatsViewModel
 import com.example.financemanager.ui.transaction.TransactionFormScreen
 import com.example.financemanager.ui.transaction.TransactionFormViewModel
 import kotlinx.serialization.Serializable
@@ -46,6 +48,9 @@ data class TransactionFormRoute(val isIncome: Boolean)
 
 @Serializable
 data object RemindersRoute
+
+@Serializable
+data object StatsRoute
 
 /** [id] of the reminder to edit, or [NEW] for a new one. */
 @Serializable
@@ -90,12 +95,19 @@ fun FinanceNavHost() {
                 onAddExpense = { navController.navigate(TransactionFormRoute(isIncome = false)) },
                 onOpenReminders = { navController.navigate(RemindersRoute) },
                 onAddReminder = { navController.navigate(ReminderFormRoute()) },
+                onOpenStats = { navController.navigate(StatsRoute) },
             )
         }
         composable<TransactionFormRoute> { entry ->
             val type = if (entry.toRoute<TransactionFormRoute>().isIncome) TransactionType.INCOME else TransactionType.EXPENSE
             TransactionFormScreen(
                 viewModel = viewModel(factory = viewModelFactory { initializer { TransactionFormViewModel(type, repository()) } }),
+                onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
+            )
+        }
+        composable<StatsRoute> {
+            StatsScreen(
+                viewModel = viewModel(factory = viewModelFactory { initializer { StatsViewModel(repository()) } }),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
             )
         }

@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -79,6 +80,7 @@ fun DashboardScreen(
     onAddExpense: () -> Unit,
     onOpenReminders: () -> Unit,
     onAddReminder: () -> Unit,
+    onOpenStats: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
@@ -108,7 +110,7 @@ fun DashboardScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             item(key = "header") {
-                Header(Modifier.contentWidth().staggeredEntrance(0, playIntro))
+                Header(onOpenStats, Modifier.contentWidth().staggeredEntrance(0, playIntro))
             }
             item(key = "balance") {
                 BalanceCard(state, Modifier.contentWidth().padding(top = 8.dp).staggeredEntrance(1, playIntro))
@@ -179,7 +181,7 @@ fun DashboardScreen(
 private fun Modifier.contentWidth() = widthIn(max = 640.dp).fillMaxWidth()
 
 @Composable
-private fun Header(modifier: Modifier) {
+private fun Header(onOpenStats: () -> Unit, modifier: Modifier) {
     val greeting = when (LocalTime.now().hour) {
         in 5..11 -> R.string.greeting_morning
         in 12..17 -> R.string.greeting_day
@@ -191,6 +193,10 @@ private fun Header(modifier: Modifier) {
             Text(stringResource(R.string.overview_title), style = MaterialTheme.typography.headlineSmall)
         }
         Chip(DateFormat.chip(LocalDate.now()))
+        Spacer(Modifier.width(8.dp))
+        FilledTonalIconButton(onClick = onOpenStats) {
+            Icon(painterResource(R.drawable.ic_chart), contentDescription = stringResource(R.string.open_stats))
+        }
     }
 }
 

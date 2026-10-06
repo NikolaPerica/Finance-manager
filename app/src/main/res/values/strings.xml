@@ -108,4 +108,28 @@
         <item quantity="few">%d plaćanja uskoro dospijevaju</item>
         <item quantity="other">%d plaćanja uskoro dospijeva</item>
     </plurals>
+
+    <!-- Statistika -->
+    <string name="stats_title">Statistika</string>
+    <string name="open_stats">Otvori statistiku</string>
+    <string name="range_month">Mjesec</string>
+    <string name="range_year">Godina</string>
+    <string name="range_all">Sve</string>
+    <string name="all_time">Sve vrijeme</string>
+    <string name="previous_period">Prethodno razdoblje</string>
+    <string name="next_period">Sljedeće razdoblje</string>
+    <string name="total_expense">Ukupno potrošeno</string>
+    <string name="total_income">Ukupno zarađeno</string>
+    <string name="vs_previous_month">u odnosu na prethodni mjesec</string>
+    <string name="vs_previous_year">u odnosu na prethodnu godinu</string>
+    <string name="over_time">Kroz vrijeme</string>
+    <string name="chart_hint">Dodirnite stupac za prikaz tog razdoblja</string>
+    <string name="by_category">Po kategorijama</string>
+    <string name="stats_empty_expense">Nema rashoda u ovom razdoblju.</string>
+    <string name="stats_empty_income">Nema prihoda u ovom razdoblju.</string>
+    <plurals name="transactions_count">
+        <item quantity="one">%d transakcija</item>
+        <item quantity="few">%d transakcije</item>
+        <item quantity="other">%d transakcija</item>
+    </plurals>
 </resources>
