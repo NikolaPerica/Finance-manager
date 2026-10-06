@@ -3,11 +3,12 @@ package com.example.financemanager.ui.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financemanager.data.FinanceRepository
+import com.example.financemanager.data.Reminder
 import com.example.financemanager.data.Transaction
 import com.example.financemanager.data.TransactionType
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -16,22 +17,26 @@ data class DashboardUiState(
     val expense: Double = 0.0,
     /** Newest first. */
     val transactions: List<Transaction> = emptyList(),
+    /** The next few payment reminders, soonest first. */
+    val upcoming: List<Reminder> = emptyList(),
     val isLoading: Boolean = true,
 ) {
     val balance: Double get() = income - expense
 }
 
-fun summarize(transactions: List<Transaction>) = DashboardUiState(
+private const val UPCOMING_COUNT = 3
+
+fun summarize(transactions: List<Transaction>, reminders: List<Reminder> = emptyList()) = DashboardUiState(
     income = transactions.filter { it.type == TransactionType.INCOME }.sumOf { it.amount },
     expense = transactions.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount },
     transactions = transactions.sortedWith(compareByDescending<Transaction> { it.date }.thenByDescending { it.id }),
+    upcoming = reminders.sortedBy { it.nextDueDate }.take(UPCOMING_COUNT),
     isLoading = false,
 )
 
 class DashboardViewModel(private val repository: FinanceRepository) : ViewModel() {
 
-    val state: StateFlow<DashboardUiState> = repository.transactions()
-        .map(::summarize)
+    val state: StateFlow<DashboardUiState> = combine(repository.transactions(), repository.reminders(), ::summarize)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DashboardUiState())
 
     fun delete(transaction: Transaction) {

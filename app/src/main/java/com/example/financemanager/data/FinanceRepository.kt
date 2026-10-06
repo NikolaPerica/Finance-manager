@@ -1,6 +1,11 @@
 package com.example.financemanager.data
 
+import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
+
+/** What [FinanceRepository.payReminder] changed, so it can be undone. */
+data class ReminderPayment(val before: Reminder, val transactionId: Long)
 
 /** Single entry point the UI uses to read and change finance data. */
 interface FinanceRepository {
@@ -10,7 +15,30 @@ interface FinanceRepository {
 
     fun categories(type: TransactionType): Flow<List<Category>>
     suspend fun addCategory(name: String, type: TransactionType)
+
+    fun reminders(): Flow<List<Reminder>>
+    suspend fun reminder(id: Long): Reminder?
+    suspend fun saveReminder(reminder: Reminder)
+    suspend fun deleteReminder(reminder: Reminder)
+
+    /**
+     * Records the reminder's next payment as an expense dated [paidOn] and moves the
+     * reminder on to its following due date (a one-off reminder is removed).
+     */
+    suspend fun payReminder(reminder: Reminder, paidOn: LocalDate): ReminderPayment
+
+    /** Reverts [payReminder]: removes the expense and restores the reminder. */
+    suspend fun undoPayment(payment: ReminderPayment)
 }
+
+/** The expense a payment of this reminder is recorded as. */
+fun Reminder.toExpense(paidOn: LocalDate) = Transaction(
+    amount = amount,
+    date = paidOn,
+    note = if (category.isBlank()) note else name,
+    category = category.ifBlank { name },
+    type = TransactionType.EXPENSE,
+)
 
 class RoomFinanceRepository(private val db: AppDatabase) : FinanceRepository {
     override fun transactions() = db.transactionDao().observeAll()
@@ -27,5 +55,32 @@ class RoomFinanceRepository(private val db: AppDatabase) : FinanceRepository {
 
     override suspend fun addCategory(name: String, type: TransactionType) {
         db.categoryDao().insert(Category(name = name, type = type))
+    }
+
+    override fun reminders() = db.reminderDao().observeAll()
+
+    override suspend fun reminder(id: Long) = db.reminderDao().get(id)
+
+    override suspend fun saveReminder(reminder: Reminder) {
+        db.reminderDao().upsert(reminder)
+    }
+
+    override suspend fun deleteReminder(reminder: Reminder) {
+        db.reminderDao().delete(reminder)
+    }
+
+    override suspend fun payReminder(reminder: Reminder, paidOn: LocalDate) = db.withTransaction {
+        val transactionId = db.transactionDao().insert(reminder.toExpense(paidOn))
+        if (reminder.period == PaymentPeriod.ONCE) {
+            db.reminderDao().delete(reminder)
+        } else {
+            db.reminderDao().upsert(reminder.copy(paidCount = reminder.paidCount + 1))
+        }
+        ReminderPayment(before = reminder, transactionId = transactionId)
+    }
+
+    override suspend fun undoPayment(payment: ReminderPayment) = db.withTransaction {
+        db.transactionDao().deleteById(payment.transactionId)
+        db.reminderDao().upsert(payment.before)
     }
 }

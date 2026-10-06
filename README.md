@@ -38,17 +38,20 @@ Field "date" (TEXT) - date of transaction<br>
 
 Field "id" (INTEGER, primary key) - unique identifier of the reminder<br>
 Field "name" (TEXT) - name of the reminder/payment<br>
-Field "amount" (FLOAT) - payment amount<br>
-Field "period" (TEXT) - repetition period ("once", "monthly", "quarterly", "semi-annually", "annually")<br>
-Field "date" (TEXT) - date of the first payment<br>
-Field "description" (TEXT) - description of the payment<br>
+Field "amount" (REAL) - payment amount<br>
+Field "period" (TEXT) - repetition period ("ONCE", "MONTHLY", "QUARTERLY", "SEMI_ANNUALLY", "YEARLY")<br>
+Field "firstDueDate" (TEXT) - date of the first payment ("yyyy-MM-dd")<br>
+Field "paidCount" (INTEGER) - number of payments made; the next due date is counted from the first one<br>
+Field "category" (TEXT) - expense category used when the payment is recorded (optional)<br>
+Field "note" (TEXT) - description of the payment (optional)<br>
 
 ## Features
 
 - Create custom categories
 - Graphs reports
 - Fingerprint or password protection
-- Payment reminders
+- Payment reminders: recurring or one-off, a daily notification the day before, on the day and while
+  overdue, and "Pay" records the expense and moves the reminder to its next date
 
 
 ## Tech Stack
@@ -71,12 +74,14 @@ Field "description" (TEXT) - description of the payment<br>
 app/src/main/java/com/example/financemanager/
 ├── MainActivity.kt          single activity, hosts Compose
 ├── FinanceApp.kt            Application; creates the database and repository
-├── data/                    Room entities, DAOs, database, FinanceRepository
+├── data/                    Room entities, DAOs, database (+ migrations), FinanceRepository
+├── notifications/           daily WorkManager check and payment notifications
 └── ui/
     ├── navigation/          NavHost and type-safe routes
     ├── login/               biometric login screen
     ├── dashboard/           balance, totals and transaction list (swipe to delete)
     ├── transaction/         add income / expense form
+    ├── reminders/           payment reminders list and form
     ├── components/          shared composables and animations
     └── theme/               colours, typography, shapes
 ```
@@ -88,7 +93,7 @@ Android Studio, or run:
 
 ```
 ./gradlew assembleDebug        # build the app
-./gradlew testDebugUnitTest    # unit tests
+./gradlew testDebugUnitTest    # unit tests (incl. Room/migration tests on Robolectric)
 ./gradlew lintDebug            # lint
 ```
 

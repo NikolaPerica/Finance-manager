@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -32,10 +33,8 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -63,6 +62,8 @@ import com.example.financemanager.ui.MoneyFormat
 import com.example.financemanager.ui.components.TransactionTypeBadge
 import com.example.financemanager.ui.components.animatedAmount
 import com.example.financemanager.ui.components.staggeredEntrance
+import com.example.financemanager.ui.components.SwipeToDelete
+import com.example.financemanager.ui.reminders.ReminderCard
 import com.example.financemanager.ui.theme.FinanceTheme
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -76,6 +77,8 @@ fun DashboardScreen(
     viewModel: DashboardViewModel,
     onAddIncome: () -> Unit,
     onAddExpense: () -> Unit,
+    onOpenReminders: () -> Unit,
+    onAddReminder: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
@@ -119,12 +122,38 @@ fun DashboardScreen(
                     ActionCard(false, onAddExpense, Modifier.weight(1f))
                 }
             }
+            item(key = "upcomingHeader") {
+                SectionHeader(
+                    stringResource(R.string.upcoming_payments),
+                    Modifier.contentWidth().staggeredEntrance(3, playIntro),
+                ) {
+                    TextButton(onClick = onOpenReminders) { Text(stringResource(R.string.see_all)) }
+                }
+            }
+            if (!state.isLoading && state.upcoming.isEmpty()) {
+                item(key = "reminderCta") {
+                    ReminderCta(onAddReminder, Modifier.contentWidth().animateItem().staggeredEntrance(4, playIntro))
+                }
+            }
+            items(state.upcoming, key = { "reminder-${it.id}" }) { reminder ->
+                ReminderCard(
+                    reminder = reminder,
+                    today = LocalDate.now(),
+                    onClick = onOpenReminders,
+                    modifier = Modifier.contentWidth().animateItem().staggeredEntrance(4, playIntro),
+                )
+            }
             item(key = "recentHeader") {
-                RecentHeader(state.transactions.size, Modifier.contentWidth().staggeredEntrance(3, playIntro))
+                SectionHeader(
+                    stringResource(R.string.recent_transactions),
+                    Modifier.contentWidth().padding(top = 8.dp).staggeredEntrance(5, playIntro),
+                ) {
+                    Chip(state.transactions.size.toString())
+                }
             }
             if (!state.isLoading && state.transactions.isEmpty()) {
                 item(key = "empty") {
-                    EmptyState(Modifier.contentWidth().animateItem().staggeredEntrance(4, playIntro))
+                    EmptyState(Modifier.contentWidth().animateItem().staggeredEntrance(6, playIntro))
                 }
             }
             items(state.transactions, key = { it.id }) { transaction ->
@@ -282,10 +311,49 @@ private fun ActionCard(isIncome: Boolean, onClick: () -> Unit, modifier: Modifie
 }
 
 @Composable
-private fun RecentHeader(count: Int, modifier: Modifier) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        Text(stringResource(R.string.recent_transactions), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-        Chip(count.toString())
+private fun SectionHeader(title: String, modifier: Modifier, trailing: @Composable () -> Unit) {
+    Row(modifier.heightIn(min = 40.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+        trailing()
+    }
+}
+
+@Composable
+private fun ReminderCta(onClick: () -> Unit, modifier: Modifier) {
+    Surface(
+        onClick = onClick,
+        shape = CardShape,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        modifier = modifier,
+    ) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier.size(44.dp).background(MaterialTheme.colorScheme.surfaceContainer, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painterResource(R.drawable.ic_bell),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(22.dp),
+                )
+            }
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    stringResource(R.string.add_reminder_cta),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                Text(
+                    stringResource(R.string.add_reminder_cta_subtitle),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
+                )
+            }
+            Spacer(Modifier.width(8.dp))
+            Icon(painterResource(R.drawable.ic_add), contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+        }
     }
 }
 
@@ -322,30 +390,6 @@ private fun EmptyState(modifier: Modifier) {
     }
 }
 
-@Composable
-private fun SwipeToDelete(onDelete: () -> Unit, modifier: Modifier, content: @Composable () -> Unit) {
-    val dismissState = rememberSwipeToDismissBoxState()
-    SwipeToDismissBox(
-        state = dismissState,
-        enableDismissFromStartToEnd = false,
-        onDismiss = { if (it == SwipeToDismissBoxValue.EndToStart) onDelete() },
-        backgroundContent = {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .clip(CardShape)
-                    .background(FinanceTheme.colors.expense)
-                    .padding(horizontal = 24.dp),
-                contentAlignment = Alignment.CenterEnd,
-            ) {
-                Icon(painterResource(R.drawable.ic_delete), contentDescription = stringResource(R.string.delete), tint = Color.White)
-            }
-        },
-        modifier = modifier,
-    ) {
-        content()
-    }
-}
 
 @Composable
 private fun TransactionRow(transaction: Transaction) {

@@ -34,6 +34,10 @@ android {
     buildFeatures {
         compose = true
     }
+    testOptions {
+        // Robolectric runs the Room tests on the JVM against a real SQLite.
+        unitTests.isIncludeAndroidResources = true
+    }
 }
 
 room {
@@ -60,12 +64,15 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
+    implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.biometric)
     // BiometricPrompt needs a FragmentActivity; biometric alone pulls in a 2020 fragment release.
     implementation(libs.androidx.fragment)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.test.espresso)
 }

@@ -25,8 +25,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -47,7 +45,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -72,16 +69,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financemanager.R
 import com.example.financemanager.data.Category
 import com.example.financemanager.data.TransactionType
-import com.example.financemanager.ui.DateFormat
+import com.example.financemanager.ui.components.DateField
+import com.example.financemanager.ui.components.DatePickerSheet
+import com.example.financemanager.ui.components.FieldShape
 import com.example.financemanager.ui.components.TransactionTypeBadge
 import com.example.financemanager.ui.components.shakeOn
 import com.example.financemanager.ui.components.staggeredEntrance
 import com.example.financemanager.ui.theme.FinanceTheme
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneOffset
 
-private val FieldShape = RoundedCornerShape(16.dp)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -270,28 +265,6 @@ private fun AmountCard(
     }
 }
 
-@Composable
-private fun DateField(date: LocalDate, onClick: () -> Unit, modifier: Modifier) {
-    // A read-only text field that opens the picker; the overlay catches the tap.
-    Box(modifier) {
-        OutlinedTextField(
-            value = DateFormat.long(date),
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(stringResource(R.string.datum)) },
-            leadingIcon = { Icon(painterResource(R.drawable.ic_calendar), contentDescription = null) },
-            shape = FieldShape,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Surface(
-            onClick = onClick,
-            color = Color.Transparent,
-            shape = FieldShape,
-            modifier = Modifier.matchParentSize().padding(top = 8.dp),
-        ) {}
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CategoryField(
@@ -336,30 +309,6 @@ private fun CategoryField(
                 )
             }
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DatePickerSheet(initial: LocalDate, onDismiss: () -> Unit, onConfirm: (LocalDate) -> Unit) {
-    // The Material date picker works in UTC milliseconds.
-    val pickerState = rememberDatePickerState(
-        initialSelectedDateMillis = initial.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(),
-    )
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = {
-                pickerState.selectedDateMillis
-                    ?.let { Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate() }
-                    ?.let(onConfirm) ?: onDismiss()
-            }) { Text(stringResource(R.string.ok)) }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.odustani)) } },
-    ) {
-        DatePicker(state = pickerState, title = {
-            Text(stringResource(R.string.odaberite_datum), modifier = Modifier.padding(start = 24.dp, top = 16.dp))
-        })
     }
 }
 
