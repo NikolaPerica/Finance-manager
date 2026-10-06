@@ -31,7 +31,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -45,6 +48,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -55,6 +59,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financemanager.R
 import com.example.financemanager.data.Category
 import com.example.financemanager.data.PaymentPeriod
+import com.example.financemanager.ui.components.AddCategoryDialog
 import com.example.financemanager.ui.components.DateField
 import com.example.financemanager.ui.components.DatePickerSheet
 import com.example.financemanager.ui.components.FieldShape
@@ -67,8 +72,14 @@ fun ReminderFormScreen(viewModel: ReminderFormViewModel, onBack: () -> Unit) {
     val categories by viewModel.categories.collectAsStateWithLifecycle()
     val currentOnBack by rememberUpdatedState(onBack)
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
+    var showAddCategory by rememberSaveable { mutableStateOf(false) }
+    val snackbar = remember { SnackbarHostState() }
+    val resources = LocalResources.current
 
     LaunchedEffect(viewModel) { viewModel.done.collect { currentOnBack() } }
+    LaunchedEffect(viewModel) {
+        viewModel.categoryAdded.collect { snackbar.showSnackbar(resources.getString(R.string.category_added, it)) }
+    }
 
     Scaffold(
         topBar = {
@@ -105,6 +116,7 @@ fun ReminderFormScreen(viewModel: ReminderFormViewModel, onBack: () -> Unit) {
                 Text(stringResource(R.string.spremi), style = MaterialTheme.typography.labelLarge)
             }
         },
+        snackbarHost = { SnackbarHost(snackbar) },
     ) { padding ->
         Column(
             modifier = Modifier
@@ -184,7 +196,13 @@ fun ReminderFormScreen(viewModel: ReminderFormViewModel, onBack: () -> Unit) {
                 }
             }
 
-            CategoryPicker(categories, state.category, viewModel::onCategoryChange, field)
+            CategoryPicker(
+                categories = categories,
+                selected = state.category,
+                onSelect = viewModel::onCategoryChange,
+                onAddNew = { showAddCategory = true },
+                modifier = field,
+            )
 
             OutlinedTextField(
                 value = state.note,
@@ -197,6 +215,17 @@ fun ReminderFormScreen(viewModel: ReminderFormViewModel, onBack: () -> Unit) {
                 modifier = field,
             )
         }
+    }
+
+    if (showAddCategory) {
+        AddCategoryDialog(
+            validate = viewModel::validateCategoryName,
+            onDismiss = { showAddCategory = false },
+            onConfirm = {
+                viewModel.addCategory(it)
+                showAddCategory = false
+            },
+        )
     }
 
     if (showDatePicker) {
@@ -217,6 +246,7 @@ private fun CategoryPicker(
     categories: List<Category>,
     selected: String,
     onSelect: (String) -> Unit,
+    onAddNew: () -> Unit,
     modifier: Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -244,6 +274,18 @@ private fun CategoryPicker(
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                 )
             }
+            HorizontalDivider()
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.nova_kategorija), color = MaterialTheme.colorScheme.primary) },
+                leadingIcon = {
+                    Icon(painterResource(R.drawable.ic_add), contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                },
+                onClick = {
+                    expanded = false
+                    onAddNew()
+                },
+                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+            )
         }
     }
 }

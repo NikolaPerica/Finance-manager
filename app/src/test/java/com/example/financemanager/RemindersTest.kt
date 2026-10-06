@@ -1,9 +1,11 @@
 package com.example.financemanager
 
+import com.example.financemanager.data.Category
 import com.example.financemanager.data.PaymentPeriod
 import com.example.financemanager.data.Reminder
 import com.example.financemanager.data.TransactionType
 import com.example.financemanager.data.toExpense
+import com.example.financemanager.ui.components.CategoryNameError
 import com.example.financemanager.ui.reminders.DueStatus
 import com.example.financemanager.ui.reminders.ReminderFormViewModel
 import com.example.financemanager.ui.reminders.RemindersEvent
@@ -12,6 +14,7 @@ import com.example.financemanager.ui.reminders.summarizeReminders
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -146,5 +149,25 @@ class RemindersTest {
         assertEquals(7L, saved.id)
         assertEquals(530.0, saved.amount, 0.0)
         assertEquals(LocalDate.of(2026, 10, 15), saved.nextDueDate)
+    }
+
+    @Test
+    fun formCanAddAnExpenseCategory() = runTest(UnconfinedTestDispatcher()) {
+        repository.categories.value = listOf(
+            Category(1, "Režije", TransactionType.EXPENSE),
+            Category(2, "Plaća", TransactionType.INCOME),
+        )
+        val viewModel = ReminderFormViewModel(null, repository)
+        backgroundScope.launch { viewModel.categories.collect {} }
+
+        assertEquals(CategoryNameError.EMPTY, viewModel.validateCategoryName(" "))
+        assertEquals(CategoryNameError.EXISTS, viewModel.validateCategoryName("režije"))
+        // Only expense categories count, reminders always become expenses.
+        assertNull(viewModel.validateCategoryName("Plaća"))
+
+        viewModel.addCategory(" Pretplate ")
+        assertEquals("Pretplate", viewModel.state.value.category)
+        assertEquals("Pretplate", viewModel.categoryAdded.first())
+        assertTrue(viewModel.categories.value.any { it.name == "Pretplate" && it.type == TransactionType.EXPENSE })
     }
 }

@@ -2,7 +2,7 @@ package com.example.financemanager
 
 import com.example.financemanager.data.Category
 import com.example.financemanager.data.TransactionType
-import com.example.financemanager.ui.transaction.CategoryNameError
+import com.example.financemanager.ui.components.CategoryNameError
 import com.example.financemanager.ui.transaction.FormEvent
 import com.example.financemanager.ui.transaction.TransactionFormViewModel
 import kotlinx.coroutines.Dispatchers

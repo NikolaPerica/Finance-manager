@@ -2,7 +2,6 @@ package com.example.financemanager.ui.transaction
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,10 +19,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,7 +37,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
@@ -55,8 +51,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
@@ -69,6 +63,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financemanager.R
 import com.example.financemanager.data.Category
 import com.example.financemanager.data.TransactionType
+import com.example.financemanager.ui.components.AddCategoryDialog
 import com.example.financemanager.ui.components.DateField
 import com.example.financemanager.ui.components.DatePickerSheet
 import com.example.financemanager.ui.components.FieldShape
@@ -310,59 +305,4 @@ private fun CategoryField(
             }
         }
     }
-}
-
-@Composable
-private fun AddCategoryDialog(
-    validate: (String) -> CategoryNameError?,
-    onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit,
-) {
-    var name by rememberSaveable { mutableStateOf("") }
-    var error by remember { mutableStateOf<CategoryNameError?>(null) }
-    val focus = remember { FocusRequester() }
-    LaunchedEffect(Unit) { focus.requestFocus() }
-
-    fun submit() {
-        error = validate(name)
-        if (error == null) onConfirm(name)
-    }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.nova_kategorija)) },
-        text = {
-            OutlinedTextField(
-                value = name,
-                onValueChange = {
-                    name = it
-                    error = null
-                },
-                label = { Text(stringResource(R.string.naziv_kategorije)) },
-                isError = error != null,
-                supportingText = error?.let {
-                    {
-                        Text(
-                            stringResource(
-                                when (it) {
-                                    CategoryNameError.EMPTY -> R.string.error_category_name
-                                    CategoryNameError.EXISTS -> R.string.error_category_exists
-                                },
-                            ),
-                        )
-                    }
-                },
-                singleLine = true,
-                shape = FieldShape,
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Sentences,
-                    imeAction = ImeAction.Done,
-                ),
-                keyboardActions = KeyboardActions(onDone = { submit() }),
-                modifier = Modifier.focusRequester(focus),
-            )
-        },
-        confirmButton = { TextButton(onClick = ::submit) { Text(stringResource(R.string.dodaj)) } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.odustani)) } },
-    )
 }

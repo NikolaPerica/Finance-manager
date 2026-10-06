@@ -6,6 +6,8 @@ import com.example.financemanager.data.Category
 import com.example.financemanager.data.FinanceRepository
 import com.example.financemanager.data.Transaction
 import com.example.financemanager.data.TransactionType
+import com.example.financemanager.ui.components.CategoryNameError
+import com.example.financemanager.ui.components.categoryNameError
 import com.example.financemanager.ui.isValidAmountInput
 import com.example.financemanager.ui.parseAmount
 import kotlinx.coroutines.channels.Channel
@@ -31,8 +33,6 @@ data class TransactionFormState(
     val categoryShake: Int = 0,
     val isSaving: Boolean = false,
 )
-
-enum class CategoryNameError { EMPTY, EXISTS }
 
 sealed interface FormEvent {
     data object Saved : FormEvent
@@ -64,11 +64,7 @@ class TransactionFormViewModel(
     fun onNoteChange(note: String) = _state.update { it.copy(note = note) }
 
     /** Returns why [name] can't be used as a new category, or null if it can. */
-    fun validateCategoryName(name: String): CategoryNameError? = when {
-        name.isBlank() -> CategoryNameError.EMPTY
-        categories.value.any { it.name.equals(name.trim(), ignoreCase = true) } -> CategoryNameError.EXISTS
-        else -> null
-    }
+    fun validateCategoryName(name: String): CategoryNameError? = categoryNameError(name, categories.value)
 
     fun addCategory(name: String) {
         val trimmed = name.trim()

@@ -8,6 +8,8 @@ import com.example.financemanager.data.PaymentPeriod
 import com.example.financemanager.data.Reminder
 import com.example.financemanager.data.TransactionType
 import com.example.financemanager.ui.Croatian
+import com.example.financemanager.ui.components.CategoryNameError
+import com.example.financemanager.ui.components.categoryNameError
 import com.example.financemanager.ui.isValidAmountInput
 import com.example.financemanager.ui.parseAmount
 import kotlinx.coroutines.channels.Channel
@@ -58,6 +60,10 @@ class ReminderFormViewModel(
     private val _done = Channel<Unit>(Channel.BUFFERED)
     val done = _done.receiveAsFlow()
 
+    /** Fires with the name of each category created from the form. */
+    private val _categoryAdded = Channel<String>(Channel.BUFFERED)
+    val categoryAdded = _categoryAdded.receiveAsFlow()
+
     init {
         if (reminderId != null) {
             viewModelScope.launch {
@@ -93,6 +99,20 @@ class ReminderFormViewModel(
     fun onCategoryChange(category: String) = _state.update { it.copy(category = category) }
 
     fun onNoteChange(note: String) = _state.update { it.copy(note = note) }
+
+    /** Returns why [name] can't be used as a new expense category, or null if it can. */
+    fun validateCategoryName(name: String): CategoryNameError? = categoryNameError(name, categories.value)
+
+    /** Creates a new expense category and selects it for this reminder. */
+    fun addCategory(name: String) {
+        val trimmed = name.trim()
+        if (validateCategoryName(trimmed) != null) return
+        viewModelScope.launch {
+            repository.addCategory(trimmed, TransactionType.EXPENSE)
+            onCategoryChange(trimmed)
+            _categoryAdded.send(trimmed)
+        }
+    }
 
     fun save() {
         val current = _state.value
