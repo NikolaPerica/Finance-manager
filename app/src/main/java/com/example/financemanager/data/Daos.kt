@@ -40,6 +40,10 @@ interface TransactionDao {
     @Update
     suspend fun update(transaction: Transaction)
 
+    /** Moves every transaction of one category to another (or to none, with an empty name). */
+    @Query("UPDATE transactions SET category = :to WHERE category = :from AND type = :type")
+    suspend fun moveCategory(from: String, to: String, type: TransactionType)
+
     @Query("DELETE FROM transactions WHERE id = :id")
     suspend fun deleteById(id: Long)
 
@@ -57,6 +61,9 @@ interface ReminderDao {
 
     @Query("SELECT * FROM reminders WHERE id = :id")
     suspend fun get(id: Long): Reminder?
+
+    @Query("UPDATE reminders SET category = :to WHERE category = :from")
+    suspend fun moveCategory(from: String, to: String)
 
     /** Inserts a new reminder or replaces the one with the same id. */
     @Upsert

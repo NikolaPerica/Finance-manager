@@ -8,9 +8,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.financemanager.data.AppDatabase
 import com.example.financemanager.data.MIGRATION_1_2
 import com.example.financemanager.data.MIGRATION_2_3
+import com.example.financemanager.data.MIGRATION_3_4
 import com.example.financemanager.data.PaymentPeriod
 import com.example.financemanager.data.Reminder
 import com.example.financemanager.data.RoomFinanceRepository
+import com.example.financemanager.data.Transaction
 import com.example.financemanager.data.TransactionType
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -56,7 +58,7 @@ class DatabaseMigrationTest {
 
         // Room checks the migrated tables against the current schema when it opens.
         val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
             .build()
         try {
             val transaction = db.transactionDao().observeAll().first().single()
@@ -85,7 +87,7 @@ class DatabaseMigrationTest {
         }
 
         val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
             .build()
         try {
             val repository = RoomFinanceRepository(db)
@@ -97,6 +99,63 @@ class DatabaseMigrationTest {
             assertEquals(300.0, repository.categories(TransactionType.EXPENSE).first().single().monthlyBudget!!, 0.0)
             repository.setBudget(category, null)
             assertNull(repository.categories(TransactionType.EXPENSE).first().single().monthlyBudget)
+        } finally {
+            db.close()
+        }
+    }
+
+    @Test
+    fun version3KeepsBudgetsAndGetsColours() = runBlocking {
+        createVersion(3) { db ->
+            db.execSQL("INSERT INTO categories (id, name, type, monthlyBudget) VALUES (3, 'Hrana', 'EXPENSE', 250.0)")
+        }
+        val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            .build()
+        try {
+            val category = db.categoryDao().observeByType(TransactionType.EXPENSE).first().single()
+            assertEquals(250.0, category.monthlyBudget!!, 0.0)
+            assertNull(category.color)
+            assertEquals(3, category.colorIndex)
+        } finally {
+            db.close()
+        }
+    }
+
+    @Test
+    fun renamingAndMergingCategoriesMovesTheirData() = runBlocking {
+        val db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+        try {
+            val repository = RoomFinanceRepository(db)
+            repository.addCategory("Hrana", TransactionType.EXPENSE)
+            repository.addCategory("Namirnice", TransactionType.EXPENSE)
+            repository.addCategory("Hrana", TransactionType.INCOME)
+            repository.addTransaction(Transaction(amount = 10.0, date = LocalDate.of(2026, 10, 1), note = "", category = "Hrana", type = TransactionType.EXPENSE))
+            repository.addTransaction(Transaction(amount = 99.0, date = LocalDate.of(2026, 10, 1), note = "", category = "Hrana", type = TransactionType.INCOME))
+            repository.saveReminder(
+                Reminder(name = "Dostava", amount = 20.0, period = PaymentPeriod.MONTHLY, firstDueDate = LocalDate.of(2026, 10, 9), category = "Hrana"),
+            )
+            val (food, groceries) = repository.categories(TransactionType.EXPENSE).first()
+
+            repository.updateCategory(food, "Hrana i piće", color = 5)
+            val renamed = repository.categories(TransactionType.EXPENSE).first().first { it.id == food.id }
+            assertEquals("Hrana i piće", renamed.name)
+            assertEquals(5, renamed.colorIndex)
+            // Only the expense transaction and the reminder follow; the income category of the same name is separate.
+            val byType = repository.transactions().first().associate { it.type to it.category }
+            assertEquals("Hrana i piće", byType[TransactionType.EXPENSE])
+            assertEquals("Hrana", byType[TransactionType.INCOME])
+            assertEquals("Hrana i piće", repository.reminders().first().single().category)
+
+            repository.deleteCategory(renamed, moveTo = groceries)
+            assertEquals(listOf("Namirnice"), repository.categories(TransactionType.EXPENSE).first().map { it.name })
+            assertEquals("Namirnice", repository.transactions().first().first { it.type == TransactionType.EXPENSE }.category)
+            assertEquals("Namirnice", repository.reminders().first().single().category)
+
+            repository.deleteCategory(groceries, moveTo = null)
+            assertEquals("", repository.transactions().first().first { it.type == TransactionType.EXPENSE }.category)
         } finally {
             db.close()
         }

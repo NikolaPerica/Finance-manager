@@ -21,8 +21,12 @@ import java.time.YearMonth
 data class DashboardUiState(
     val income: Double = 0.0,
     val expense: Double = 0.0,
-    /** Newest first. */
+    /** The most recent transactions, newest first. */
     val transactions: List<Transaction> = emptyList(),
+    /** How many transactions there are in total. */
+    val transactionCount: Int = 0,
+    /** All categories, to colour the transactions. */
+    val categories: List<Category> = emptyList(),
     /** The next few payment reminders, soonest first. */
     val upcoming: List<Reminder> = emptyList(),
     /** This month's totals over categories with a budget, null when none has one. */
@@ -33,6 +37,7 @@ data class DashboardUiState(
 }
 
 private const val UPCOMING_COUNT = 3
+private const val RECENT_COUNT = 10
 
 fun summarize(
     transactions: List<Transaction>,
@@ -42,9 +47,12 @@ fun summarize(
 ) = DashboardUiState(
     income = transactions.filter { it.type == TransactionType.INCOME }.sumOf { it.amount },
     expense = transactions.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount },
-    transactions = transactions.sortedWith(compareByDescending<Transaction> { it.date }.thenByDescending { it.id }),
+    transactions = transactions.sortedWith(compareByDescending<Transaction> { it.date }.thenByDescending { it.id })
+        .take(RECENT_COUNT),
+    transactionCount = transactions.size,
+    categories = categories,
     upcoming = reminders.sortedBy { it.nextDueDate }.take(UPCOMING_COUNT),
-    budget = budgetSummary(budgetItems(categories, transactions, YearMonth.from(today))),
+    budget = budgetSummary(budgetItems(categories.filter { it.type == TransactionType.EXPENSE }, transactions, YearMonth.from(today))),
     isLoading = false,
 )
 
@@ -54,7 +62,10 @@ class DashboardViewModel(private val repository: FinanceRepository) : ViewModel(
         repository.transactions(),
         repository.reminders(),
         repository.categories(TransactionType.EXPENSE),
-    ) { transactions, reminders, categories -> summarize(transactions, reminders, categories) }
+        repository.categories(TransactionType.INCOME),
+    ) { transactions, reminders, expenseCategories, incomeCategories ->
+        summarize(transactions, reminders, expenseCategories + incomeCategories)
+    }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DashboardUiState())
 
     fun delete(transaction: Transaction) {
