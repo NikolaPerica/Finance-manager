@@ -27,6 +27,11 @@ object DateFormat {
     fun chip(date: LocalDate): String = chip.format(date).replaceFirstChar { it.titlecase(Croatian) }
 }
 
+/** An amount as it is typed into an amount field, e.g. "1234,5", so it round-trips through [parseAmount]. */
+fun amountInputText(amount: Double): String = AmountInputFormat.get()!!.format(amount)
+
+private val AmountInputFormat = ThreadLocal.withInitial { DecimalFormat("0.##", DecimalFormatSymbols(Croatian)) }
+
 /**
  * Parses what the user typed in the amount field. Accepts either "," or "." as the
  * decimal separator; returns null for anything that isn't a positive number.

@@ -22,6 +22,8 @@ data class Category(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
     val type: TransactionType,
+    /** Monthly spending limit for an expense category, or null for none. */
+    val monthlyBudget: Double? = null,
 )
 
 @Entity(tableName = "transactions")

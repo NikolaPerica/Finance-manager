@@ -26,6 +26,9 @@ data class FinanceColors(
     val incomeContainer: Color,
     val expense: Color,
     val expenseContainer: Color,
+    /** Close to a limit, e.g. a budget that is nearly used up. */
+    val warning: Color,
+    val warningContainer: Color,
     val gradient: List<Color>,
 )
 
@@ -86,6 +89,8 @@ private val LightFinanceColors = FinanceColors(
     incomeContainer = Color(0xFFDDF6E7),
     expense = Color(0xFFE5484D),
     expenseContainer = Color(0xFFFDE4E4),
+    warning = Color(0xFFB86E00),
+    warningContainer = Color(0xFFFFF0D6),
     gradient = listOf(Color(0xFF4F46E5), Color(0xFF7C3AED), Color(0xFFC026D3)),
 )
 
@@ -94,6 +99,8 @@ private val DarkFinanceColors = FinanceColors(
     incomeContainer = Color(0xFF12321F),
     expense = Color(0xFFFF6B6F),
     expenseContainer = Color(0xFF3A1618),
+    warning = Color(0xFFF5B547),
+    warningContainer = Color(0xFF3A2A0E),
     gradient = listOf(Color(0xFF4338CA), Color(0xFF6D28D9), Color(0xFFA21CAF)),
 )
 

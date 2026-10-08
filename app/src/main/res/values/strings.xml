@@ -136,4 +136,40 @@
         <item quantity="few">%d transakcije</item>
         <item quantity="other">%d transakcija</item>
     </plurals>
+    <!-- Uređivanje transakcija -->
+    <string name="uredi_prihod">Uredi prihod</string>
+    <string name="uredi_rashod">Uredi rashod</string>
+    <string name="delete_transaction_title">Obrisati transakciju?</string>
+    <string name="delete_transaction_message">Transakcija će biti trajno obrisana.</string>
+
+    <!-- Budžeti -->
+    <string name="budgets_title">Budžeti</string>
+    <string name="budgets_intro">Postavite mjesečni limit za kategorije rashoda i javit ćemo vam kad mu se približite.</string>
+    <string name="budgets_no_categories">Još nemate kategorija rashoda. Dodajte prvu pa joj postavite budžet.</string>
+    <string name="budget_for_month">Mjesečni budžet · %1$s</string>
+    <string name="budget_of">od %1$s</string>
+    <string name="budget_spent_of">%1$s od %2$s</string>
+    <string name="budget_remaining">Ostalo %1$s</string>
+    <string name="budget_over_by">Prekoračeno za %1$s</string>
+    <string name="budget_warning">Blizu granice</string>
+    <string name="budget_exceeded">Prekoračeno</string>
+    <string name="with_budget">S budžetom</string>
+    <string name="without_budget">Bez budžeta</string>
+    <string name="spent_this_month">Ovaj mjesec potrošeno %1$s</string>
+    <string name="set_budget">Postavi</string>
+    <string name="monthly_budget">Mjesečni budžet</string>
+    <string name="remove_budget">Ukloni</string>
+    <string name="budget_card_title">Budžet ovaj mjesec</string>
+    <string name="budget_cta">Postavite mjesečne budžete</string>
+    <string name="budget_cta_subtitle">Pratite koliko vam je ostalo po kategorijama.</string>
+    <string name="budget_channel_name">Budžeti</string>
+    <string name="budget_channel_description">Upozorenja kad se kategorija približi mjesečnom budžetu ili ga prijeđe</string>
+    <string name="budget_alert_warning">%1$s: iskorišteno %2$d %% budžeta</string>
+    <string name="budget_alert_exceeded">%1$s: budžet je prekoračen</string>
+    <string name="budget_alert_text">Ovaj mjesec potrošeno %1$s od %2$s.</string>
+    <plurals name="budgets_exceeded">
+        <item quantity="one">%d kategorija je prekoračila budžet</item>
+        <item quantity="few">%d kategorije su prekoračile budžet</item>
+        <item quantity="other">%d kategorija je prekoračilo budžet</item>
+    </plurals>
 </resources>
