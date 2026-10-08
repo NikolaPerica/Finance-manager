@@ -92,6 +92,10 @@
     <string name="reminder_channel_description">Obavijesti o računima koji uskoro dospijevaju</string>
     <string name="notifications_off">Obavijesti su isključene pa podsjetnici neće stizati.</string>
     <string name="enable">Uključi</string>
+    <string name="test_notification">Pošalji probnu obavijest</string>
+    <string name="test_notification_title">Obavijesti rade</string>
+    <string name="test_notification_text">Ovako ćete dobivati podsjetnike za plaćanje.</string>
+    <string name="test_notification_sent">Probna obavijest je poslana</string>
 
     <plurals name="due_overdue">
         <item quantity="one">Kasni %d dan</item>
