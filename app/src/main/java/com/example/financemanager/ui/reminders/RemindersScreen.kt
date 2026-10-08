@@ -1,11 +1,5 @@
 package com.example.financemanager.ui.reminders
 
-import android.Manifest
-import android.content.Intent
-import android.os.Build
-import android.provider.Settings
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -46,7 +40,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,15 +53,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financemanager.R
 import com.example.financemanager.data.Reminder
 import com.example.financemanager.notifications.ReminderNotifier
 import com.example.financemanager.ui.DateFormat
 import com.example.financemanager.ui.MoneyFormat
+import com.example.financemanager.ui.components.NotificationAccess
 import com.example.financemanager.ui.components.SwipeToDelete
+import com.example.financemanager.ui.components.rememberNotificationAccess
 import com.example.financemanager.ui.theme.FinanceTheme
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,6 +79,12 @@ fun RemindersScreen(
     val resources = LocalResources.current
     val today = LocalDate.now()
     var confirmPay by remember { mutableStateOf<Reminder?>(null) }
+    val notifications = rememberNotificationAccess()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    // Reminders are only useful with notifications, so ask the first time this screen opens.
+    LaunchedEffect(Unit) { notifications.requestQuietly() }
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -115,6 +117,20 @@ fun RemindersScreen(
                         Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = stringResource(R.string.natrag))
                     }
                 },
+                actions = {
+                    IconButton(onClick = {
+                        if (ReminderNotifier(context).notifyTest()) {
+                            scope.launch {
+                                snackbar.currentSnackbarData?.dismiss()
+                                snackbar.showSnackbar(resources.getString(R.string.test_notification_sent))
+                            }
+                        } else {
+                            notifications.request()
+                        }
+                    }) {
+                        Icon(painterResource(R.drawable.ic_bell), contentDescription = stringResource(R.string.test_notification))
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
             )
         },
@@ -133,7 +149,7 @@ fun RemindersScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            item(key = "permission") { NotificationBanner(Modifier.contentWidth()) }
+            item(key = "permission") { NotificationBanner(notifications, Modifier.contentWidth()) }
             if (state.reminders.isNotEmpty()) {
                 item(key = "summary") { MonthSummary(state.dueThisMonth, Modifier.contentWidth()) }
             } else if (!state.isLoading) {
@@ -186,20 +202,8 @@ private fun MonthSummary(amount: Double, modifier: Modifier) {
 
 /** Explains that reminders can't arrive while notifications are off, with a way to turn them on. */
 @Composable
-private fun NotificationBanner(modifier: Modifier) {
-    val context = LocalContext.current
-    val notifier = remember(context) { ReminderNotifier(context) }
-    var enabled by remember { mutableStateOf(notifier.canNotify()) }
-    var asked by rememberSaveable { mutableStateOf(false) }
-    LifecycleResumeEffect(notifier) {
-        enabled = notifier.canNotify()
-        onPauseOrDispose {}
-    }
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
-        enabled = notifier.canNotify()
-    }
-    if (enabled) return
-
+private fun NotificationBanner(access: NotificationAccess, modifier: Modifier) {
+    if (access.enabled) return
     Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.primaryContainer, modifier = modifier) {
         Row(Modifier.padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(painterResource(R.drawable.ic_bell), contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
@@ -210,18 +214,7 @@ private fun NotificationBanner(modifier: Modifier) {
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.weight(1f),
             )
-            TextButton(onClick = {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !asked) {
-                    asked = true
-                    launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                } else {
-                    // Already refused once (or switched off in settings): only the settings screen can help.
-                    context.startActivity(
-                        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-                            .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName),
-                    )
-                }
-            }) { Text(stringResource(R.string.enable)) }
+            TextButton(onClick = access::request) { Text(stringResource(R.string.enable)) }
         }
     }
 }

@@ -39,12 +39,7 @@ class ReminderNotifier(private val context: Context) {
 
     fun notify(due: List<Pair<Reminder, DueStatus>>) {
         if (due.isEmpty() || !canNotify()) return
-        val open = PendingIntent.getActivity(
-            context,
-            0,
-            Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
-            PendingIntent.FLAG_IMMUTABLE,
-        )
+        val open = openApp()
         val manager = NotificationManagerCompat.from(context)
         try {
             due.forEach { (reminder, status) ->
@@ -75,6 +70,31 @@ class ReminderNotifier(private val context: Context) {
         }
     }
 
+    /** Posts a sample notification so the user can see that reminders will arrive. */
+    fun notifyTest(): Boolean {
+        if (!canNotify()) return false
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(context.getString(R.string.test_notification_title))
+            .setContentText(context.getString(R.string.test_notification_text))
+            .setContentIntent(openApp())
+            .setAutoCancel(true)
+            .build()
+        return try {
+            NotificationManagerCompat.from(context).notify(TEST_ID, notification)
+            true
+        } catch (_: SecurityException) {
+            false
+        }
+    }
+
+    private fun openApp(): PendingIntent = PendingIntent.getActivity(
+        context,
+        0,
+        Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
+        PendingIntent.FLAG_IMMUTABLE,
+    )
+
     private fun statusText(status: DueStatus): String = when (status) {
         is DueStatus.Overdue -> context.resources.getQuantityString(R.plurals.due_overdue, status.days, status.days)
         DueStatus.Today -> context.getString(R.string.due_today)
@@ -86,5 +106,6 @@ class ReminderNotifier(private val context: Context) {
         const val CHANNEL_ID = "payment_reminders"
         const val GROUP = "payment_reminders"
         const val SUMMARY_ID = Int.MAX_VALUE
+        const val TEST_ID = Int.MAX_VALUE - 1
     }
 }

@@ -63,6 +63,7 @@ import com.example.financemanager.ui.components.AddCategoryDialog
 import com.example.financemanager.ui.components.DateField
 import com.example.financemanager.ui.components.DatePickerSheet
 import com.example.financemanager.ui.components.FieldShape
+import com.example.financemanager.ui.components.rememberNotificationAccess
 import com.example.financemanager.ui.components.shakeOn
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,7 +77,11 @@ fun ReminderFormScreen(viewModel: ReminderFormViewModel, onBack: () -> Unit) {
     val snackbar = remember { SnackbarHostState() }
     val resources = LocalResources.current
 
+    val notifications = rememberNotificationAccess()
+
     LaunchedEffect(viewModel) { viewModel.done.collect { currentOnBack() } }
+    // A reminder only helps if it can notify, so ask while the user is setting one up.
+    LaunchedEffect(Unit) { if (!viewModel.isEditing) notifications.requestQuietly() }
     LaunchedEffect(viewModel) {
         viewModel.categoryAdded.collect { snackbar.showSnackbar(resources.getString(R.string.category_added, it)) }
     }
