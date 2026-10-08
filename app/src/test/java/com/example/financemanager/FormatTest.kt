@@ -15,10 +15,10 @@ import java.time.LocalDate
 class FormatTest {
     @Test
     fun moneyUsesCroatianSeparators() {
-        assertEquals("1.234,56 €", MoneyFormat.format(1234.56))
-        assertEquals("0,00 €", MoneyFormat.format(0.0))
-        assertEquals("+12,50 €", MoneyFormat.signed(12.5, isIncome = true))
-        assertEquals("−12,50 €", MoneyFormat.signed(12.5, isIncome = false))
+        assertEquals("1.234,56\u00A0€", MoneyFormat.format(1234.56))
+        assertEquals("0,00\u00A0€", MoneyFormat.format(0.0))
+        assertEquals("+12,50\u00A0€", MoneyFormat.signed(12.5, isIncome = true))
+        assertEquals("−12,50\u00A0€", MoneyFormat.signed(12.5, isIncome = false))
     }
 
     @Test

@@ -21,6 +21,18 @@ interface FinanceRepository {
     /** Sets the monthly budget of a category; null removes it. */
     suspend fun setBudget(category: Category, budget: Double?)
 
+    /**
+     * Renames and recolours a category. Its transactions (and, for expenses, payment
+     * reminders) follow the new name.
+     */
+    suspend fun updateCategory(category: Category, name: String, color: Int?)
+
+    /**
+     * Deletes a category. Its transactions and reminders move to [moveTo], or are left
+     * without a category when it is null. Moving into another category merges the two.
+     */
+    suspend fun deleteCategory(category: Category, moveTo: Category?)
+
     fun reminders(): Flow<List<Reminder>>
     suspend fun reminder(id: Long): Reminder?
     suspend fun saveReminder(reminder: Reminder)
@@ -70,6 +82,22 @@ class RoomFinanceRepository(private val db: AppDatabase) : FinanceRepository {
 
     override suspend fun setBudget(category: Category, budget: Double?) {
         db.categoryDao().setBudget(category.id, budget)
+    }
+
+    override suspend fun updateCategory(category: Category, name: String, color: Int?) = db.withTransaction {
+        db.categoryDao().update(category.copy(name = name, color = color))
+        if (name != category.name) moveCategoryData(category, name)
+    }
+
+    override suspend fun deleteCategory(category: Category, moveTo: Category?) = db.withTransaction {
+        moveCategoryData(category, moveTo?.name.orEmpty())
+        db.categoryDao().delete(category)
+    }
+
+    private suspend fun moveCategoryData(category: Category, to: String) {
+        db.transactionDao().moveCategory(category.name, to, category.type)
+        // Reminders always become expenses, so only expense categories are used there.
+        if (category.type == TransactionType.EXPENSE) db.reminderDao().moveCategory(category.name, to)
     }
 
     override fun reminders() = db.reminderDao().observeAll()

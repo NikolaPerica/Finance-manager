@@ -22,9 +22,12 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.toRoute
 import com.example.financemanager.FinanceApp
 import com.example.financemanager.data.FinanceRepository
+import com.example.financemanager.data.Transaction
 import com.example.financemanager.data.TransactionType
 import com.example.financemanager.ui.budgets.BudgetsScreen
 import com.example.financemanager.ui.budgets.BudgetsViewModel
+import com.example.financemanager.ui.categories.CategoriesScreen
+import com.example.financemanager.ui.categories.CategoriesViewModel
 import com.example.financemanager.ui.components.EmphasizedDecelerate
 import com.example.financemanager.ui.dashboard.DashboardScreen
 import com.example.financemanager.ui.dashboard.DashboardViewModel
@@ -37,6 +40,8 @@ import com.example.financemanager.ui.stats.StatsScreen
 import com.example.financemanager.ui.stats.StatsViewModel
 import com.example.financemanager.ui.transaction.TransactionFormScreen
 import com.example.financemanager.ui.transaction.TransactionFormViewModel
+import com.example.financemanager.ui.transactions.TransactionsScreen
+import com.example.financemanager.ui.transactions.TransactionsViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -62,6 +67,12 @@ data object StatsRoute
 @Serializable
 data object BudgetsRoute
 
+@Serializable
+data object TransactionsRoute
+
+@Serializable
+data object CategoriesRoute
+
 /** [id] of the reminder to edit, or [NEW] for a new one. */
 @Serializable
 data class ReminderFormRoute(val id: Long = NEW) {
@@ -69,6 +80,8 @@ data class ReminderFormRoute(val id: Long = NEW) {
         const val NEW = -1L
     }
 }
+
+private fun Transaction.editRoute() = TransactionFormRoute(isIncome = type == TransactionType.INCOME, id = id)
 
 private fun CreationExtras.repository(): FinanceRepository = (this[APPLICATION_KEY] as FinanceApp).repository
 
@@ -107,9 +120,9 @@ fun FinanceNavHost() {
                 onAddReminder = { navController.navigate(ReminderFormRoute()) },
                 onOpenStats = { navController.navigate(StatsRoute) },
                 onOpenBudgets = { navController.navigate(BudgetsRoute) },
-                onEditTransaction = {
-                    navController.navigate(TransactionFormRoute(isIncome = it.type == TransactionType.INCOME, id = it.id))
-                },
+                onEditTransaction = { navController.navigate(it.editRoute()) },
+                onOpenTransactions = { navController.navigate(TransactionsRoute) },
+                onOpenCategories = { navController.navigate(CategoriesRoute) },
             )
         }
         composable<TransactionFormRoute> { entry ->
@@ -118,6 +131,20 @@ fun FinanceNavHost() {
             val id = route.id.takeIf { it != TransactionFormRoute.NEW }
             TransactionFormScreen(
                 viewModel = viewModel(factory = viewModelFactory { initializer { TransactionFormViewModel(type, repository(), id) } }),
+                // Back to wherever the form was opened from (dashboard or the transaction list).
+                onBack = { if (navController.currentDestination?.hasRoute<TransactionFormRoute>() == true) navController.popBackStack() },
+            )
+        }
+        composable<TransactionsRoute> {
+            TransactionsScreen(
+                viewModel = viewModel(factory = viewModelFactory { initializer { TransactionsViewModel(repository()) } }),
+                onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
+                onEdit = { navController.navigate(it.editRoute()) },
+            )
+        }
+        composable<CategoriesRoute> {
+            CategoriesScreen(
+                viewModel = viewModel(factory = viewModelFactory { initializer { CategoriesViewModel(repository()) } }),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
             )
         }

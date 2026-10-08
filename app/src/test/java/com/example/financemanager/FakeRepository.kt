@@ -46,6 +46,25 @@ class FakeRepository : FinanceRepository {
         categories.update { list -> list.map { if (it.id == category.id) it.copy(monthlyBudget = budget) else it } }
     }
 
+    override suspend fun updateCategory(category: Category, name: String, color: Int?) {
+        categories.update { list -> list.map { if (it.id == category.id) it.copy(name = name, color = color) else it } }
+        if (name != category.name) moveCategoryData(category, name)
+    }
+
+    override suspend fun deleteCategory(category: Category, moveTo: Category?) {
+        moveCategoryData(category, moveTo?.name.orEmpty())
+        categories.update { list -> list.filterNot { it.id == category.id } }
+    }
+
+    private fun moveCategoryData(category: Category, to: String) {
+        transactions.update { list ->
+            list.map { if (it.type == category.type && it.category == category.name) it.copy(category = to) else it }
+        }
+        if (category.type == TransactionType.EXPENSE) {
+            reminders.update { list -> list.map { if (it.category == category.name) it.copy(category = to) else it } }
+        }
+    }
+
     override fun reminders() = reminders
 
     override suspend fun reminder(id: Long) = reminders.value.find { it.id == id }

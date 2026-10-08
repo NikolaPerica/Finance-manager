@@ -12,7 +12,8 @@ val Croatian: Locale = Locale.forLanguageTag("hr-HR")
 object MoneyFormat {
     private val format = ThreadLocal.withInitial { DecimalFormat("#,##0.00", DecimalFormatSymbols(Croatian)) }
 
-    fun format(amount: Double): String = "${format.get()!!.format(amount)} €"
+    // A no-break space keeps the euro sign on the same line as the number.
+    fun format(amount: Double): String = "${format.get()!!.format(amount)}\u00A0€"
 
     fun signed(amount: Double, isIncome: Boolean): String = (if (isIncome) "+" else "−") + format(amount)
 }

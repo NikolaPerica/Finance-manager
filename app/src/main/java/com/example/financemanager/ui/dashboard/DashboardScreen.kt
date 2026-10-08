@@ -25,8 +25,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -65,7 +68,9 @@ import com.example.financemanager.ui.budgets.BudgetBar
 import com.example.financemanager.ui.budgets.BudgetSummary
 import com.example.financemanager.ui.budgets.LevelChip
 import com.example.financemanager.ui.budgets.levelColor
+import com.example.financemanager.ui.components.TransactionRow
 import com.example.financemanager.ui.components.TransactionTypeBadge
+import com.example.financemanager.ui.components.rememberCategoryColors
 import com.example.financemanager.ui.components.animatedAmount
 import com.example.financemanager.ui.components.staggeredEntrance
 import com.example.financemanager.ui.components.SwipeToDelete
@@ -88,12 +93,15 @@ fun DashboardScreen(
     onOpenStats: () -> Unit,
     onOpenBudgets: () -> Unit,
     onEditTransaction: (Transaction) -> Unit,
+    onOpenTransactions: () -> Unit,
+    onOpenCategories: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val deletedText = stringResource(R.string.transaction_deleted)
     val undoText = stringResource(R.string.undo)
+    val categoryColors = rememberCategoryColors(state.categories)
 
     // Intro animation plays on first open only, not when coming back from the form.
     var introPlayed by rememberSaveable { mutableStateOf(false) }
@@ -117,7 +125,7 @@ fun DashboardScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             item(key = "header") {
-                Header(onOpenStats, Modifier.contentWidth().staggeredEntrance(0, playIntro))
+                Header(onOpenStats, onOpenCategories, onOpenBudgets, onOpenReminders, Modifier.contentWidth().staggeredEntrance(0, playIntro))
             }
             item(key = "balance") {
                 BalanceCard(state, Modifier.contentWidth().padding(top = 8.dp).staggeredEntrance(1, playIntro))
@@ -162,7 +170,11 @@ fun DashboardScreen(
                     stringResource(R.string.recent_transactions),
                     Modifier.contentWidth().padding(top = 8.dp).staggeredEntrance(5, playIntro),
                 ) {
-                    Chip(state.transactions.size.toString())
+                    if (state.transactionCount > 0) {
+                        TextButton(onClick = onOpenTransactions) {
+                            Text(stringResource(R.string.see_all_count, state.transactionCount))
+                        }
+                    }
                 }
             }
             if (!state.isLoading && state.transactions.isEmpty()) {
@@ -182,7 +194,7 @@ fun DashboardScreen(
                     },
                     modifier = Modifier.contentWidth().animateItem(),
                 ) {
-                    TransactionRow(transaction, onClick = { onEditTransaction(transaction) })
+                    TransactionRow(transaction, onClick = { onEditTransaction(transaction) }, categoryColor = categoryColors(transaction))
                 }
             }
         }
@@ -193,7 +205,13 @@ fun DashboardScreen(
 private fun Modifier.contentWidth() = widthIn(max = 640.dp).fillMaxWidth()
 
 @Composable
-private fun Header(onOpenStats: () -> Unit, modifier: Modifier) {
+private fun Header(
+    onOpenStats: () -> Unit,
+    onOpenCategories: () -> Unit,
+    onOpenBudgets: () -> Unit,
+    onOpenReminders: () -> Unit,
+    modifier: Modifier,
+) {
     val greeting = when (LocalTime.now().hour) {
         in 5..11 -> R.string.greeting_morning
         in 12..17 -> R.string.greeting_day
@@ -208,6 +226,28 @@ private fun Header(onOpenStats: () -> Unit, modifier: Modifier) {
         Spacer(Modifier.width(8.dp))
         FilledTonalIconButton(onClick = onOpenStats) {
             Icon(painterResource(R.drawable.ic_chart), contentDescription = stringResource(R.string.open_stats))
+        }
+        Box {
+            var menuOpen by remember { mutableStateOf(false) }
+            IconButton(onClick = { menuOpen = true }) {
+                Icon(painterResource(R.drawable.ic_more_vert), contentDescription = stringResource(R.string.more_options))
+            }
+            DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                listOf(
+                    Triple(R.string.categories_title, R.drawable.ic_label, onOpenCategories),
+                    Triple(R.string.budgets_title, R.drawable.ic_wallet, onOpenBudgets),
+                    Triple(R.string.reminders_title, R.drawable.ic_bell, onOpenReminders),
+                ).forEach { (label, icon, action) ->
+                    DropdownMenuItem(
+                        text = { Text(stringResource(label)) },
+                        leadingIcon = { Icon(painterResource(icon), contentDescription = null) },
+                        onClick = {
+                            menuOpen = false
+                            action()
+                        },
+                    )
+                }
+            }
         }
     }
 }
@@ -463,50 +503,6 @@ private fun EmptyState(modifier: Modifier) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
-            )
-        }
-    }
-}
-
-
-@Composable
-private fun TransactionRow(transaction: Transaction, onClick: () -> Unit) {
-    val isIncome = transaction.type == TransactionType.INCOME
-    val today = LocalDate.now()
-    val dateText = when (transaction.date) {
-        today -> stringResource(R.string.today)
-        today.minusDays(1) -> stringResource(R.string.yesterday)
-        else -> DateFormat.short(transaction.date)
-    }
-    Surface(
-        onClick = onClick,
-        shape = CardShape,
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-    ) {
-        Row(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-            TransactionTypeBadge(isIncome)
-            Spacer(Modifier.width(14.dp))
-            Column(Modifier.weight(1f)) {
-                Text(
-                    transaction.category.ifBlank { stringResource(if (isIncome) R.string.prihod else R.string.rashod) },
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    listOf(dateText, transaction.note).filter { it.isNotBlank() }.joinToString(" • "),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-            Spacer(Modifier.width(12.dp))
-            Text(
-                MoneyFormat.signed(transaction.amount, isIncome),
-                style = MaterialTheme.typography.titleMedium,
-                color = if (isIncome) FinanceTheme.colors.income else FinanceTheme.colors.expense,
             )
         }
     }

@@ -24,7 +24,15 @@ data class Category(
     val type: TransactionType,
     /** Monthly spending limit for an expense category, or null for none. */
     val monthlyBudget: Double? = null,
-)
+    /** Index into the category colour palette, or null to derive one from [id]. */
+    val color: Int? = null,
+) {
+    /** Palette slot this category is drawn with; stable for its whole life. */
+    val colorIndex: Int get() = color ?: (id % CATEGORY_COLOR_COUNT).toInt()
+}
+
+/** Number of colours a category can be given. */
+const val CATEGORY_COLOR_COUNT = 8
 
 @Entity(tableName = "transactions")
 data class Transaction(

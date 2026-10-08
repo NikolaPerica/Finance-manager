@@ -30,6 +30,8 @@ data class FinanceColors(
     val warning: Color,
     val warningContainer: Color,
     val gradient: List<Color>,
+    /** One colour per category slot, see [com.example.financemanager.data.Category.colorIndex]. */
+    val categories: List<Color>,
 )
 
 private val LightScheme = lightColorScheme(
@@ -92,6 +94,10 @@ private val LightFinanceColors = FinanceColors(
     warning = Color(0xFFB86E00),
     warningContainer = Color(0xFFFFF0D6),
     gradient = listOf(Color(0xFF4F46E5), Color(0xFF7C3AED), Color(0xFFC026D3)),
+    categories = listOf(
+        Color(0xFF2A78D6), Color(0xFFEB6834), Color(0xFF1BAF7A), Color(0xFFEDA100),
+        Color(0xFFE87BA4), Color(0xFF008300), Color(0xFF4A3AA7), Color(0xFFE34948),
+    ),
 )
 
 private val DarkFinanceColors = FinanceColors(
@@ -102,6 +108,10 @@ private val DarkFinanceColors = FinanceColors(
     warning = Color(0xFFF5B547),
     warningContainer = Color(0xFF3A2A0E),
     gradient = listOf(Color(0xFF4338CA), Color(0xFF6D28D9), Color(0xFFA21CAF)),
+    categories = listOf(
+        Color(0xFF3987E5), Color(0xFFD95926), Color(0xFF199E70), Color(0xFFC98500),
+        Color(0xFFD55181), Color(0xFF008300), Color(0xFF9085E9), Color(0xFFE66767),
+    ),
 )
 
 private val LocalFinanceColors = staticCompositionLocalOf { LightFinanceColors }
