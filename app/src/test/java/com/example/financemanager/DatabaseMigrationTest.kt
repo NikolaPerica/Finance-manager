@@ -7,6 +7,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.financemanager.data.AppDatabase
 import com.example.financemanager.data.MIGRATION_1_2
+import com.example.financemanager.data.MIGRATION_2_3
 import com.example.financemanager.data.PaymentPeriod
 import com.example.financemanager.data.Reminder
 import com.example.financemanager.data.RoomFinanceRepository
@@ -14,6 +15,7 @@ import com.example.financemanager.data.TransactionType
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.json.JSONObject
@@ -25,9 +27,9 @@ import java.time.LocalDate
 class DatabaseMigrationTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
 
-    /** Creates the database exactly as version 1 of the app left it, from the exported schema. */
-    private fun createVersion1(fill: (SQLiteDatabase) -> Unit) {
-        val schema = JSONObject(File("schemas/${AppDatabase::class.java.name}/1.json").readText()).getJSONObject("database")
+    /** Creates the database exactly as [version] of the app left it, from the exported schema. */
+    private fun createVersion(version: Int, fill: (SQLiteDatabase) -> Unit) {
+        val schema = JSONObject(File("schemas/${AppDatabase::class.java.name}/$version.json").readText()).getJSONObject("database")
         val file = context.getDatabasePath(DB).apply { parentFile!!.mkdirs(); delete() }
         SQLiteDatabase.openOrCreateDatabase(file, null).use { db ->
             val entities = schema.getJSONArray("entities")
@@ -37,14 +39,14 @@ class DatabaseMigrationTest {
             }
             val setup = schema.getJSONArray("setupQueries")
             for (i in 0 until setup.length()) db.execSQL(setup.getString(i))
-            db.version = 1
+            db.version = version
             fill(db)
         }
     }
 
     @Test
     fun version1DataSurvivesTheUpgrade() = runBlocking {
-        createVersion1 { db ->
+        createVersion(1) { db ->
             db.execSQL("INSERT INTO categories (id, name, type) VALUES (1, 'Hrana', 'EXPENSE')")
             db.execSQL(
                 "INSERT INTO transactions (id, amount, date, note, category, type) " +
@@ -52,9 +54,9 @@ class DatabaseMigrationTest {
             )
         }
 
-        // Room checks the migrated tables against the version 2 schema when it opens.
+        // Room checks the migrated tables against the current schema when it opens.
         val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
-            .addMigrations(MIGRATION_1_2)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
             .build()
         try {
             val transaction = db.transactionDao().observeAll().first().single()
@@ -67,6 +69,34 @@ class DatabaseMigrationTest {
                 Reminder(name = "Struja", amount = 40.0, period = PaymentPeriod.MONTHLY, firstDueDate = LocalDate.of(2026, 10, 15)),
             )
             assertEquals("Struja", db.reminderDao().getAll().single().name)
+        } finally {
+            db.close()
+        }
+    }
+
+    @Test
+    fun version2GetsEmptyBudgets() = runBlocking {
+        createVersion(2) { db ->
+            db.execSQL("INSERT INTO categories (id, name, type) VALUES (1, 'Hrana', 'EXPENSE')")
+            db.execSQL(
+                "INSERT INTO reminders (id, name, amount, period, firstDueDate, paidCount, category, note) " +
+                    "VALUES (1, 'Struja', 40.0, 'MONTHLY', '2026-10-15', 2, 'Režije', '')",
+            )
+        }
+
+        val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+            .build()
+        try {
+            val repository = RoomFinanceRepository(db)
+            val category = repository.categories(TransactionType.EXPENSE).first().single()
+            assertNull(category.monthlyBudget)
+            assertEquals(2, repository.reminder(1)!!.paidCount)
+
+            repository.setBudget(category, 300.0)
+            assertEquals(300.0, repository.categories(TransactionType.EXPENSE).first().single().monthlyBudget!!, 0.0)
+            repository.setBudget(category, null)
+            assertNull(repository.categories(TransactionType.EXPENSE).first().single().monthlyBudget)
         } finally {
             db.close()
         }

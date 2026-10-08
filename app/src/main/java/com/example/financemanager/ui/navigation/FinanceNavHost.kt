@@ -23,6 +23,8 @@ import androidx.navigation.toRoute
 import com.example.financemanager.FinanceApp
 import com.example.financemanager.data.FinanceRepository
 import com.example.financemanager.data.TransactionType
+import com.example.financemanager.ui.budgets.BudgetsScreen
+import com.example.financemanager.ui.budgets.BudgetsViewModel
 import com.example.financemanager.ui.components.EmphasizedDecelerate
 import com.example.financemanager.ui.dashboard.DashboardScreen
 import com.example.financemanager.ui.dashboard.DashboardViewModel
@@ -43,14 +45,22 @@ data object LoginRoute
 @Serializable
 data object DashboardRoute
 
+/** [id] of the transaction to edit, or [NEW] for a new one. */
 @Serializable
-data class TransactionFormRoute(val isIncome: Boolean)
+data class TransactionFormRoute(val isIncome: Boolean, val id: Long = NEW) {
+    companion object {
+        const val NEW = -1L
+    }
+}
 
 @Serializable
 data object RemindersRoute
 
 @Serializable
 data object StatsRoute
+
+@Serializable
+data object BudgetsRoute
 
 /** [id] of the reminder to edit, or [NEW] for a new one. */
 @Serializable
@@ -96,12 +106,24 @@ fun FinanceNavHost() {
                 onOpenReminders = { navController.navigate(RemindersRoute) },
                 onAddReminder = { navController.navigate(ReminderFormRoute()) },
                 onOpenStats = { navController.navigate(StatsRoute) },
+                onOpenBudgets = { navController.navigate(BudgetsRoute) },
+                onEditTransaction = {
+                    navController.navigate(TransactionFormRoute(isIncome = it.type == TransactionType.INCOME, id = it.id))
+                },
             )
         }
         composable<TransactionFormRoute> { entry ->
-            val type = if (entry.toRoute<TransactionFormRoute>().isIncome) TransactionType.INCOME else TransactionType.EXPENSE
+            val route = entry.toRoute<TransactionFormRoute>()
+            val type = if (route.isIncome) TransactionType.INCOME else TransactionType.EXPENSE
+            val id = route.id.takeIf { it != TransactionFormRoute.NEW }
             TransactionFormScreen(
-                viewModel = viewModel(factory = viewModelFactory { initializer { TransactionFormViewModel(type, repository()) } }),
+                viewModel = viewModel(factory = viewModelFactory { initializer { TransactionFormViewModel(type, repository(), id) } }),
+                onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
+            )
+        }
+        composable<BudgetsRoute> {
+            BudgetsScreen(
+                viewModel = viewModel(factory = viewModelFactory { initializer { BudgetsViewModel(repository()) } }),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
             )
         }

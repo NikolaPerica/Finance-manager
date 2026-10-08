@@ -50,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -60,6 +61,10 @@ import com.example.financemanager.data.Transaction
 import com.example.financemanager.data.TransactionType
 import com.example.financemanager.ui.DateFormat
 import com.example.financemanager.ui.MoneyFormat
+import com.example.financemanager.ui.budgets.BudgetBar
+import com.example.financemanager.ui.budgets.BudgetSummary
+import com.example.financemanager.ui.budgets.LevelChip
+import com.example.financemanager.ui.budgets.levelColor
 import com.example.financemanager.ui.components.TransactionTypeBadge
 import com.example.financemanager.ui.components.animatedAmount
 import com.example.financemanager.ui.components.staggeredEntrance
@@ -81,6 +86,8 @@ fun DashboardScreen(
     onOpenReminders: () -> Unit,
     onAddReminder: () -> Unit,
     onOpenStats: () -> Unit,
+    onOpenBudgets: () -> Unit,
+    onEditTransaction: (Transaction) -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
@@ -122,6 +129,11 @@ fun DashboardScreen(
                 ) {
                     ActionCard(true, onAddIncome, Modifier.weight(1f))
                     ActionCard(false, onAddExpense, Modifier.weight(1f))
+                }
+            }
+            if (!state.isLoading) {
+                item(key = "budget") {
+                    BudgetCard(state.budget, onOpenBudgets, Modifier.contentWidth().staggeredEntrance(3, playIntro))
                 }
             }
             item(key = "upcomingHeader") {
@@ -170,7 +182,7 @@ fun DashboardScreen(
                     },
                     modifier = Modifier.contentWidth().animateItem(),
                 ) {
-                    TransactionRow(transaction)
+                    TransactionRow(transaction, onClick = { onEditTransaction(transaction) })
                 }
             }
         }
@@ -317,6 +329,66 @@ private fun ActionCard(isIncome: Boolean, onClick: () -> Unit, modifier: Modifie
 }
 
 @Composable
+private fun BudgetCard(summary: BudgetSummary?, onClick: () -> Unit, modifier: Modifier) {
+    Surface(
+        onClick = onClick,
+        shape = CardShape,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        modifier = modifier,
+    ) {
+        if (summary == null) {
+            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier.size(44.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painterResource(R.drawable.ic_wallet),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
+                Spacer(Modifier.width(14.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.budget_cta), style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        stringResource(R.string.budget_cta_subtitle),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Icon(painterResource(R.drawable.ic_add), contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            }
+            return@Surface
+        }
+        Column(Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.budget_card_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                LevelChip(summary.level)
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                stringResource(R.string.budget_spent_of, MoneyFormat.format(summary.spent), MoneyFormat.format(summary.budget)),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(10.dp))
+            BudgetBar(summary.fraction, color = levelColor(summary.level), track = MaterialTheme.colorScheme.surfaceContainerHighest)
+            if (summary.exceeded > 0) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    pluralStringResource(R.plurals.budgets_exceeded, summary.exceeded, summary.exceeded),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = FinanceTheme.colors.expense,
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun SectionHeader(title: String, modifier: Modifier, trailing: @Composable () -> Unit) {
     Row(modifier.heightIn(min = 40.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
@@ -398,7 +470,7 @@ private fun EmptyState(modifier: Modifier) {
 
 
 @Composable
-private fun TransactionRow(transaction: Transaction) {
+private fun TransactionRow(transaction: Transaction, onClick: () -> Unit) {
     val isIncome = transaction.type == TransactionType.INCOME
     val today = LocalDate.now()
     val dateText = when (transaction.date) {
@@ -407,6 +479,7 @@ private fun TransactionRow(transaction: Transaction) {
         else -> DateFormat.short(transaction.date)
     }
     Surface(
+        onClick = onClick,
         shape = CardShape,
         color = MaterialTheme.colorScheme.surfaceContainer,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),

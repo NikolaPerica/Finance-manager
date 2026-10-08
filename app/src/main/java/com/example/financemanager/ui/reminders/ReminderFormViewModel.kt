@@ -7,7 +7,7 @@ import com.example.financemanager.data.FinanceRepository
 import com.example.financemanager.data.PaymentPeriod
 import com.example.financemanager.data.Reminder
 import com.example.financemanager.data.TransactionType
-import com.example.financemanager.ui.Croatian
+import com.example.financemanager.ui.amountInputText
 import com.example.financemanager.ui.components.CategoryNameError
 import com.example.financemanager.ui.components.categoryNameError
 import com.example.financemanager.ui.isValidAmountInput
@@ -21,8 +21,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
 import java.time.LocalDate
 
 data class ReminderFormState(
@@ -73,7 +71,7 @@ class ReminderFormViewModel(
                     reminder?.let {
                         current.copy(
                             name = it.name,
-                            amount = AmountText.get()!!.format(it.amount),
+                            amount = amountInputText(it.amount),
                             dueDate = it.nextDueDate,
                             period = it.period,
                             category = it.category,
@@ -155,11 +153,5 @@ class ReminderFormViewModel(
             repository.deleteReminder(reminder)
             _done.send(Unit)
         }
-    }
-
-    private companion object {
-        // Plain "1234,5" so the stored amount round-trips through the amount field.
-        val AmountText: ThreadLocal<DecimalFormat> =
-            ThreadLocal.withInitial { DecimalFormat("0.##", DecimalFormatSymbols(Croatian)) }
     }
 }

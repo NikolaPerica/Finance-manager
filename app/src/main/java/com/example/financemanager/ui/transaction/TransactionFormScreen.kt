@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,6 +38,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
@@ -52,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -63,6 +66,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financemanager.R
 import com.example.financemanager.data.Category
 import com.example.financemanager.data.TransactionType
+import com.example.financemanager.notifications.BudgetNotifier
 import com.example.financemanager.ui.components.AddCategoryDialog
 import com.example.financemanager.ui.components.DateField
 import com.example.financemanager.ui.components.DatePickerSheet
@@ -82,11 +86,17 @@ fun TransactionFormScreen(viewModel: TransactionFormViewModel, onBack: () -> Uni
     val snackbar = remember { SnackbarHostState() }
     val currentOnBack by rememberUpdatedState(onBack)
     val resources = LocalResources.current
+    val context = LocalContext.current
+    var confirmDelete by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
-                FormEvent.Saved -> currentOnBack()
+                is FormEvent.Saved -> {
+                    event.budgetAlert?.let { BudgetNotifier(context).notify(it) }
+                    currentOnBack()
+                }
+                FormEvent.Deleted -> currentOnBack()
                 is FormEvent.CategoryAdded -> snackbar.showSnackbar(resources.getString(R.string.category_added, event.name))
             }
         }
@@ -102,10 +112,28 @@ fun TransactionFormScreen(viewModel: TransactionFormViewModel, onBack: () -> Uni
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(if (isIncome) R.string.novi_prihod else R.string.novi_rashod)) },
+                title = {
+                    Text(
+                        stringResource(
+                            when {
+                                viewModel.isEditing && isIncome -> R.string.uredi_prihod
+                                viewModel.isEditing -> R.string.uredi_rashod
+                                isIncome -> R.string.novi_prihod
+                                else -> R.string.novi_rashod
+                            },
+                        ),
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = stringResource(R.string.natrag))
+                    }
+                },
+                actions = {
+                    if (viewModel.isEditing) {
+                        IconButton(onClick = { confirmDelete = true }) {
+                            Icon(painterResource(R.drawable.ic_delete), contentDescription = stringResource(R.string.delete))
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
@@ -114,7 +142,7 @@ fun TransactionFormScreen(viewModel: TransactionFormViewModel, onBack: () -> Uni
         bottomBar = {
             Button(
                 onClick = viewModel::save,
-                enabled = !state.isSaving,
+                enabled = state.isLoaded && !state.isSaving,
                 shape = RoundedCornerShape(18.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -196,6 +224,20 @@ fun TransactionFormScreen(viewModel: TransactionFormViewModel, onBack: () -> Uni
                 viewModel.onDateChange(it)
                 showDatePicker = false
             },
+        )
+    }
+    if (confirmDelete) {
+        AlertDialog(
+            onDismissRequest = { confirmDelete = false },
+            title = { Text(stringResource(R.string.delete_transaction_title)) },
+            text = { Text(stringResource(R.string.delete_transaction_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmDelete = false
+                    viewModel.delete()
+                }) { Text(stringResource(R.string.delete)) }
+            },
+            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.odustani)) } },
         )
     }
     if (showAddCategory) {

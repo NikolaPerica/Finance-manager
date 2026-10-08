@@ -26,6 +26,12 @@ class FakeRepository : FinanceRepository {
         transactions.update { it + transaction.copy(id = transaction.id.takeIf { id -> id != 0L } ?: nextId++) }
     }
 
+    override suspend fun transaction(id: Long) = transactions.value.find { it.id == id }
+
+    override suspend fun updateTransaction(transaction: Transaction) {
+        transactions.update { list -> list.map { if (it.id == transaction.id) transaction else it } }
+    }
+
     override suspend fun deleteTransaction(transaction: Transaction) {
         transactions.update { list -> list.filterNot { it.id == transaction.id } }
     }
@@ -34,6 +40,10 @@ class FakeRepository : FinanceRepository {
 
     override suspend fun addCategory(name: String, type: TransactionType) {
         categories.update { it + Category(id = nextId++, name = name, type = type) }
+    }
+
+    override suspend fun setBudget(category: Category, budget: Double?) {
+        categories.update { list -> list.map { if (it.id == category.id) it.copy(monthlyBudget = budget) else it } }
     }
 
     override fun reminders() = reminders

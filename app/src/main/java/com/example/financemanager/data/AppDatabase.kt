@@ -10,7 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [Category::class, Transaction::class, Reminder::class],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -24,7 +24,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun create(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, NAME)
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build()
     }
 }
@@ -47,5 +47,12 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
                 "`category` TEXT NOT NULL, " +
                 "`note` TEXT NOT NULL)",
         )
+    }
+}
+
+/** Version 3 adds an optional monthly budget to categories. */
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `categories` ADD COLUMN `monthlyBudget` REAL")
     }
 }

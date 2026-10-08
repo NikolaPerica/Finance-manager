@@ -19,6 +19,9 @@ interface CategoryDao {
     @Update
     suspend fun update(category: Category)
 
+    @Query("UPDATE categories SET monthlyBudget = :budget WHERE id = :id")
+    suspend fun setBudget(id: Long, budget: Double?)
+
     @Delete
     suspend fun delete(category: Category)
 }
@@ -27,6 +30,9 @@ interface CategoryDao {
 interface TransactionDao {
     @Query("SELECT * FROM transactions ORDER BY date DESC, id DESC")
     fun observeAll(): Flow<List<Transaction>>
+
+    @Query("SELECT * FROM transactions WHERE id = :id")
+    suspend fun get(id: Long): Transaction?
 
     @Insert
     suspend fun insert(transaction: Transaction): Long

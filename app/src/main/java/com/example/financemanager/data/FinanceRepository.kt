@@ -10,11 +10,16 @@ data class ReminderPayment(val before: Reminder, val transactionId: Long)
 /** Single entry point the UI uses to read and change finance data. */
 interface FinanceRepository {
     fun transactions(): Flow<List<Transaction>>
+    suspend fun transaction(id: Long): Transaction?
     suspend fun addTransaction(transaction: Transaction)
+    suspend fun updateTransaction(transaction: Transaction)
     suspend fun deleteTransaction(transaction: Transaction)
 
     fun categories(type: TransactionType): Flow<List<Category>>
     suspend fun addCategory(name: String, type: TransactionType)
+
+    /** Sets the monthly budget of a category; null removes it. */
+    suspend fun setBudget(category: Category, budget: Double?)
 
     fun reminders(): Flow<List<Reminder>>
     suspend fun reminder(id: Long): Reminder?
@@ -43,8 +48,14 @@ fun Reminder.toExpense(paidOn: LocalDate) = Transaction(
 class RoomFinanceRepository(private val db: AppDatabase) : FinanceRepository {
     override fun transactions() = db.transactionDao().observeAll()
 
+    override suspend fun transaction(id: Long) = db.transactionDao().get(id)
+
     override suspend fun addTransaction(transaction: Transaction) {
         db.transactionDao().insert(transaction)
+    }
+
+    override suspend fun updateTransaction(transaction: Transaction) {
+        db.transactionDao().update(transaction)
     }
 
     override suspend fun deleteTransaction(transaction: Transaction) {
@@ -55,6 +66,10 @@ class RoomFinanceRepository(private val db: AppDatabase) : FinanceRepository {
 
     override suspend fun addCategory(name: String, type: TransactionType) {
         db.categoryDao().insert(Category(name = name, type = type))
+    }
+
+    override suspend fun setBudget(category: Category, budget: Double?) {
+        db.categoryDao().setBudget(category.id, budget)
     }
 
     override fun reminders() = db.reminderDao().observeAll()

@@ -59,7 +59,7 @@ class TransactionFormViewModelTest {
         viewModel.onNoteChange("  ručak ")
         viewModel.save()
 
-        assertEquals(FormEvent.Saved, viewModel.events.first())
+        assertEquals(FormEvent.Saved(), viewModel.events.first())
         val saved = repository.transactions.value.single()
         assertEquals(12.5, saved.amount, 0.0)
         assertEquals("Hrana", saved.category)
