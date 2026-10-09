@@ -61,7 +61,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financemanager.R
 import com.example.financemanager.data.Transaction
-import com.example.financemanager.data.TransactionType
 import com.example.financemanager.ui.DateFormat
 import com.example.financemanager.ui.MoneyFormat
 import com.example.financemanager.ui.budgets.BudgetBar
@@ -69,6 +68,7 @@ import com.example.financemanager.ui.budgets.BudgetSummary
 import com.example.financemanager.ui.budgets.LevelChip
 import com.example.financemanager.ui.budgets.levelColor
 import com.example.financemanager.ui.components.TransactionRow
+import com.example.financemanager.ui.goals.GoalCard
 import com.example.financemanager.ui.components.TransactionTypeBadge
 import com.example.financemanager.ui.components.rememberCategoryColors
 import com.example.financemanager.ui.components.animatedAmount
@@ -95,6 +95,9 @@ fun DashboardScreen(
     onEditTransaction: (Transaction) -> Unit,
     onOpenTransactions: () -> Unit,
     onOpenCategories: () -> Unit,
+    onOpenGoals: () -> Unit,
+    onOpenGoal: (Long) -> Unit,
+    onAddGoal: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
@@ -125,7 +128,7 @@ fun DashboardScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             item(key = "header") {
-                Header(onOpenStats, onOpenCategories, onOpenBudgets, onOpenReminders, Modifier.contentWidth().staggeredEntrance(0, playIntro))
+                Header(onOpenStats, onOpenCategories, onOpenBudgets, onOpenGoals, onOpenReminders, Modifier.contentWidth().staggeredEntrance(0, playIntro))
             }
             item(key = "balance") {
                 BalanceCard(state, Modifier.contentWidth().padding(top = 8.dp).staggeredEntrance(1, playIntro))
@@ -163,6 +166,29 @@ fun DashboardScreen(
                     today = LocalDate.now(),
                     onClick = onOpenReminders,
                     modifier = Modifier.contentWidth().animateItem().staggeredEntrance(4, playIntro),
+                )
+            }
+            item(key = "goalsHeader") {
+                SectionHeader(
+                    stringResource(R.string.goals_title),
+                    Modifier.contentWidth().padding(top = 8.dp).staggeredEntrance(5, playIntro),
+                ) {
+                    if (state.hasGoals) TextButton(onClick = onOpenGoals) { Text(stringResource(R.string.see_all)) }
+                }
+            }
+            if (!state.isLoading && state.goals.isEmpty()) {
+                item(key = "goalsCta") {
+                    GoalsCta(
+                        onClick = if (state.hasGoals) onOpenGoals else onAddGoal,
+                        modifier = Modifier.contentWidth().animateItem().staggeredEntrance(5, playIntro),
+                    )
+                }
+            }
+            items(state.goals, key = { "goal-${it.goal.id}" }) { progress ->
+                GoalCard(
+                    progress,
+                    onClick = { onOpenGoal(progress.goal.id) },
+                    modifier = Modifier.contentWidth().animateItem().staggeredEntrance(5, playIntro),
                 )
             }
             item(key = "recentHeader") {
@@ -209,6 +235,7 @@ private fun Header(
     onOpenStats: () -> Unit,
     onOpenCategories: () -> Unit,
     onOpenBudgets: () -> Unit,
+    onOpenGoals: () -> Unit,
     onOpenReminders: () -> Unit,
     modifier: Modifier,
 ) {
@@ -236,6 +263,7 @@ private fun Header(
                 listOf(
                     Triple(R.string.categories_title, R.drawable.ic_label, onOpenCategories),
                     Triple(R.string.budgets_title, R.drawable.ic_wallet, onOpenBudgets),
+                    Triple(R.string.goals_title, R.drawable.ic_savings, onOpenGoals),
                     Triple(R.string.reminders_title, R.drawable.ic_bell, onOpenReminders),
                 ).forEach { (label, icon, action) ->
                     DropdownMenuItem(
@@ -424,6 +452,41 @@ private fun BudgetCard(summary: BudgetSummary?, onClick: () -> Unit, modifier: M
                     color = FinanceTheme.colors.expense,
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun GoalsCta(onClick: () -> Unit, modifier: Modifier) {
+    Surface(
+        onClick = onClick,
+        shape = CardShape,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        modifier = modifier,
+    ) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier.size(44.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painterResource(R.drawable.ic_savings),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(22.dp),
+                )
+            }
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.goals_cta), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    stringResource(R.string.goals_cta_subtitle),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Icon(painterResource(R.drawable.ic_add), contentDescription = null, tint = MaterialTheme.colorScheme.primary)
         }
     }
 }

@@ -33,6 +33,19 @@ interface FinanceRepository {
      */
     suspend fun deleteCategory(category: Category, moveTo: Category?)
 
+    /** Goals with what has been saved, the nearest deadline first. */
+    fun goals(): Flow<List<GoalWithSaved>>
+    fun contributions(goalId: Long): Flow<List<GoalContribution>>
+    suspend fun goal(id: Long): SavingsGoal?
+
+    /** Inserts a new goal or updates an existing one; returns its id. */
+    suspend fun saveGoal(goal: SavingsGoal): Long
+
+    /** Deletes the goal together with its contributions. */
+    suspend fun deleteGoal(goal: SavingsGoal)
+    suspend fun addContribution(contribution: GoalContribution)
+    suspend fun deleteContribution(contribution: GoalContribution)
+
     fun reminders(): Flow<List<Reminder>>
     suspend fun reminder(id: Long): Reminder?
     suspend fun saveReminder(reminder: Reminder)
@@ -98,6 +111,27 @@ class RoomFinanceRepository(private val db: AppDatabase) : FinanceRepository {
         db.transactionDao().moveCategory(category.name, to, category.type)
         // Reminders always become expenses, so only expense categories are used there.
         if (category.type == TransactionType.EXPENSE) db.reminderDao().moveCategory(category.name, to)
+    }
+
+    override fun goals() = db.goalDao().observeAll()
+
+    override fun contributions(goalId: Long) = db.goalDao().observeContributions(goalId)
+
+    override suspend fun goal(id: Long) = db.goalDao().get(id)
+
+    override suspend fun saveGoal(goal: SavingsGoal): Long =
+        if (goal.id == 0L) db.goalDao().insert(goal) else goal.id.also { db.goalDao().update(goal) }
+
+    override suspend fun deleteGoal(goal: SavingsGoal) {
+        db.goalDao().delete(goal)
+    }
+
+    override suspend fun addContribution(contribution: GoalContribution) {
+        db.goalDao().insertContribution(contribution)
+    }
+
+    override suspend fun deleteContribution(contribution: GoalContribution) {
+        db.goalDao().deleteContribution(contribution)
     }
 
     override fun reminders() = db.reminderDao().observeAll()

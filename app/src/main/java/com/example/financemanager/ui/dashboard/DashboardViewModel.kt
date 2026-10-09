@@ -4,12 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financemanager.data.Category
 import com.example.financemanager.data.FinanceRepository
+import com.example.financemanager.data.GoalWithSaved
 import com.example.financemanager.data.Reminder
 import com.example.financemanager.data.Transaction
 import com.example.financemanager.data.TransactionType
 import com.example.financemanager.ui.budgets.BudgetSummary
 import com.example.financemanager.ui.budgets.budgetItems
 import com.example.financemanager.ui.budgets.budgetSummary
+import com.example.financemanager.ui.goals.GoalProgress
+import com.example.financemanager.ui.goals.GoalStatus
+import com.example.financemanager.ui.goals.progress
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -31,6 +35,9 @@ data class DashboardUiState(
     val upcoming: List<Reminder> = emptyList(),
     /** This month's totals over categories with a budget, null when none has one. */
     val budget: BudgetSummary? = null,
+    /** Goals still being saved for, nearest deadline first (at most a few). */
+    val goals: List<GoalProgress> = emptyList(),
+    val hasGoals: Boolean = false,
     val isLoading: Boolean = true,
 ) {
     val balance: Double get() = income - expense
@@ -38,11 +45,13 @@ data class DashboardUiState(
 
 private const val UPCOMING_COUNT = 3
 private const val RECENT_COUNT = 10
+private const val GOALS_COUNT = 2
 
 fun summarize(
     transactions: List<Transaction>,
     reminders: List<Reminder> = emptyList(),
     categories: List<Category> = emptyList(),
+    goals: List<GoalWithSaved> = emptyList(),
     today: LocalDate = LocalDate.now(),
 ) = DashboardUiState(
     income = transactions.filter { it.type == TransactionType.INCOME }.sumOf { it.amount },
@@ -53,6 +62,8 @@ fun summarize(
     categories = categories,
     upcoming = reminders.sortedBy { it.nextDueDate }.take(UPCOMING_COUNT),
     budget = budgetSummary(budgetItems(categories.filter { it.type == TransactionType.EXPENSE }, transactions, YearMonth.from(today))),
+    goals = goals.map { it.progress(today) }.filter { it.status != GoalStatus.REACHED }.take(GOALS_COUNT),
+    hasGoals = goals.isNotEmpty(),
     isLoading = false,
 )
 
@@ -63,8 +74,9 @@ class DashboardViewModel(private val repository: FinanceRepository) : ViewModel(
         repository.reminders(),
         repository.categories(TransactionType.EXPENSE),
         repository.categories(TransactionType.INCOME),
-    ) { transactions, reminders, expenseCategories, incomeCategories ->
-        summarize(transactions, reminders, expenseCategories + incomeCategories)
+        repository.goals(),
+    ) { transactions, reminders, expenseCategories, incomeCategories, goals ->
+        summarize(transactions, reminders, expenseCategories + incomeCategories, goals)
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DashboardUiState())
 

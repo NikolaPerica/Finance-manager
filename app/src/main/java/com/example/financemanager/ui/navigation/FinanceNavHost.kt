@@ -31,6 +31,12 @@ import com.example.financemanager.ui.categories.CategoriesViewModel
 import com.example.financemanager.ui.components.EmphasizedDecelerate
 import com.example.financemanager.ui.dashboard.DashboardScreen
 import com.example.financemanager.ui.dashboard.DashboardViewModel
+import com.example.financemanager.ui.goals.GoalDetailScreen
+import com.example.financemanager.ui.goals.GoalDetailViewModel
+import com.example.financemanager.ui.goals.GoalFormScreen
+import com.example.financemanager.ui.goals.GoalFormViewModel
+import com.example.financemanager.ui.goals.GoalsScreen
+import com.example.financemanager.ui.goals.GoalsViewModel
 import com.example.financemanager.ui.login.LoginScreen
 import com.example.financemanager.ui.reminders.ReminderFormScreen
 import com.example.financemanager.ui.reminders.ReminderFormViewModel
@@ -72,6 +78,20 @@ data object TransactionsRoute
 
 @Serializable
 data object CategoriesRoute
+
+@Serializable
+data object GoalsRoute
+
+@Serializable
+data class GoalRoute(val id: Long)
+
+/** [id] of the goal to edit, or [NEW] for a new one. */
+@Serializable
+data class GoalFormRoute(val id: Long = NEW) {
+    companion object {
+        const val NEW = -1L
+    }
+}
 
 /** [id] of the reminder to edit, or [NEW] for a new one. */
 @Serializable
@@ -123,6 +143,9 @@ fun FinanceNavHost() {
                 onEditTransaction = { navController.navigate(it.editRoute()) },
                 onOpenTransactions = { navController.navigate(TransactionsRoute) },
                 onOpenCategories = { navController.navigate(CategoriesRoute) },
+                onOpenGoals = { navController.navigate(GoalsRoute) },
+                onOpenGoal = { navController.navigate(GoalRoute(it)) },
+                onAddGoal = { navController.navigate(GoalFormRoute()) },
             )
         }
         composable<TransactionFormRoute> { entry ->
@@ -146,6 +169,29 @@ fun FinanceNavHost() {
             CategoriesScreen(
                 viewModel = viewModel(factory = viewModelFactory { initializer { CategoriesViewModel(repository()) } }),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
+            )
+        }
+        composable<GoalsRoute> {
+            GoalsScreen(
+                viewModel = viewModel(factory = viewModelFactory { initializer { GoalsViewModel(repository()) } }),
+                onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
+                onOpen = { navController.navigate(GoalRoute(it)) },
+                onAdd = { navController.navigate(GoalFormRoute()) },
+            )
+        }
+        composable<GoalRoute> { entry ->
+            val id = entry.toRoute<GoalRoute>().id
+            GoalDetailScreen(
+                viewModel = viewModel(factory = viewModelFactory { initializer { GoalDetailViewModel(id, repository()) } }),
+                onBack = { if (navController.currentDestination?.hasRoute<GoalRoute>() == true) navController.popBackStack() },
+                onEdit = { navController.navigate(GoalFormRoute(id)) },
+            )
+        }
+        composable<GoalFormRoute> { entry ->
+            val id = entry.toRoute<GoalFormRoute>().id.takeIf { it != GoalFormRoute.NEW }
+            GoalFormScreen(
+                viewModel = viewModel(factory = viewModelFactory { initializer { GoalFormViewModel(id, repository()) } }),
+                onBack = { if (navController.currentDestination?.hasRoute<GoalFormRoute>() == true) navController.popBackStack() },
             )
         }
         composable<BudgetsRoute> {

@@ -2,13 +2,17 @@ package com.example.financemanager
 
 import com.example.financemanager.data.Category
 import com.example.financemanager.data.FinanceRepository
+import com.example.financemanager.data.GoalContribution
+import com.example.financemanager.data.GoalWithSaved
 import com.example.financemanager.data.PaymentPeriod
 import com.example.financemanager.data.Reminder
 import com.example.financemanager.data.ReminderPayment
+import com.example.financemanager.data.SavingsGoal
 import com.example.financemanager.data.Transaction
 import com.example.financemanager.data.TransactionType
 import com.example.financemanager.data.toExpense
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import java.time.LocalDate
@@ -17,6 +21,8 @@ class FakeRepository : FinanceRepository {
     val transactions = MutableStateFlow<List<Transaction>>(emptyList())
     val categories = MutableStateFlow<List<Category>>(emptyList())
     val reminders = MutableStateFlow<List<Reminder>>(emptyList())
+    val goals = MutableStateFlow<List<SavingsGoal>>(emptyList())
+    val contributions = MutableStateFlow<List<GoalContribution>>(emptyList())
 
     private var nextId = 1000L
 
@@ -63,6 +69,34 @@ class FakeRepository : FinanceRepository {
         if (category.type == TransactionType.EXPENSE) {
             reminders.update { list -> list.map { if (it.category == category.name) it.copy(category = to) else it } }
         }
+    }
+
+    override fun goals() = combine(goals, contributions) { goals, contributions ->
+        goals.map { goal -> GoalWithSaved(goal, contributions.filter { it.goalId == goal.id }.sumOf { it.amount }) }
+    }
+
+    override fun contributions(goalId: Long) =
+        contributions.map { list -> list.filter { it.goalId == goalId }.sortedWith(compareByDescending<GoalContribution> { it.date }.thenByDescending { it.id }) }
+
+    override suspend fun goal(id: Long) = goals.value.find { it.id == id }
+
+    override suspend fun saveGoal(goal: SavingsGoal): Long {
+        val saved = if (goal.id == 0L) goal.copy(id = nextId++) else goal
+        goals.update { list -> list.filterNot { it.id == saved.id } + saved }
+        return saved.id
+    }
+
+    override suspend fun deleteGoal(goal: SavingsGoal) {
+        goals.update { list -> list.filterNot { it.id == goal.id } }
+        contributions.update { list -> list.filterNot { it.goalId == goal.id } }
+    }
+
+    override suspend fun addContribution(contribution: GoalContribution) {
+        contributions.update { it + contribution.copy(id = contribution.id.takeIf { id -> id != 0L } ?: nextId++) }
+    }
+
+    override suspend fun deleteContribution(contribution: GoalContribution) {
+        contributions.update { list -> list.filterNot { it.id == contribution.id } }
     }
 
     override fun reminders() = reminders

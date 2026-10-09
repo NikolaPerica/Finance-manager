@@ -72,3 +72,34 @@ interface ReminderDao {
     @Delete
     suspend fun delete(reminder: Reminder)
 }
+
+@Dao
+interface GoalDao {
+    @Query(
+        "SELECT goals.*, COALESCE(SUM(goal_contributions.amount), 0) AS saved FROM goals " +
+            "LEFT JOIN goal_contributions ON goal_contributions.goalId = goals.id " +
+            "GROUP BY goals.id ORDER BY goals.deadline IS NULL, goals.deadline, goals.name COLLATE NOCASE",
+    )
+    fun observeAll(): Flow<List<GoalWithSaved>>
+
+    @Query("SELECT * FROM goal_contributions WHERE goalId = :goalId ORDER BY date DESC, id DESC")
+    fun observeContributions(goalId: Long): Flow<List<GoalContribution>>
+
+    @Query("SELECT * FROM goals WHERE id = :id")
+    suspend fun get(id: Long): SavingsGoal?
+
+    @Insert
+    suspend fun insert(goal: SavingsGoal): Long
+
+    @Update
+    suspend fun update(goal: SavingsGoal)
+
+    @Delete
+    suspend fun delete(goal: SavingsGoal)
+
+    @Insert
+    suspend fun insertContribution(contribution: GoalContribution): Long
+
+    @Delete
+    suspend fun deleteContribution(contribution: GoalContribution)
+}
