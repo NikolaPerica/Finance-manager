@@ -30,10 +30,11 @@ data class TransactionsUiState(
 
 class TransactionsViewModel(
     private val repository: FinanceRepository,
+    initialFilter: TransactionFilter = TransactionFilter(),
     private val today: () -> LocalDate = LocalDate::now,
 ) : ViewModel() {
 
-    private val filter = MutableStateFlow(TransactionFilter())
+    private val filter = MutableStateFlow(initialFilter)
 
     val state: StateFlow<TransactionsUiState> = combine(
         repository.transactions(),

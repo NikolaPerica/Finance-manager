@@ -23,6 +23,14 @@ data class StatsPeriod(val range: StatsRange, val month: YearMonth) {
         StatsRange.ALL -> null
     }
 
+    /** First and last day of the period, or null for all time. */
+    val dates: ClosedRange<LocalDate>?
+        get() = when (range) {
+            StatsRange.MONTH -> month.atDay(1)..month.atEndOfMonth()
+            StatsRange.YEAR -> month.withMonth(1).atDay(1)..month.withMonth(12).atEndOfMonth()
+            StatsRange.ALL -> null
+        }
+
     /** Whether the period starts after [today], so there is nothing to show yet. */
     fun isFuture(today: LocalDate): Boolean = when (range) {
         StatsRange.MONTH -> month > YearMonth.from(today)
