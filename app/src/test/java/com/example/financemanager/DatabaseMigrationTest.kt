@@ -9,9 +9,12 @@ import com.example.financemanager.data.AppDatabase
 import com.example.financemanager.data.MIGRATION_1_2
 import com.example.financemanager.data.MIGRATION_2_3
 import com.example.financemanager.data.MIGRATION_3_4
+import com.example.financemanager.data.MIGRATION_4_5
 import com.example.financemanager.data.PaymentPeriod
+import com.example.financemanager.data.GoalContribution
 import com.example.financemanager.data.Reminder
 import com.example.financemanager.data.RoomFinanceRepository
+import com.example.financemanager.data.SavingsGoal
 import com.example.financemanager.data.Transaction
 import com.example.financemanager.data.TransactionType
 import kotlinx.coroutines.flow.first
@@ -58,7 +61,7 @@ class DatabaseMigrationTest {
 
         // Room checks the migrated tables against the current schema when it opens.
         val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
             .build()
         try {
             val transaction = db.transactionDao().observeAll().first().single()
@@ -87,7 +90,7 @@ class DatabaseMigrationTest {
         }
 
         val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
             .build()
         try {
             val repository = RoomFinanceRepository(db)
@@ -110,7 +113,7 @@ class DatabaseMigrationTest {
             db.execSQL("INSERT INTO categories (id, name, type, monthlyBudget) VALUES (3, 'Hrana', 'EXPENSE', 250.0)")
         }
         val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
             .build()
         try {
             val category = db.categoryDao().observeByType(TransactionType.EXPENSE).first().single()
@@ -156,6 +159,40 @@ class DatabaseMigrationTest {
 
             repository.deleteCategory(groceries, moveTo = null)
             assertEquals("", repository.transactions().first().first { it.type == TransactionType.EXPENSE }.category)
+        } finally {
+            db.close()
+        }
+    }
+
+    @Test
+    fun version4GetsGoalsThatAddUpAndDeleteWithTheirHistory() = runBlocking {
+        createVersion(4) { db ->
+            db.execSQL("INSERT INTO categories (id, name, type) VALUES (1, 'Hrana', 'EXPENSE')")
+        }
+        val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+            .build()
+        try {
+            val repository = RoomFinanceRepository(db)
+            assertEquals("Hrana", repository.categories(TransactionType.EXPENSE).first().single().name)
+            assertTrue(repository.goals().first().isEmpty())
+
+            val trip = repository.saveGoal(SavingsGoal(name = "Ljetovanje", target = 1500.0, deadline = LocalDate.of(2027, 6, 1)))
+            val laptop = repository.saveGoal(SavingsGoal(name = "Laptop", target = 900.0))
+            repository.addContribution(GoalContribution(goalId = trip, amount = 300.0, date = LocalDate.of(2026, 10, 1)))
+            repository.addContribution(GoalContribution(goalId = trip, amount = -50.0, date = LocalDate.of(2026, 10, 2)))
+
+            // The goal with a deadline comes first; a goal without contributions has saved nothing.
+            val goals = repository.goals().first()
+            assertEquals(listOf("Ljetovanje", "Laptop"), goals.map { it.goal.name })
+            assertEquals(250.0, goals[0].saved, 0.0)
+            assertEquals(0.0, goals[1].saved, 0.0)
+            assertEquals(LocalDate.of(2027, 6, 1), repository.goal(trip)!!.deadline)
+            assertNull(repository.goal(laptop)!!.deadline)
+
+            repository.deleteGoal(repository.goal(trip)!!)
+            assertTrue(repository.contributions(trip).first().isEmpty())
+            assertEquals(listOf("Laptop"), repository.goals().first().map { it.goal.name })
         } finally {
             db.close()
         }

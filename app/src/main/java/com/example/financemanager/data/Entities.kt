@@ -1,6 +1,9 @@
 package com.example.financemanager.data
 
+import androidx.room.Embedded
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.time.LocalDate
 
@@ -64,3 +67,38 @@ data class Reminder(
     val nextDueDate: LocalDate
         get() = firstDueDate.plusMonths(period.months.toLong() * paidCount)
 }
+
+@Entity(tableName = "goals")
+data class SavingsGoal(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val name: String,
+    /** Amount to save. */
+    val target: Double,
+    /** When the money is needed, or null for no deadline. */
+    val deadline: LocalDate? = null,
+    /** Index into the colour palette, or null to derive one from [id]. */
+    val color: Int? = null,
+) {
+    val colorIndex: Int get() = color ?: (id % CATEGORY_COLOR_COUNT).toInt()
+}
+
+/** Money put into (positive) or taken out of (negative) a savings goal. */
+@Entity(
+    tableName = "goal_contributions",
+    foreignKeys = [
+        ForeignKey(entity = SavingsGoal::class, parentColumns = ["id"], childColumns = ["goalId"], onDelete = ForeignKey.CASCADE),
+    ],
+    indices = [Index("goalId")],
+)
+data class GoalContribution(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val goalId: Long,
+    val amount: Double,
+    val date: LocalDate,
+)
+
+/** A goal with the sum of its contributions. */
+data class GoalWithSaved(
+    @Embedded val goal: SavingsGoal,
+    val saved: Double,
+)
