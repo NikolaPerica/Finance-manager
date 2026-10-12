@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.RoundRect
@@ -51,6 +53,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -82,7 +85,11 @@ private val CardShape = RoundedCornerShape(24.dp)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StatsScreen(viewModel: StatsViewModel, onBack: () -> Unit) {
+fun StatsScreen(
+    viewModel: StatsViewModel,
+    onBack: () -> Unit,
+    onOpenCategory: (category: String, type: TransactionType, period: StatsPeriod) -> Unit,
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val isIncome = state.type == TransactionType.INCOME
     val accent = if (isIncome) FinanceTheme.colors.income else FinanceTheme.colors.expense
@@ -161,7 +168,13 @@ fun StatsScreen(viewModel: StatsViewModel, onBack: () -> Unit) {
                     val largest = state.categories.firstOrNull()?.amount ?: 0.0
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         state.categories.forEach { category ->
-                            CategoryRow(category, total = state.total, largest = largest, accent = accent)
+                            CategoryRow(
+                                category,
+                                total = state.total,
+                                largest = largest,
+                                accent = accent,
+                                onClick = { onOpenCategory(category.name, state.type, state.period) },
+                            )
                         }
                     }
                 }
@@ -305,7 +318,7 @@ private fun Section(title: String, modifier: Modifier, subtitle: String? = null,
 }
 
 @Composable
-private fun CategoryRow(category: CategoryStat, total: Double, largest: Double, accent: Color) {
+private fun CategoryRow(category: CategoryStat, total: Double, largest: Double, accent: Color, onClick: () -> Unit) {
     val share = if (total > 0) category.amount / total else 0.0
     // Bars are scaled to the largest category so small differences stay visible.
     val fill by animateFloatAsState(
@@ -313,8 +326,14 @@ private fun CategoryRow(category: CategoryStat, total: Double, largest: Double, 
         animationSpec = tween(600),
         label = "categoryFill",
     )
-    Column {
-        Row(verticalAlignment = Alignment.Bottom) {
+    // The whole row opens the category's transactions; the chevron hints that it can.
+    Column(
+        Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClickLabel = stringResource(R.string.show_transactions), role = Role.Button, onClick = onClick)
+            .padding(vertical = 4.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(
                     category.name.ifBlank { stringResource(R.string.no_category) },
@@ -337,6 +356,12 @@ private fun CategoryRow(category: CategoryStat, total: Double, largest: Double, 
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            Icon(
+                painterResource(R.drawable.ic_chevron_right),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 4.dp).size(20.dp),
+            )
         }
         Spacer(Modifier.height(8.dp))
         Box(

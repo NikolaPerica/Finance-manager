@@ -46,9 +46,12 @@ import com.example.financemanager.ui.stats.StatsScreen
 import com.example.financemanager.ui.stats.StatsViewModel
 import com.example.financemanager.ui.transaction.TransactionFormScreen
 import com.example.financemanager.ui.transaction.TransactionFormViewModel
+import com.example.financemanager.ui.transactions.PeriodFilter
+import com.example.financemanager.ui.transactions.TransactionFilter
 import com.example.financemanager.ui.transactions.TransactionsScreen
 import com.example.financemanager.ui.transactions.TransactionsViewModel
 import kotlinx.serialization.Serializable
+import java.time.LocalDate
 
 @Serializable
 data object LoginRoute
@@ -73,8 +76,23 @@ data object StatsRoute
 @Serializable
 data object BudgetsRoute
 
+/**
+ * The transaction list, optionally opened with filters already set: a category name
+ * ("" for none), [type] as a [TransactionType] name, and an ISO date range.
+ */
 @Serializable
-data object TransactionsRoute
+data class TransactionsRoute(
+    val category: String? = null,
+    val type: String? = null,
+    val from: String? = null,
+    val to: String? = null,
+) {
+    fun filter() = TransactionFilter(
+        type = type?.let(TransactionType::valueOf),
+        category = category,
+        period = if (from != null && to != null) PeriodFilter.Range(LocalDate.parse(from), LocalDate.parse(to)) else PeriodFilter.All,
+    )
+}
 
 @Serializable
 data object CategoriesRoute
@@ -141,7 +159,7 @@ fun FinanceNavHost() {
                 onOpenStats = { navController.navigate(StatsRoute) },
                 onOpenBudgets = { navController.navigate(BudgetsRoute) },
                 onEditTransaction = { navController.navigate(it.editRoute()) },
-                onOpenTransactions = { navController.navigate(TransactionsRoute) },
+                onOpenTransactions = { navController.navigate(TransactionsRoute()) },
                 onOpenCategories = { navController.navigate(CategoriesRoute) },
                 onOpenGoals = { navController.navigate(GoalsRoute) },
                 onOpenGoal = { navController.navigate(GoalRoute(it)) },
@@ -158,10 +176,12 @@ fun FinanceNavHost() {
                 onBack = { if (navController.currentDestination?.hasRoute<TransactionFormRoute>() == true) navController.popBackStack() },
             )
         }
-        composable<TransactionsRoute> {
+        composable<TransactionsRoute> { entry ->
+            val filter = entry.toRoute<TransactionsRoute>().filter()
             TransactionsScreen(
-                viewModel = viewModel(factory = viewModelFactory { initializer { TransactionsViewModel(repository()) } }),
-                onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
+                viewModel = viewModel(factory = viewModelFactory { initializer { TransactionsViewModel(repository(), filter) } }),
+                // Back to the dashboard or to the statistics it was opened from.
+                onBack = { if (navController.currentDestination?.hasRoute<TransactionsRoute>() == true) navController.popBackStack() },
                 onEdit = { navController.navigate(it.editRoute()) },
             )
         }
@@ -204,6 +224,12 @@ fun FinanceNavHost() {
             StatsScreen(
                 viewModel = viewModel(factory = viewModelFactory { initializer { StatsViewModel(repository()) } }),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
+                onOpenCategory = { category, type, period ->
+                    val dates = period.dates
+                    navController.navigate(
+                        TransactionsRoute(category, type.name, dates?.start?.toString(), dates?.endInclusive?.toString()),
+                    )
+                },
             )
         }
         composable<RemindersRoute> {

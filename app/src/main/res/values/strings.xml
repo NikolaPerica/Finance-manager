@@ -129,6 +129,7 @@
     <string name="over_time">Kroz vrijeme</string>
     <string name="chart_hint">Dodirnite stupac za prikaz tog razdoblja</string>
     <string name="by_category">Po kategorijama</string>
+    <string name="show_transactions">prikaži transakcije</string>
     <string name="stats_empty_expense">Nema rashoda u ovom razdoblju.</string>
     <string name="stats_empty_income">Nema prihoda u ovom razdoblju.</string>
     <plurals name="transactions_count">

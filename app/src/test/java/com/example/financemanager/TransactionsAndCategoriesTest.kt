@@ -7,6 +7,9 @@ import com.example.financemanager.data.TransactionType.EXPENSE
 import com.example.financemanager.data.TransactionType.INCOME
 import com.example.financemanager.ui.categories.CategoriesViewModel
 import com.example.financemanager.ui.components.CategoryNameError
+import com.example.financemanager.ui.navigation.TransactionsRoute
+import com.example.financemanager.ui.stats.StatsPeriod
+import com.example.financemanager.ui.stats.StatsRange
 import com.example.financemanager.ui.transactions.PeriodFilter
 import com.example.financemanager.ui.transactions.TransactionFilter
 import com.example.financemanager.ui.transactions.TransactionsViewModel
@@ -26,6 +29,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.time.LocalDate
+import java.time.YearMonth
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TransactionsAndCategoriesTest {
@@ -133,5 +137,27 @@ class TransactionsAndCategoriesTest {
 
         viewModel.onTypeChange(INCOME)
         assertEquals(listOf("Plaća"), viewModel.state.value.items.map { it.category.name })
+    }
+
+    @Test
+    fun statisticsOpenTheListFilteredToACategoryAndPeriod() = runTest(UnconfinedTestDispatcher()) {
+        val october = StatsPeriod(StatsRange.MONTH, YearMonth.of(2026, 10))
+        assertEquals(LocalDate.of(2026, 10, 1)..LocalDate.of(2026, 10, 31), october.dates)
+        assertEquals(LocalDate.of(2026, 1, 1)..LocalDate.of(2026, 12, 31), october.copy(range = StatsRange.YEAR).dates)
+        assertNull(october.copy(range = StatsRange.ALL).dates)
+
+        // What the statistics screen puts in the route comes back as the same filter.
+        val dates = october.dates!!
+        val route = TransactionsRoute("Hrana", EXPENSE.name, dates.start.toString(), dates.endInclusive.toString())
+        assertEquals(
+            TransactionFilter(type = EXPENSE, category = "Hrana", period = PeriodFilter.Range(dates.start, dates.endInclusive)),
+            route.filter(),
+        )
+        assertEquals(TransactionFilter(), TransactionsRoute().filter())
+
+        val viewModel = TransactionsViewModel(repository, route.filter()) { today }
+        backgroundScope.launch { viewModel.state.collect {} }
+        assertEquals(listOf(1L), viewModel.state.value.groups.flatMap { it.transactions }.map { it.id })
+        assertEquals(54.2, viewModel.state.value.expense, 1e-9)
     }
 }

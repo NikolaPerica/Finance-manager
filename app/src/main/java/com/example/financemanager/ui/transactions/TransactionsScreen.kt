@@ -224,7 +224,7 @@ private fun FilterRow(
                 FilterChip(
                     selected = selected != null,
                     onClick = { if (selected != null) onCategory(null) else categoryMenu = true },
-                    label = { Text(selected ?: stringResource(R.string.kategorija)) },
+                    label = { Text(selected?.ifBlank { stringResource(R.string.no_category) } ?: stringResource(R.string.kategorija)) },
                     leadingIcon = { Icon(painterResource(R.drawable.ic_label), contentDescription = null, modifier = Modifier.size(18.dp)) },
                     trailingIcon = if (selected != null) {
                         {
@@ -253,6 +253,9 @@ private fun FilterRow(
                 }
             }
         }
+        val range = filter.period as? PeriodFilter.Range
+        // A chosen range goes right after the category, where it is seen without scrolling.
+        if (range != null) item(key = "range") { RangeChip(range, onPickRange) }
         items(periods, key = { it.second }) { (period, label) ->
             FilterChip(
                 selected = filter.period == period,
@@ -260,18 +263,18 @@ private fun FilterRow(
                 label = { Text(stringResource(label)) },
             )
         }
-        item(key = "range") {
-            val range = filter.period as? PeriodFilter.Range
-            FilterChip(
-                selected = range != null,
-                onClick = onPickRange,
-                label = {
-                    Text(range?.let { "${ShortDate.format(it.from)} – ${ShortDate.format(it.to)}" } ?: stringResource(R.string.date_range))
-                },
-                leadingIcon = { Icon(painterResource(R.drawable.ic_calendar), contentDescription = null, modifier = Modifier.size(18.dp)) },
-            )
-        }
+        if (range == null) item(key = "range") { RangeChip(null, onPickRange) }
     }
+}
+
+@Composable
+private fun RangeChip(range: PeriodFilter.Range?, onClick: () -> Unit) {
+    FilterChip(
+        selected = range != null,
+        onClick = onClick,
+        label = { Text(range?.let { "${ShortDate.format(it.from)} – ${ShortDate.format(it.to)}" } ?: stringResource(R.string.date_range)) },
+        leadingIcon = { Icon(painterResource(R.drawable.ic_calendar), contentDescription = null, modifier = Modifier.size(18.dp)) },
+    )
 }
 
 @Composable
