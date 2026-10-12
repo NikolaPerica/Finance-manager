@@ -4,9 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,7 +22,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -53,13 +50,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
@@ -72,8 +67,8 @@ import com.example.financemanager.ui.MoneyFormat
 import com.example.financemanager.ui.components.AddCategoryDialog
 import com.example.financemanager.ui.components.CategoryAvatar
 import com.example.financemanager.ui.components.CategoryNameError
+import com.example.financemanager.ui.components.ColorPicker
 import com.example.financemanager.ui.components.FieldShape
-import com.example.financemanager.ui.theme.FinanceTheme
 
 private val CardShape = RoundedCornerShape(24.dp)
 
@@ -275,30 +270,6 @@ private fun EditCategoryDialog(
         confirmButton = { TextButton(onClick = ::submit) { Text(stringResource(R.string.spremi)) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.odustani)) } },
     )
-}
-
-@Composable
-private fun ColorPicker(selected: Int, onSelect: (Int) -> Unit) {
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        FinanceTheme.colors.categories.forEachIndexed { index, color ->
-            val isSelected = index == selected
-            val description = stringResource(R.string.color_n, index + 1)
-            Box(
-                Modifier
-                    .size(40.dp)
-                    .border(2.dp, if (isSelected) MaterialTheme.colorScheme.onSurface else Color.Transparent, CircleShape)
-                    .padding(4.dp)
-                    .background(color, CircleShape)
-                    .selectable(selected = isSelected, role = Role.RadioButton, onClick = { onSelect(index) })
-                    .semantics { contentDescription = description },
-                contentAlignment = Alignment.Center,
-            ) {
-                if (isSelected) {
-                    Icon(painterResource(R.drawable.ic_check), contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
-                }
-            }
-        }
-    }
 }
 
 @Composable
