@@ -31,6 +31,8 @@ import com.example.financemanager.ui.categories.CategoriesViewModel
 import com.example.financemanager.ui.components.EmphasizedDecelerate
 import com.example.financemanager.ui.dashboard.DashboardScreen
 import com.example.financemanager.ui.dashboard.DashboardViewModel
+import com.example.financemanager.ui.export.ExportScreen
+import com.example.financemanager.ui.export.ExportViewModel
 import com.example.financemanager.ui.goals.GoalDetailScreen
 import com.example.financemanager.ui.goals.GoalDetailViewModel
 import com.example.financemanager.ui.goals.GoalFormScreen
@@ -101,6 +103,9 @@ data object CategoriesRoute
 data object GoalsRoute
 
 @Serializable
+data object ExportRoute
+
+@Serializable
 data class GoalRoute(val id: Long)
 
 /** [id] of the goal to edit, or [NEW] for a new one. */
@@ -162,6 +167,7 @@ fun FinanceNavHost() {
                 onOpenTransactions = { navController.navigate(TransactionsRoute()) },
                 onOpenCategories = { navController.navigate(CategoriesRoute) },
                 onOpenGoals = { navController.navigate(GoalsRoute) },
+                onOpenExport = { navController.navigate(ExportRoute) },
                 onOpenGoal = { navController.navigate(GoalRoute(it)) },
                 onAddGoal = { navController.navigate(GoalFormRoute()) },
             )
@@ -188,6 +194,12 @@ fun FinanceNavHost() {
         composable<CategoriesRoute> {
             CategoriesScreen(
                 viewModel = viewModel(factory = viewModelFactory { initializer { CategoriesViewModel(repository()) } }),
+                onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
+            )
+        }
+        composable<ExportRoute> {
+            ExportScreen(
+                viewModel = viewModel(factory = viewModelFactory { initializer { ExportViewModel(repository()) } }),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
             )
         }

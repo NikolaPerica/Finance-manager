@@ -98,6 +98,7 @@ fun DashboardScreen(
     onOpenGoals: () -> Unit,
     onOpenGoal: (Long) -> Unit,
     onAddGoal: () -> Unit,
+    onOpenExport: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
@@ -128,7 +129,7 @@ fun DashboardScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             item(key = "header") {
-                Header(onOpenStats, onOpenCategories, onOpenBudgets, onOpenGoals, onOpenReminders, Modifier.contentWidth().staggeredEntrance(0, playIntro))
+                Header(onOpenStats, onOpenCategories, onOpenBudgets, onOpenGoals, onOpenReminders, onOpenExport, Modifier.contentWidth().staggeredEntrance(0, playIntro))
             }
             item(key = "balance") {
                 BalanceCard(state, Modifier.contentWidth().padding(top = 8.dp).staggeredEntrance(1, playIntro))
@@ -237,6 +238,7 @@ private fun Header(
     onOpenBudgets: () -> Unit,
     onOpenGoals: () -> Unit,
     onOpenReminders: () -> Unit,
+    onOpenExport: () -> Unit,
     modifier: Modifier,
 ) {
     val greeting = when (LocalTime.now().hour) {
@@ -265,6 +267,7 @@ private fun Header(
                     Triple(R.string.budgets_title, R.drawable.ic_wallet, onOpenBudgets),
                     Triple(R.string.goals_title, R.drawable.ic_savings, onOpenGoals),
                     Triple(R.string.reminders_title, R.drawable.ic_bell, onOpenReminders),
+                    Triple(R.string.export_menu, R.drawable.ic_file_download, onOpenExport),
                 ).forEach { (label, icon, action) ->
                     DropdownMenuItem(
                         text = { Text(stringResource(label)) },

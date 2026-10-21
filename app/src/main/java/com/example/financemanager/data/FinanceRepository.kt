@@ -7,6 +7,15 @@ import java.time.LocalDate
 /** What [FinanceRepository.payReminder] changed, so it can be undone. */
 data class ReminderPayment(val before: Reminder, val transactionId: Long)
 
+/** Everything the app stores, e.g. for a backup. */
+data class FinanceData(
+    val categories: List<Category> = emptyList(),
+    val transactions: List<Transaction> = emptyList(),
+    val reminders: List<Reminder> = emptyList(),
+    val goals: List<SavingsGoal> = emptyList(),
+    val contributions: List<GoalContribution> = emptyList(),
+)
+
 /** Single entry point the UI uses to read and change finance data. */
 interface FinanceRepository {
     fun transactions(): Flow<List<Transaction>>
@@ -45,6 +54,12 @@ interface FinanceRepository {
     suspend fun deleteGoal(goal: SavingsGoal)
     suspend fun addContribution(contribution: GoalContribution)
     suspend fun deleteContribution(contribution: GoalContribution)
+
+    /** A copy of all data at this moment. */
+    suspend fun snapshot(): FinanceData
+
+    /** Replaces all data with [data], keeping its ids, in one database transaction. */
+    suspend fun replaceAll(data: FinanceData)
 
     fun reminders(): Flow<List<Reminder>>
     suspend fun reminder(id: Long): Reminder?
@@ -132,6 +147,28 @@ class RoomFinanceRepository(private val db: AppDatabase) : FinanceRepository {
 
     override suspend fun deleteContribution(contribution: GoalContribution) {
         db.goalDao().deleteContribution(contribution)
+    }
+
+    override suspend fun snapshot() = db.withTransaction {
+        FinanceData(
+            categories = db.categoryDao().getAll(),
+            transactions = db.transactionDao().getAll(),
+            reminders = db.reminderDao().getAll(),
+            goals = db.goalDao().getAll(),
+            contributions = db.goalDao().getAllContributions(),
+        )
+    }
+
+    override suspend fun replaceAll(data: FinanceData) = db.withTransaction {
+        db.goalDao().deleteAll()
+        db.reminderDao().deleteAll()
+        db.transactionDao().deleteAll()
+        db.categoryDao().deleteAll()
+        db.categoryDao().insertAll(data.categories)
+        db.transactionDao().insertAll(data.transactions)
+        db.reminderDao().insertAll(data.reminders)
+        db.goalDao().insertAll(data.goals)
+        db.goalDao().insertAllContributions(data.contributions)
     }
 
     override fun reminders() = db.reminderDao().observeAll()

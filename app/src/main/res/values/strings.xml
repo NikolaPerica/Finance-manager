@@ -239,4 +239,37 @@
     <string name="delete_goal_message">Cilj i sva njegova povijest uplata bit će trajno obrisani.</string>
     <string name="goals_cta">Postavite cilj štednje</string>
     <string name="goals_cta_subtitle">Ljetovanje, auto ili rezerva za nepredviđeno.</string>
+    <!-- Izvoz i sigurnosna kopija -->
+    <string name="export_title">Izvoz i sigurnosna kopija</string>
+    <string name="export_menu">Izvoz i kopija</string>
+    <string name="report_section">Izvještaj</string>
+    <string name="report_section_text">PDF izvještaj s prihodima, rashodima po kategorijama i svim transakcijama, za dijeljenje ili ispis. Ili CSV tablica za Excel.</string>
+    <string name="export_pdf">PDF izvještaj</string>
+    <string name="export_csv">CSV tablica</string>
+    <string name="export_done">Datoteka je spremljena</string>
+    <string name="export_failed">Spremanje nije uspjelo</string>
+    <string name="open">Otvori</string>
+    <string name="no_app_to_open">Nema aplikacije koja može otvoriti datoteku</string>
+    <string name="file_all_time">sve</string>
+    <string name="csv_type">Vrsta</string>
+    <string name="report_title">Financijski izvještaj</string>
+    <string name="report_generated">Izrađeno %1$s</string>
+    <string name="report_balance">Saldo</string>
+    <string name="report_expense_categories">Rashodi po kategorijama</string>
+    <string name="report_income_categories">Prihodi po kategorijama</string>
+    <string name="report_transactions">Transakcije</string>
+    <string name="report_no_transactions">Nema transakcija u ovom razdoblju.</string>
+    <string name="report_note">Napomena</string>
+    <string name="report_page">Stranica %1$d</string>
+    <string name="backup_section">Sigurnosna kopija</string>
+    <string name="backup_section_text">Spremite sve podatke (transakcije, kategorije, budžete, podsjetnike i ciljeve) u jednu datoteku, npr. prije promjene mobitela. Pri spremanju možete odabrati i Google Drive.</string>
+    <string name="backup_save">Spremi kopiju</string>
+    <string name="backup_restore">Vrati</string>
+    <string name="backup_done">Sigurnosna kopija je spremljena</string>
+    <string name="backup_failed">Spremanje kopije nije uspjelo</string>
+    <string name="restore_title">Vratiti podatke iz kopije?</string>
+    <string name="restore_message">Kopija od %1$s sadrži %2$s, kategorija: %3$d, podsjetnika: %4$d i ciljeva: %5$d.\n\nSvi trenutni podaci u aplikaciji bit će zamijenjeni podacima iz kopije.</string>
+    <string name="restore_done">Podaci su vraćeni iz kopije</string>
+    <string name="restore_failed">Vraćanje nije uspjelo, podaci nisu promijenjeni</string>
+    <string name="restore_invalid">Datoteka nije ispravna sigurnosna kopija</string>
 </resources>

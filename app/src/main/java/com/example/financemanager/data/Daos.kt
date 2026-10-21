@@ -13,6 +13,15 @@ interface CategoryDao {
     @Query("SELECT * FROM categories WHERE type = :type ORDER BY name COLLATE NOCASE")
     fun observeByType(type: TransactionType): Flow<List<Category>>
 
+    @Query("SELECT * FROM categories")
+    suspend fun getAll(): List<Category>
+
+    @Insert
+    suspend fun insertAll(categories: List<Category>)
+
+    @Query("DELETE FROM categories")
+    suspend fun deleteAll()
+
     @Insert
     suspend fun insert(category: Category): Long
 
@@ -30,6 +39,15 @@ interface CategoryDao {
 interface TransactionDao {
     @Query("SELECT * FROM transactions ORDER BY date DESC, id DESC")
     fun observeAll(): Flow<List<Transaction>>
+
+    @Query("SELECT * FROM transactions ORDER BY date, id")
+    suspend fun getAll(): List<Transaction>
+
+    @Insert
+    suspend fun insertAll(transactions: List<Transaction>)
+
+    @Query("DELETE FROM transactions")
+    suspend fun deleteAll()
 
     @Query("SELECT * FROM transactions WHERE id = :id")
     suspend fun get(id: Long): Transaction?
@@ -62,6 +80,12 @@ interface ReminderDao {
     @Query("SELECT * FROM reminders WHERE id = :id")
     suspend fun get(id: Long): Reminder?
 
+    @Insert
+    suspend fun insertAll(reminders: List<Reminder>)
+
+    @Query("DELETE FROM reminders")
+    suspend fun deleteAll()
+
     @Query("UPDATE reminders SET category = :to WHERE category = :from")
     suspend fun moveCategory(from: String, to: String)
 
@@ -84,6 +108,22 @@ interface GoalDao {
 
     @Query("SELECT * FROM goal_contributions WHERE goalId = :goalId ORDER BY date DESC, id DESC")
     fun observeContributions(goalId: Long): Flow<List<GoalContribution>>
+
+    @Query("SELECT * FROM goals")
+    suspend fun getAll(): List<SavingsGoal>
+
+    @Query("SELECT * FROM goal_contributions ORDER BY date, id")
+    suspend fun getAllContributions(): List<GoalContribution>
+
+    @Insert
+    suspend fun insertAll(goals: List<SavingsGoal>)
+
+    @Insert
+    suspend fun insertAllContributions(contributions: List<GoalContribution>)
+
+    /** Also removes every contribution, through the foreign key. */
+    @Query("DELETE FROM goals")
+    suspend fun deleteAll()
 
     @Query("SELECT * FROM goals WHERE id = :id")
     suspend fun get(id: Long): SavingsGoal?

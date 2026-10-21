@@ -1,6 +1,7 @@
 package com.example.financemanager
 
 import com.example.financemanager.data.Category
+import com.example.financemanager.data.FinanceData
 import com.example.financemanager.data.FinanceRepository
 import com.example.financemanager.data.GoalContribution
 import com.example.financemanager.data.GoalWithSaved
@@ -97,6 +98,18 @@ class FakeRepository : FinanceRepository {
 
     override suspend fun deleteContribution(contribution: GoalContribution) {
         contributions.update { list -> list.filterNot { it.id == contribution.id } }
+    }
+
+    override suspend fun snapshot() = FinanceData(
+        categories.value, transactions.value, reminders.value, goals.value, contributions.value,
+    )
+
+    override suspend fun replaceAll(data: FinanceData) {
+        categories.value = data.categories
+        transactions.value = data.transactions
+        reminders.value = data.reminders
+        goals.value = data.goals
+        contributions.value = data.contributions
     }
 
     override fun reminders() = reminders
