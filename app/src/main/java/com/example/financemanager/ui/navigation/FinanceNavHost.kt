@@ -1,29 +1,42 @@
 package com.example.financemanager.ui.navigation
 
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
-import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.toRoute
 import com.example.financemanager.FinanceApp
 import com.example.financemanager.data.FinanceRepository
 import com.example.financemanager.data.Transaction
 import com.example.financemanager.data.TransactionType
+import com.example.financemanager.security.AppLock
 import com.example.financemanager.ui.budgets.BudgetsScreen
 import com.example.financemanager.ui.budgets.BudgetsViewModel
 import com.example.financemanager.ui.categories.CategoriesScreen
@@ -52,11 +65,8 @@ import com.example.financemanager.ui.transactions.PeriodFilter
 import com.example.financemanager.ui.transactions.TransactionFilter
 import com.example.financemanager.ui.transactions.TransactionsScreen
 import com.example.financemanager.ui.transactions.TransactionsViewModel
-import kotlinx.serialization.Serializable
 import java.time.LocalDate
-
-@Serializable
-data object LoginRoute
+import kotlinx.serialization.Serializable
 
 @Serializable
 data object DashboardRoute
@@ -128,13 +138,48 @@ private fun Transaction.editRoute() = TransactionFormRoute(isIncome = type == Tr
 
 private fun CreationExtras.repository(): FinanceRepository = (this[APPLICATION_KEY] as FinanceApp).repository
 
+/**
+ * The app's screens with the fingerprint/PIN screen on top of them while [appLock] is
+ * locked, so unlocking returns to wherever the user was.
+ */
 @Composable
-fun FinanceNavHost() {
+fun FinanceNavHost(appLock: AppLock) {
+    val locked by appLock.locked.collectAsStateWithLifecycle()
+    // Nothing behind the lock screen until the first unlock, so the dashboard's intro
+    // plays when it can be seen.
+    var opened by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(locked) { if (!locked) opened = true }
+    val activity = LocalActivity.current
+
+    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        if (opened) {
+            // While locked, screen readers mustn't read the content underneath.
+            AppNavHost(onLock = appLock::lockNow, modifier = if (locked) Modifier.clearAndSetSemantics {} else Modifier)
+        }
+        AnimatedVisibility(visible = locked, enter = fadeIn(), exit = fadeOut(tween(300))) {
+            // Back leaves the app instead of going back in the screens underneath.
+            BackHandler { activity?.moveTaskToBack(true) }
+            Box(Modifier.fillMaxSize().blockTouches()) {
+                LoginScreen(onUnlocked = appLock::unlock)
+            }
+        }
+    }
+}
+
+/** Swallows every touch so nothing underneath can be used. */
+private fun Modifier.blockTouches() = pointerInput(Unit) {
+    awaitPointerEventScope {
+        while (true) awaitPointerEvent().changes.forEach { it.consume() }
+    }
+}
+
+@Composable
+private fun AppNavHost(onLock: () -> Unit, modifier: Modifier) {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = LoginRoute,
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+        startDestination = DashboardRoute,
+        modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
         enterTransition = {
             slideInHorizontally(tween(400, easing = EmphasizedDecelerate)) { it / 4 } + fadeIn(tween(300))
         },
@@ -144,16 +189,6 @@ fun FinanceNavHost() {
             slideOutHorizontally(tween(300)) { it / 4 } + fadeOut(tween(200))
         },
     ) {
-        composable<LoginRoute>(
-            enterTransition = { fadeIn() },
-            exitTransition = { fadeOut(tween(300)) },
-        ) {
-            LoginScreen(onUnlocked = {
-                navController.navigate(DashboardRoute) {
-                    popUpTo<LoginRoute> { inclusive = true }
-                }
-            })
-        }
         composable<DashboardRoute>(enterTransition = { fadeIn(tween(400)) }) {
             DashboardScreen(
                 viewModel = viewModel(factory = viewModelFactory { initializer { DashboardViewModel(repository()) } }),
@@ -168,6 +203,7 @@ fun FinanceNavHost() {
                 onOpenCategories = { navController.navigate(CategoriesRoute) },
                 onOpenGoals = { navController.navigate(GoalsRoute) },
                 onOpenExport = { navController.navigate(ExportRoute) },
+                onLock = onLock,
                 onOpenGoal = { navController.navigate(GoalRoute(it)) },
                 onAddGoal = { navController.navigate(GoalFormRoute()) },
             )

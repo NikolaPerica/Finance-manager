@@ -16,6 +16,7 @@
     <string name="login_failed">Otisak nije prepoznat. Pokušajte ponovno.</string>
     <string name="login_unavailable">Na uređaju nije postavljeno zaključavanje zaslona.</string>
     <string name="login_continue">Nastavi</string>
+    <string name="lock_now">Zaključaj</string>
     <string name="biometric_title">Prijava u Finance Manager</string>
     <string name="biometric_subtitle">Potvrdite identitet otiskom prsta ili PIN-om</string>
     <string name="login_fingerprint_description">Prijava otiskom prsta</string>
