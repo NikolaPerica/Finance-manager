@@ -11,6 +11,8 @@ import com.example.financemanager.data.MIGRATION_2_3
 import com.example.financemanager.data.MIGRATION_3_4
 import com.example.financemanager.data.MIGRATION_4_5
 import com.example.financemanager.data.PaymentPeriod
+import com.example.financemanager.data.Category
+import com.example.financemanager.data.FinanceData
 import com.example.financemanager.data.GoalContribution
 import com.example.financemanager.data.Reminder
 import com.example.financemanager.data.RoomFinanceRepository
@@ -193,6 +195,36 @@ class DatabaseMigrationTest {
             repository.deleteGoal(repository.goal(trip)!!)
             assertTrue(repository.contributions(trip).first().isEmpty())
             assertEquals(listOf("Laptop"), repository.goals().first().map { it.goal.name })
+        } finally {
+            db.close()
+        }
+    }
+
+    @Test
+    fun restoringABackupReplacesTheWholeDatabase() = runBlocking {
+        val db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).allowMainThreadQueries().build()
+        try {
+            val repository = RoomFinanceRepository(db)
+            repository.addCategory("Stara", TransactionType.EXPENSE)
+            val oldGoal = repository.saveGoal(SavingsGoal(name = "Stari cilj", target = 10.0))
+            repository.addContribution(GoalContribution(goalId = oldGoal, amount = 5.0, date = LocalDate.of(2026, 1, 1)))
+
+            val backup = FinanceData(
+                categories = listOf(Category(7, "Hrana", TransactionType.EXPENSE, monthlyBudget = 300.0, color = 2)),
+                transactions = listOf(Transaction(40, 12.5, LocalDate.of(2026, 10, 3), "Konzum", "Hrana", TransactionType.EXPENSE)),
+                reminders = listOf(Reminder(3, "Struja", 40.0, PaymentPeriod.MONTHLY, LocalDate.of(2026, 10, 15), 1, "Hrana", "")),
+                goals = listOf(SavingsGoal(12, "Ljetovanje", 1500.0, LocalDate.of(2027, 6, 1), 1)),
+                contributions = listOf(GoalContribution(20, 12, 300.0, LocalDate.of(2026, 10, 2))),
+            )
+            repository.replaceAll(backup)
+
+            // Same rows with the same ids; nothing of the old data is left.
+            assertEquals(backup, repository.snapshot())
+            assertEquals(300.0, repository.goals().first().single().saved, 0.0)
+
+            // New rows continue after the restored ids.
+            repository.addTransaction(Transaction(amount = 1.0, date = LocalDate.of(2026, 10, 4), note = "", category = "Hrana", type = TransactionType.EXPENSE))
+            assertTrue(repository.snapshot().transactions.last().id > 40)
         } finally {
             db.close()
         }

@@ -186,7 +186,7 @@ fun StatsScreen(
 private fun Modifier.contentWidth() = widthIn(max = 640.dp).fillMaxWidth()
 
 @Composable
-private fun <T> Choice(options: List<Pair<T, Int>>, selected: T, onSelect: (T) -> Unit, modifier: Modifier) {
+internal fun <T> Choice(options: List<Pair<T, Int>>, selected: T, onSelect: (T) -> Unit, modifier: Modifier) {
     SingleChoiceSegmentedButtonRow(modifier) {
         options.forEachIndexed { index, (value, label) ->
             SegmentedButton(
@@ -201,7 +201,7 @@ private fun <T> Choice(options: List<Pair<T, Int>>, selected: T, onSelect: (T) -
 }
 
 @Composable
-private fun PeriodSwitcher(period: StatsPeriod, canGoForward: Boolean, onShift: (Long) -> Unit, modifier: Modifier) {
+internal fun PeriodSwitcher(period: StatsPeriod, canGoForward: Boolean, onShift: (Long) -> Unit, modifier: Modifier) {
     val movable = period.range != StatsRange.ALL
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = { onShift(-1) }, enabled = movable) {
