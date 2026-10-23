@@ -66,12 +66,14 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.androidx.biometric)
+    implementation(libs.androidx.glance.appwidget)
     // BiometricPrompt needs a FragmentActivity; biometric alone pulls in a 2020 fragment release.
     implementation(libs.androidx.fragment)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.glance.appwidget.testing)
     testImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.test.espresso)

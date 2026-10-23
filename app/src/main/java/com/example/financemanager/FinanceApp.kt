@@ -8,6 +8,7 @@ import com.example.financemanager.notifications.BudgetNotifier
 import com.example.financemanager.notifications.ReminderCheck
 import com.example.financemanager.notifications.ReminderNotifier
 import com.example.financemanager.security.AppLock
+import com.example.financemanager.widget.WidgetSync
 
 class FinanceApp : Application() {
     val repository: FinanceRepository by lazy { RoomFinanceRepository(AppDatabase.create(this)) }
@@ -20,5 +21,6 @@ class FinanceApp : Application() {
         ReminderNotifier(this).createChannel()
         BudgetNotifier(this).createChannel()
         ReminderCheck.schedule(this)
+        WidgetSync.startIfPlaced(this)
     }
 }
