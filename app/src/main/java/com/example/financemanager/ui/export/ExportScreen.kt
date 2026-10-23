@@ -10,10 +10,12 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -52,6 +54,7 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financemanager.R
@@ -228,21 +231,20 @@ fun ExportScreen(viewModel: ExportViewModel, onBack: () -> Unit) {
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                 )
                 Spacer(Modifier.height(4.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Button(
-                        onClick = { pdfLauncher.launch("izvjestaj-${viewModel.periodSlug(allTime)}.pdf") },
-                        enabled = !busy && !state.isLoading,
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.weight(1f).height(48.dp),
-                    ) { Text(stringResource(R.string.export_pdf)) }
-                    OutlinedButton(
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
-                        onClick = { csvLauncher.launch("transakcije-${viewModel.periodSlug(allTime)}.csv") },
-                        enabled = !busy && state.count > 0,
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.weight(1f).height(48.dp),
-                    ) { Text(stringResource(R.string.export_csv)) }
-                }
+                ActionButton(
+                    text = stringResource(R.string.export_pdf),
+                    icon = R.drawable.ic_file_download,
+                    primary = true,
+                    enabled = !busy && !state.isLoading,
+                    onClick = { pdfLauncher.launch("izvjestaj-${viewModel.periodSlug(allTime)}.pdf") },
+                )
+                ActionButton(
+                    text = stringResource(R.string.export_csv),
+                    icon = R.drawable.ic_notes,
+                    primary = false,
+                    enabled = !busy && state.count > 0,
+                    onClick = { csvLauncher.launch("transakcije-${viewModel.periodSlug(allTime)}.csv") },
+                )
             }
 
             Section(
@@ -251,22 +253,21 @@ fun ExportScreen(viewModel: ExportViewModel, onBack: () -> Unit) {
                 text = stringResource(R.string.backup_section_text),
                 modifier = width,
             ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Button(
-                        onClick = { backupLauncher.launch("finance-manager-kopija-${LocalDate.now()}.json") },
-                        enabled = !busy,
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.weight(1f).height(48.dp),
-                    ) { Text(stringResource(R.string.backup_save)) }
-                    OutlinedButton(
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
-                        // Cloud providers often don't label JSON as such, so accept plain text and binary too.
-                        onClick = { restoreLauncher.launch(arrayOf(JSON, "text/plain", "application/octet-stream")) },
-                        enabled = !busy,
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.weight(1f).height(48.dp),
-                    ) { Text(stringResource(R.string.backup_restore)) }
-                }
+                ActionButton(
+                    text = stringResource(R.string.backup_save),
+                    icon = R.drawable.ic_backup,
+                    primary = true,
+                    enabled = !busy,
+                    onClick = { backupLauncher.launch("finance-manager-kopija-${LocalDate.now()}.json") },
+                )
+                ActionButton(
+                    text = stringResource(R.string.backup_restore_from_file),
+                    icon = R.drawable.ic_restore,
+                    primary = false,
+                    enabled = !busy,
+                    // Cloud providers often don't label JSON as such, so accept plain text and binary too.
+                    onClick = { restoreLauncher.launch(arrayOf(JSON, "text/plain", "application/octet-stream")) },
+                )
             }
         }
     }
@@ -296,6 +297,33 @@ fun ExportScreen(viewModel: ExportViewModel, onBack: () -> Unit) {
                 }) { Text(stringResource(R.string.backup_restore)) }
             },
             dismissButton = { TextButton(onClick = { preview = null }) { Text(stringResource(R.string.odustani)) } },
+        )
+    }
+}
+
+/**
+ * Full-width button with an icon. Stacked rather than side by side, so the label stays on
+ * one line on narrow phones and with large font sizes.
+ */
+@Composable
+private fun ActionButton(text: String, icon: Int, primary: Boolean, enabled: Boolean, onClick: () -> Unit) {
+    val content: @Composable RowScope.() -> Unit = {
+        Icon(painterResource(icon), contentDescription = null, modifier = Modifier.size(20.dp))
+        Spacer(Modifier.width(8.dp))
+        Text(text, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
+    val modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+    val shape = RoundedCornerShape(16.dp)
+    if (primary) {
+        Button(onClick = onClick, enabled = enabled, shape = shape, modifier = modifier, content = content)
+    } else {
+        OutlinedButton(
+            onClick = onClick,
+            enabled = enabled,
+            shape = shape,
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
+            modifier = modifier,
+            content = content,
         )
     }
 }

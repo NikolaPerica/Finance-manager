@@ -266,6 +266,7 @@
     <string name="backup_section_text">Spremite sve podatke (transakcije, kategorije, budžete, podsjetnike i ciljeve) u jednu datoteku, npr. prije promjene mobitela. Pri spremanju možete odabrati i Google Drive.</string>
     <string name="backup_save">Spremi kopiju</string>
     <string name="backup_restore">Vrati</string>
+    <string name="backup_restore_from_file">Vrati iz kopije</string>
     <string name="backup_done">Sigurnosna kopija je spremljena</string>
     <string name="backup_failed">Spremanje kopije nije uspjelo</string>
     <string name="restore_title">Vratiti podatke iz kopije?</string>
