@@ -1,5 +1,6 @@
 package com.example.financemanager
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
@@ -8,11 +9,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.fragment.app.FragmentActivity
 import com.example.financemanager.ui.navigation.FinanceNavHost
 import com.example.financemanager.ui.theme.FinanceTheme
+import kotlinx.coroutines.flow.MutableStateFlow
 
 // FragmentActivity rather than ComponentActivity because BiometricPrompt needs one.
 class MainActivity : FragmentActivity() {
 
     private val appLock get() = (application as FinanceApp).appLock
+
+    /** A shortcut from the widget waiting to be carried out, see [QuickAction]. */
+    private val quickAction = MutableStateFlow<QuickAction?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -20,11 +25,20 @@ class MainActivity : FragmentActivity() {
         // Keep balances out of the recent apps overview. On Android 13+ only that preview is
         // hidden; older versions have no such switch, see onPause.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) setRecentsScreenshotEnabled(false)
+        // After a rotation the shortcut has already been handled.
+        if (savedInstanceState == null) quickAction.value = QuickAction.from(intent)
         setContent {
             FinanceTheme {
-                FinanceNavHost(appLock)
+                FinanceNavHost(appLock, quickAction, onQuickActionHandled = { quickAction.value = null })
             }
         }
+    }
+
+    // The app was already open (launchMode singleTop) and a widget button was tapped.
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        QuickAction.from(intent)?.let { quickAction.value = it }
     }
 
     override fun onStart() {

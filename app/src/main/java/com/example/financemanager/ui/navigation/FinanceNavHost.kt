@@ -33,6 +33,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.financemanager.FinanceApp
+import com.example.financemanager.QuickAction
 import com.example.financemanager.data.FinanceRepository
 import com.example.financemanager.data.Transaction
 import com.example.financemanager.data.TransactionType
@@ -66,6 +67,8 @@ import com.example.financemanager.ui.transactions.TransactionFilter
 import com.example.financemanager.ui.transactions.TransactionsScreen
 import com.example.financemanager.ui.transactions.TransactionsViewModel
 import java.time.LocalDate
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -143,7 +146,11 @@ private fun CreationExtras.repository(): FinanceRepository = (this[APPLICATION_K
  * locked, so unlocking returns to wherever the user was.
  */
 @Composable
-fun FinanceNavHost(appLock: AppLock) {
+fun FinanceNavHost(
+    appLock: AppLock,
+    quickAction: StateFlow<QuickAction?> = MutableStateFlow(null),
+    onQuickActionHandled: () -> Unit = {},
+) {
     val locked by appLock.locked.collectAsStateWithLifecycle()
     // Nothing behind the lock screen until the first unlock, so the dashboard's intro
     // plays when it can be seen.
@@ -154,7 +161,12 @@ fun FinanceNavHost(appLock: AppLock) {
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         if (opened) {
             // While locked, screen readers mustn't read the content underneath.
-            AppNavHost(onLock = appLock::lockNow, modifier = if (locked) Modifier.clearAndSetSemantics {} else Modifier)
+            AppNavHost(
+                onLock = appLock::lockNow,
+                quickAction = quickAction,
+                onQuickActionHandled = onQuickActionHandled,
+                modifier = if (locked) Modifier.clearAndSetSemantics {} else Modifier,
+            )
         }
         AnimatedVisibility(visible = locked, enter = fadeIn(), exit = fadeOut(tween(300))) {
             // Back leaves the app instead of going back in the screens underneath.
@@ -174,8 +186,23 @@ private fun Modifier.blockTouches() = pointerInput(Unit) {
 }
 
 @Composable
-private fun AppNavHost(onLock: () -> Unit, modifier: Modifier) {
+private fun AppNavHost(
+    onLock: () -> Unit,
+    quickAction: StateFlow<QuickAction?>,
+    onQuickActionHandled: () -> Unit,
+    modifier: Modifier,
+) {
     val navController = rememberNavController()
+    // A widget button opens the form on top of the dashboard. While locked this happens
+    // underneath the lock screen, so the form is there once the user unlocks.
+    val action by quickAction.collectAsStateWithLifecycle()
+    LaunchedEffect(action) {
+        val pending = action ?: return@LaunchedEffect
+        navController.navigate(TransactionFormRoute(isIncome = pending == QuickAction.ADD_INCOME)) {
+            popUpTo<DashboardRoute>()
+        }
+        onQuickActionHandled()
+    }
     NavHost(
         navController = navController,
         startDestination = DashboardRoute,
