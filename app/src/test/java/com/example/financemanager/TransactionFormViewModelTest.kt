@@ -2,6 +2,7 @@ package com.example.financemanager
 
 import com.example.financemanager.data.Category
 import com.example.financemanager.data.TransactionType
+import com.example.financemanager.receipt.ReceiptData
 import com.example.financemanager.ui.components.CategoryNameError
 import com.example.financemanager.ui.transaction.FormEvent
 import com.example.financemanager.ui.transaction.TransactionFormViewModel
@@ -20,6 +21,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TransactionFormViewModelTest {
@@ -80,5 +82,27 @@ class TransactionFormViewModelTest {
         viewModel.addCategory(" Stanarina ")
         assertEquals("Stanarina", viewModel.state.value.category)
         assertEquals(FormEvent.CategoryAdded("Stanarina"), viewModel.events.first())
+    }
+
+    @Test
+    fun aScannedReceiptFillsWhatWasFoundAndKeepsWhatWasTyped() = runTest(UnconfinedTestDispatcher()) {
+        viewModel.onNoteChange("tjedna kupnja")
+        viewModel.save() // marks the empty amount and category as errors
+        val receipt = ReceiptData(amount = 23.9, date = LocalDate.of(2026, 10, 21), merchant = "Konzum Plus")
+
+        viewModel.applyReceipt(receipt, category = "Hrana")
+
+        val state = viewModel.state.value
+        assertEquals("23,9", state.amount)
+        assertEquals(LocalDate.of(2026, 10, 21), state.date)
+        assertEquals("tjedna kupnja", state.note)
+        assertEquals("Hrana", state.category)
+        assertFalse(state.amountError)
+        assertFalse(state.categoryError)
+        assertEquals(FormEvent.ReceiptRead(receipt), viewModel.events.first())
+
+        // Nothing found: the form stays as it was.
+        viewModel.applyReceipt(ReceiptData(null, null, null), category = null)
+        assertEquals("23,9", viewModel.state.value.amount)
     }
 }

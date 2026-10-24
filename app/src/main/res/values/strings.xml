@@ -303,4 +303,14 @@
     <string name="insight_last_month_share">To je %1$d %% prihoda tog mjeseca.</string>
     <string name="insight_last_month_over_share">Rashodi su bili %1$d %% veći od prihoda.</string>
     <string name="insight_last_month_no_income">Nije bilo prihoda, a rashodi su bili %1$s.</string>
+    <!-- Skeniranje računa -->
+    <string name="scan_receipt">Skeniraj račun</string>
+    <string name="scan_receipt_text">Fotografiraj račun ili odaberi njegovu sliku. Iznos, datum i trgovina popunit će se sami, a slika se čita samo na mobitelu. Prije spremanja provjeri podatke.</string>
+    <string name="scan_take_photo">Fotografiraj</string>
+    <string name="scan_pick_image">Iz galerije</string>
+    <string name="scan_found">S računa: %1$s. Provjeri podatke prije spremanja.</string>
+    <string name="scan_no_amount">Iznos nije prepoznat. Pokušaj s oštrijom fotografijom ili ga upiši ručno.</string>
+    <string name="scan_failed">Slika se ne može pročitati.</string>
+    <string name="scan_model_downloading">Prepoznavanje teksta još se preuzima preko Google Play usluga. Pokušaj ponovno za minutu.</string>
+    <string name="scan_no_camera">Nema aplikacije za kameru.</string>
 </resources>
