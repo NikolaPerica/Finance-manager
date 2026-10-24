@@ -6,6 +6,7 @@ import com.example.financemanager.data.Category
 import com.example.financemanager.data.FinanceRepository
 import com.example.financemanager.data.Transaction
 import com.example.financemanager.data.TransactionType
+import com.example.financemanager.receipt.ReceiptData
 import com.example.financemanager.ui.amountInputText
 import com.example.financemanager.ui.budgets.BudgetAlert
 import com.example.financemanager.ui.budgets.budgetAlert
@@ -46,6 +47,9 @@ sealed interface FormEvent {
     /** [budgetAlert] is set when the expense brought its category close to or over budget. */
     data class Saved(val budgetAlert: BudgetAlert? = null) : FormEvent
     data object Deleted : FormEvent
+
+    /** A receipt was read; the fields that were found have been filled in. */
+    data class ReceiptRead(val receipt: ReceiptData) : FormEvent
     data class CategoryAdded(val name: String) : FormEvent
 }
 
@@ -98,6 +102,24 @@ class TransactionFormViewModel(
     fun onCategoryChange(name: String) = _state.update { it.copy(category = name, categoryError = false) }
 
     fun onNoteChange(note: String) = _state.update { it.copy(note = note) }
+
+    /**
+     * Fills the form from a scanned receipt: the amount and date when found, the shop as the
+     * note (unless one was typed) and [category] when none is chosen yet.
+     */
+    fun applyReceipt(receipt: ReceiptData, category: String?) {
+        _state.update { current ->
+            current.copy(
+                amount = receipt.amount?.let(::amountInputText) ?: current.amount,
+                amountError = if (receipt.amount != null) false else current.amountError,
+                date = receipt.date ?: current.date,
+                note = current.note.ifBlank { receipt.merchant.orEmpty() },
+                category = current.category.ifBlank { category.orEmpty() },
+                categoryError = if (current.category.isBlank() && category != null) false else current.categoryError,
+            )
+        }
+        viewModelScope.launch { _events.send(FormEvent.ReceiptRead(receipt)) }
+    }
 
     /** Returns why [name] can't be used as a new category, or null if it can. */
     fun validateCategoryName(name: String): CategoryNameError? = categoryNameError(name, categories.value)

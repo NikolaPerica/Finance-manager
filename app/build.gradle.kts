@@ -67,6 +67,7 @@ dependencies {
 
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.glance.appwidget)
+    implementation(libs.mlkit.text.recognition)
     // BiometricPrompt needs a FragmentActivity; biometric alone pulls in a 2020 fragment release.
     implementation(libs.androidx.fragment)
 
