@@ -53,6 +53,8 @@ import com.example.financemanager.ui.goals.GoalFormScreen
 import com.example.financemanager.ui.goals.GoalFormViewModel
 import com.example.financemanager.ui.goals.GoalsScreen
 import com.example.financemanager.ui.goals.GoalsViewModel
+import com.example.financemanager.ui.insights.InsightsScreen
+import com.example.financemanager.ui.insights.InsightsViewModel
 import com.example.financemanager.ui.login.LoginScreen
 import com.example.financemanager.ui.reminders.ReminderFormScreen
 import com.example.financemanager.ui.reminders.ReminderFormViewModel
@@ -117,6 +119,9 @@ data object GoalsRoute
 
 @Serializable
 data object ExportRoute
+
+@Serializable
+data object InsightsRoute
 
 @Serializable
 data class GoalRoute(val id: Long)
@@ -231,6 +236,7 @@ private fun AppNavHost(
                 onOpenGoals = { navController.navigate(GoalsRoute) },
                 onOpenExport = { navController.navigate(ExportRoute) },
                 onLock = onLock,
+                onOpenInsights = { navController.navigate(InsightsRoute) },
                 onOpenGoal = { navController.navigate(GoalRoute(it)) },
                 onAddGoal = { navController.navigate(GoalFormRoute()) },
             )
@@ -257,6 +263,12 @@ private fun AppNavHost(
         composable<CategoriesRoute> {
             CategoriesScreen(
                 viewModel = viewModel(factory = viewModelFactory { initializer { CategoriesViewModel(repository()) } }),
+                onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
+            )
+        }
+        composable<InsightsRoute> {
+            InsightsScreen(
+                viewModel = viewModel(factory = viewModelFactory { initializer { InsightsViewModel(repository()) } }),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
             )
         }

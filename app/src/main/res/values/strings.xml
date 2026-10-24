@@ -277,4 +277,30 @@
     <string name="restore_done">Podaci su vraćeni iz kopije</string>
     <string name="restore_failed">Vraćanje nije uspjelo, podaci nisu promijenjeni</string>
     <string name="restore_invalid">Datoteka nije ispravna sigurnosna kopija</string>
+    <!-- Uvidi -->
+    <string name="insights_title">Uvidi</string>
+    <string name="insights_about">Uvidi uspoređuju ovaj mjesec s prethodna 3 mjeseca, uvijek za isti dio mjeseca: danas se 1. – %1$d. ovog mjeseca uspoređuje s 1. – %1$d. u prethodnim mjesecima. Predviđanje dodaje trenutnom stanju ono što se u prethodnim mjesecima obično događalo u ostatku mjeseca.</string>
+    <string name="insights_need_history">Usporedbe s prošlim mjesecima pojavit će se kad aplikacija bude imala podatke za barem jedan cijeli mjesec.</string>
+    <string name="insight_forecast_title">Na kraju mjeseca: oko %1$s</string>
+    <string name="insight_forecast_body">%1$s do kraja mjeseca obično stigne još oko %2$s, a potroši se oko %3$s.</string>
+    <string name="insight_forecast_expense_only">%1$s do kraja mjeseca obično se potroši još oko %2$s.</string>
+    <string name="insight_forecast_pace">%1$s do kraja mjeseca potrošit ćeš još oko %2$s.</string>
+    <string name="insight_basis_pace">Prema dosadašnjoj potrošnji ovog mjeseca</string>
+    <plurals name="insight_basis_months">
+        <item quantity="one">Prema prošlom mjesecu</item>
+        <item quantity="few">Prema prethodna %d mjeseca</item>
+        <item quantity="other">Prema prethodnih %d mjeseci</item>
+    </plurals>
+    <string name="insight_trend_more">%1$d %% više nego inače do ovog dana u mjesecu: %2$s, inače oko %3$s.</string>
+    <string name="insight_trend_times">%1$s puta više nego inače do ovog dana u mjesecu: %2$s, inače oko %3$s.</string>
+    <string name="insight_trend_less">%1$d %% manje nego inače do ovog dana u mjesecu: %2$s, inače oko %3$s.</string>
+    <string name="insight_budget_title">Budžet za kategoriju %1$s</string>
+    <string name="insight_budget_body">Ovim tempom do kraja mjeseca potrošit ćeš oko %1$s, a budžet je %2$s.</string>
+    <string name="insight_unusual_title">Neuobičajeno velik rashod</string>
+    <string name="insight_unusual_body">%1$s: %2$s (%3$s), a inače oko %4$s.</string>
+    <string name="insight_last_month_saved">%1$s: ušteđeno %2$s</string>
+    <string name="insight_last_month_overspent">%1$s: potrošeno %2$s više nego zarađeno</string>
+    <string name="insight_last_month_share">To je %1$d %% prihoda tog mjeseca.</string>
+    <string name="insight_last_month_over_share">Rashodi su bili %1$d %% veći od prihoda.</string>
+    <string name="insight_last_month_no_income">Nije bilo prihoda, a rashodi su bili %1$s.</string>
 </resources>

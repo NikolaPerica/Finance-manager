@@ -12,6 +12,8 @@ import com.example.financemanager.ui.budgets.BudgetSummary
 import com.example.financemanager.ui.budgets.budgetItems
 import com.example.financemanager.ui.budgets.budgetSummary
 import com.example.financemanager.ui.goals.GoalProgress
+import com.example.financemanager.ui.insights.Insight
+import com.example.financemanager.ui.insights.buildInsights
 import com.example.financemanager.ui.goals.GoalStatus
 import com.example.financemanager.ui.goals.progress
 import kotlinx.coroutines.flow.SharingStarted
@@ -38,6 +40,8 @@ data class DashboardUiState(
     /** Goals still being saved for, nearest deadline first (at most a few). */
     val goals: List<GoalProgress> = emptyList(),
     val hasGoals: Boolean = false,
+    /** The month-end forecast first, then the most notable other insights. */
+    val insights: List<Insight> = emptyList(),
     val isLoading: Boolean = true,
 ) {
     val balance: Double get() = income - expense
@@ -46,6 +50,7 @@ data class DashboardUiState(
 private const val UPCOMING_COUNT = 3
 private const val RECENT_COUNT = 10
 private const val GOALS_COUNT = 2
+private const val INSIGHTS_COUNT = 3
 
 fun summarize(
     transactions: List<Transaction>,
@@ -64,6 +69,7 @@ fun summarize(
     budget = budgetSummary(budgetItems(categories.filter { it.type == TransactionType.EXPENSE }, transactions, YearMonth.from(today))),
     goals = goals.map { it.progress(today) }.filter { it.status != GoalStatus.REACHED }.take(GOALS_COUNT),
     hasGoals = goals.isNotEmpty(),
+    insights = buildInsights(transactions, categories, today).take(INSIGHTS_COUNT),
     isLoading = false,
 )
 
