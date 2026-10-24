@@ -1,5 +1,7 @@
 # Finance manager
 
+[![CI](https://github.com/NikolaPerica/Finance-manager/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/NikolaPerica/Finance-manager/actions/workflows/ci.yml)
+
 Final thesis at the university.
 
 Mobile app in Kotlin for finance tracking.
