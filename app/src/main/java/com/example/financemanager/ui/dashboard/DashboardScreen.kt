@@ -69,6 +69,8 @@ import com.example.financemanager.ui.budgets.LevelChip
 import com.example.financemanager.ui.budgets.levelColor
 import com.example.financemanager.ui.components.TransactionRow
 import com.example.financemanager.ui.goals.GoalCard
+import com.example.financemanager.ui.insights.Insight
+import com.example.financemanager.ui.insights.InsightRow
 import com.example.financemanager.ui.components.TransactionTypeBadge
 import com.example.financemanager.ui.components.rememberCategoryColors
 import com.example.financemanager.ui.components.animatedAmount
@@ -100,6 +102,7 @@ fun DashboardScreen(
     onAddGoal: () -> Unit,
     onOpenExport: () -> Unit,
     onLock: () -> Unit,
+    onOpenInsights: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
@@ -130,7 +133,7 @@ fun DashboardScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             item(key = "header") {
-                Header(onOpenStats, onOpenCategories, onOpenBudgets, onOpenGoals, onOpenReminders, onOpenExport, onLock, Modifier.contentWidth().staggeredEntrance(0, playIntro))
+                Header(onOpenStats, onOpenCategories, onOpenBudgets, onOpenGoals, onOpenReminders, onOpenExport, onLock, onOpenInsights, Modifier.contentWidth().staggeredEntrance(0, playIntro))
             }
             item(key = "balance") {
                 BalanceCard(state, Modifier.contentWidth().padding(top = 8.dp).staggeredEntrance(1, playIntro))
@@ -147,6 +150,19 @@ fun DashboardScreen(
             if (!state.isLoading) {
                 item(key = "budget") {
                     BudgetCard(state.budget, onOpenBudgets, Modifier.contentWidth().staggeredEntrance(3, playIntro))
+                }
+            }
+            if (state.insights.isNotEmpty()) {
+                item(key = "insightsHeader") {
+                    SectionHeader(
+                        stringResource(R.string.insights_title),
+                        Modifier.contentWidth().padding(top = 8.dp).staggeredEntrance(3, playIntro),
+                    ) {
+                        TextButton(onClick = onOpenInsights) { Text(stringResource(R.string.see_all)) }
+                    }
+                }
+                item(key = "insights") {
+                    InsightsCard(state.insights, onOpenInsights, Modifier.contentWidth().animateItem().staggeredEntrance(3, playIntro))
                 }
             }
             item(key = "upcomingHeader") {
@@ -241,6 +257,7 @@ private fun Header(
     onOpenReminders: () -> Unit,
     onOpenExport: () -> Unit,
     onLock: () -> Unit,
+    onOpenInsights: () -> Unit,
     modifier: Modifier,
 ) {
     val greeting = when (LocalTime.now().hour) {
@@ -269,6 +286,7 @@ private fun Header(
                     Triple(R.string.budgets_title, R.drawable.ic_wallet, onOpenBudgets),
                     Triple(R.string.goals_title, R.drawable.ic_savings, onOpenGoals),
                     Triple(R.string.reminders_title, R.drawable.ic_bell, onOpenReminders),
+                    Triple(R.string.insights_title, R.drawable.ic_lightbulb, onOpenInsights),
                     Triple(R.string.export_menu, R.drawable.ic_file_download, onOpenExport),
                     Triple(R.string.lock_now, R.drawable.ic_lock, onLock),
                 ).forEach { (label, icon, action) ->
@@ -458,6 +476,21 @@ private fun BudgetCard(summary: BudgetSummary?, onClick: () -> Unit, modifier: M
                     color = FinanceTheme.colors.expense,
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun InsightsCard(insights: List<Insight>, onClick: () -> Unit, modifier: Modifier) {
+    Surface(
+        onClick = onClick,
+        shape = CardShape,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        modifier = modifier,
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            insights.forEach { InsightRow(it) }
         }
     }
 }
