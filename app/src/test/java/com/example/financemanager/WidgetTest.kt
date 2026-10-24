@@ -43,8 +43,8 @@ class WidgetTest {
         provideComposable { WidgetContent(summary) }
 
         onNode(hasText("Trenutno stanje")).assertExists()
-        onNode(hasText("1.221,60 €")).assertExists()
-        onNode(hasText("Ovaj mjesec +1.850,00 € · −628,40 €")).assertExists()
+        onNode(hasText("1.221,60\u00A0€")).assertExists()
+        onNode(hasText("Ovaj mjesec +1.850,00\u00A0€ · −628,40\u00A0€")).assertExists()
         onNode(hasText("Dodaj prihod")).assertExists()
         onNode(hasText("Dodaj rashod")).assertExists()
     }
@@ -55,7 +55,7 @@ class WidgetTest {
         setAppWidgetSize(FinanceWidget.Compact)
         provideComposable { WidgetContent(summary) }
 
-        onNode(hasText("1.221,60 €")).assertExists()
+        onNode(hasText("1.221,60\u00A0€")).assertExists()
         onNode(hasText("Ovaj mjesec")).assertDoesNotExist()
         onNode(hasText("Prihod")).assertExists()
         onNode(hasText("Rashod")).assertExists()
