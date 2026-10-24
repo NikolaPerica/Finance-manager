@@ -74,6 +74,10 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)
+    // Compose UI tests run on the JVM with Robolectric, so CI needs no emulator.
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
     testImplementation(libs.androidx.glance.appwidget.testing)
     testImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.test.junit)

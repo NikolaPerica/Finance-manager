@@ -1,0 +1,73 @@
+# Builds and tests the app on every push and pull request, so a broken change shows up
+# on GitHub before it reaches main. The same checks can be run locally with:
+#   ./gradlew testDebugUnitTest lintDebug assembleDebug assembleRelease
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same branch makes an older, still running check pointless.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Tests, lint and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v4
+
+      # Caches Gradle's downloads and build outputs between runs.
+      - uses: gradle/actions/setup-gradle@v6
+
+      # local.properties in the repository points at an SDK on a Windows PC;
+      # use the runner's SDK instead.
+      - name: Use the runner's Android SDK
+        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      # Unit tests, plus the Compose UI tests that run on the JVM with Robolectric.
+      - name: Tests
+        run: ./gradlew testDebugUnitTest
+
+      - name: Lint
+        run: ./gradlew lintDebug
+
+      - name: Build
+        run: ./gradlew assembleDebug assembleRelease
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports
+          path: app/build/reports/tests/
+          if-no-files-found: ignore
+
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-debug.html
+          if-no-files-found: ignore
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
