@@ -49,7 +49,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financemanager.R
-import com.example.financemanager.ui.DateFormat
+import com.example.financemanager.domain.DateFormat
 import com.example.financemanager.ui.components.ColorPicker
 import com.example.financemanager.ui.components.DatePickerSheet
 import com.example.financemanager.ui.components.FieldShape

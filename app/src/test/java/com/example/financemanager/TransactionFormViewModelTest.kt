@@ -1,8 +1,8 @@
 package com.example.financemanager
 
-import com.example.financemanager.data.Category
-import com.example.financemanager.data.TransactionType
-import com.example.financemanager.receipt.ReceiptData
+import com.example.financemanager.domain.receipt.ReceiptData
+import com.example.financemanager.model.Category
+import com.example.financemanager.model.TransactionType
 import com.example.financemanager.ui.components.CategoryNameError
 import com.example.financemanager.ui.transaction.FormEvent
 import com.example.financemanager.ui.transaction.TransactionFormViewModel

@@ -3,7 +3,11 @@ package com.example.financemanager.ui.stats
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financemanager.data.FinanceRepository
-import com.example.financemanager.data.TransactionType
+import com.example.financemanager.domain.stats.StatsPeriod
+import com.example.financemanager.domain.stats.StatsRange
+import com.example.financemanager.domain.stats.StatsUiState
+import com.example.financemanager.domain.stats.buildStats
+import com.example.financemanager.model.TransactionType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

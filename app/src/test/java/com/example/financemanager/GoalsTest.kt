@@ -1,15 +1,15 @@
 package com.example.financemanager
 
-import com.example.financemanager.data.GoalContribution
-import com.example.financemanager.data.GoalWithSaved
-import com.example.financemanager.data.SavingsGoal
+import com.example.financemanager.domain.goals.GoalProgress
+import com.example.financemanager.domain.goals.GoalStatus
+import com.example.financemanager.model.GoalContribution
+import com.example.financemanager.model.GoalWithSaved
+import com.example.financemanager.model.SavingsGoal
 import com.example.financemanager.ui.dashboard.summarize
 import com.example.financemanager.ui.goals.ContributionError
 import com.example.financemanager.ui.goals.GoalDetailViewModel
 import com.example.financemanager.ui.goals.GoalEvent
 import com.example.financemanager.ui.goals.GoalFormViewModel
-import com.example.financemanager.ui.goals.GoalProgress
-import com.example.financemanager.ui.goals.GoalStatus
 import com.example.financemanager.ui.goals.GoalsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

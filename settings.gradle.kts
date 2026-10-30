@@ -22,3 +22,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "Finance Manager"
 include(":app")
+include(":core:model")
+include(":core:domain")
+include(":core:data")

@@ -3,7 +3,10 @@ package com.example.financemanager.ui.insights
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financemanager.data.FinanceRepository
-import com.example.financemanager.data.TransactionType
+import com.example.financemanager.domain.insights.Insight
+import com.example.financemanager.domain.insights.buildInsights
+import com.example.financemanager.domain.insights.historyMonths
+import com.example.financemanager.model.TransactionType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

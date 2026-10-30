@@ -6,9 +6,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.edit
-import com.example.financemanager.data.Reminder
 import com.example.financemanager.di.appEntryPoint
-import com.example.financemanager.ui.reminders.DueStatus
+import com.example.financemanager.domain.reminders.DueStatus
+import com.example.financemanager.model.Reminder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

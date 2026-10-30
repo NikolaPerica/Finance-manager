@@ -55,10 +55,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financemanager.R
-import com.example.financemanager.data.Reminder
+import com.example.financemanager.domain.DateFormat
+import com.example.financemanager.domain.MoneyFormat
+import com.example.financemanager.model.Reminder
 import com.example.financemanager.notifications.ReminderNotifier
-import com.example.financemanager.ui.DateFormat
-import com.example.financemanager.ui.MoneyFormat
 import com.example.financemanager.ui.components.NotificationAccess
 import com.example.financemanager.ui.components.SwipeToDelete
 import com.example.financemanager.ui.components.rememberNotificationAccess

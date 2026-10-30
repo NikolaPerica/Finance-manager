@@ -57,8 +57,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financemanager.R
-import com.example.financemanager.data.Category
-import com.example.financemanager.data.PaymentPeriod
+import com.example.financemanager.model.Category
+import com.example.financemanager.model.PaymentPeriod
 import com.example.financemanager.ui.components.AddCategoryDialog
 import com.example.financemanager.ui.components.DateField
 import com.example.financemanager.ui.components.DatePickerSheet

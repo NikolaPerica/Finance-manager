@@ -2,10 +2,15 @@ package com.example.financemanager.ui.transactions
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.financemanager.data.Category
 import com.example.financemanager.data.FinanceRepository
-import com.example.financemanager.data.Transaction
-import com.example.financemanager.data.TransactionType
+import com.example.financemanager.domain.transactions.DayGroup
+import com.example.financemanager.domain.transactions.PeriodFilter
+import com.example.financemanager.domain.transactions.TransactionFilter
+import com.example.financemanager.domain.transactions.applyFilter
+import com.example.financemanager.domain.transactions.groupByDay
+import com.example.financemanager.model.Category
+import com.example.financemanager.model.Transaction
+import com.example.financemanager.model.TransactionType
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject

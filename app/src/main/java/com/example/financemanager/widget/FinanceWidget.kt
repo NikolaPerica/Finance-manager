@@ -41,7 +41,9 @@ import com.example.financemanager.MainActivity
 import com.example.financemanager.QuickAction
 import com.example.financemanager.R
 import com.example.financemanager.di.appEntryPoint
-import com.example.financemanager.ui.MoneyFormat
+import com.example.financemanager.domain.MoneyFormat
+import com.example.financemanager.domain.widget.WidgetSummary
+import com.example.financemanager.domain.widget.widgetSummary
 import kotlinx.coroutines.flow.first
 
 /** Home screen widget: the balance, this month's totals and buttons to add income or an expense. */

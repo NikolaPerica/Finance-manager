@@ -65,9 +65,14 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financemanager.R
-import com.example.financemanager.data.TransactionType
-import com.example.financemanager.ui.Croatian
-import com.example.financemanager.ui.MoneyFormat
+import com.example.financemanager.domain.Croatian
+import com.example.financemanager.domain.MoneyFormat
+import com.example.financemanager.domain.stats.CategoryStat
+import com.example.financemanager.domain.stats.StatsPeriod
+import com.example.financemanager.domain.stats.StatsRange
+import com.example.financemanager.domain.stats.StatsUiState
+import com.example.financemanager.domain.stats.TrendBar
+import com.example.financemanager.model.TransactionType
 import com.example.financemanager.ui.components.TransactionTypeBadge
 import com.example.financemanager.ui.components.animatedAmount
 import com.example.financemanager.ui.theme.FinanceTheme

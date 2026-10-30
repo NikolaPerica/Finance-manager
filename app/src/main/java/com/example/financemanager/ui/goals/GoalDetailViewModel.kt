@@ -3,8 +3,11 @@ package com.example.financemanager.ui.goals
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financemanager.data.FinanceRepository
-import com.example.financemanager.data.GoalContribution
-import com.example.financemanager.ui.parseAmount
+import com.example.financemanager.domain.goals.GoalProgress
+import com.example.financemanager.domain.goals.GoalStatus
+import com.example.financemanager.domain.goals.progress
+import com.example.financemanager.domain.parseAmount
+import com.example.financemanager.model.GoalContribution
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject

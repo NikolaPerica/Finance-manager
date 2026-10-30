@@ -1,6 +1,6 @@
 # Builds and tests the app on every push and pull request, so a broken change shows up
 # on GitHub before it reaches main. The same checks can be run locally with:
-#   ./gradlew testDebugUnitTest lintDebug assembleDebug assembleRelease
+#   ./gradlew testDebugUnitTest :core:domain:test lintDebug assembleDebug assembleRelease
 name: CI
 
 on:
@@ -41,8 +41,9 @@ jobs:
         run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
       # Unit tests, plus the Compose UI tests that run on the JVM with Robolectric.
+      # :core:domain is plain Kotlin, so its task is just "test".
       - name: Tests
-        run: ./gradlew testDebugUnitTest
+        run: ./gradlew testDebugUnitTest :core:domain:test
 
       - name: Lint
         run: ./gradlew lintDebug
@@ -55,7 +56,9 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: test-reports
-          path: app/build/reports/tests/
+          path: |
+            app/build/reports/tests/
+            core/*/build/reports/tests/
           if-no-files-found: ignore
 
       - name: Upload lint report
@@ -63,7 +66,9 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: lint-report
-          path: app/build/reports/lint-results-debug.html
+          path: |
+            app/build/reports/lint-results-debug.html
+            core/data/build/reports/lint-results-debug.html
           if-no-files-found: ignore
 
       - name: Upload debug APK

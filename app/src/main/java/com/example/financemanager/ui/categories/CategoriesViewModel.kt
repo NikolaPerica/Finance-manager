@@ -2,10 +2,10 @@ package com.example.financemanager.ui.categories
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.financemanager.data.Category
 import com.example.financemanager.data.FinanceRepository
-import com.example.financemanager.data.Transaction
-import com.example.financemanager.data.TransactionType
+import com.example.financemanager.model.Category
+import com.example.financemanager.model.Transaction
+import com.example.financemanager.model.TransactionType
 import com.example.financemanager.ui.components.CategoryNameError
 import com.example.financemanager.ui.components.categoryNameError
 import dagger.hilt.android.lifecycle.HiltViewModel

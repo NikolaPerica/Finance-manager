@@ -20,7 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import com.example.financemanager.R
-import com.example.financemanager.data.Category
+import com.example.financemanager.model.Category
 
 enum class CategoryNameError { EMPTY, EXISTS }
 

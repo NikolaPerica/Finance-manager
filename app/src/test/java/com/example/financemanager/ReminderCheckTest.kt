@@ -1,9 +1,9 @@
 package com.example.financemanager
 
-import com.example.financemanager.data.PaymentPeriod
-import com.example.financemanager.data.Reminder
+import com.example.financemanager.domain.reminders.DueStatus
+import com.example.financemanager.model.PaymentPeriod
+import com.example.financemanager.model.Reminder
 import com.example.financemanager.notifications.ReminderCheck
-import com.example.financemanager.ui.reminders.DueStatus
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.LocalDate

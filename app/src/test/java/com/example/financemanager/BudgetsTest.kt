@@ -1,13 +1,13 @@
 package com.example.financemanager
 
-import com.example.financemanager.data.Category
-import com.example.financemanager.data.Transaction
-import com.example.financemanager.data.TransactionType
-import com.example.financemanager.ui.budgets.BudgetAlert
-import com.example.financemanager.ui.budgets.BudgetLevel
+import com.example.financemanager.domain.budgets.BudgetAlert
+import com.example.financemanager.domain.budgets.BudgetLevel
+import com.example.financemanager.domain.budgets.budgetAlert
+import com.example.financemanager.domain.budgets.budgetLevel
+import com.example.financemanager.model.Category
+import com.example.financemanager.model.Transaction
+import com.example.financemanager.model.TransactionType
 import com.example.financemanager.ui.budgets.BudgetsViewModel
-import com.example.financemanager.ui.budgets.budgetAlert
-import com.example.financemanager.ui.budgets.budgetLevel
 import com.example.financemanager.ui.dashboard.summarize
 import com.example.financemanager.ui.transaction.FormEvent
 import com.example.financemanager.ui.transaction.TransactionFormViewModel

@@ -24,9 +24,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.financemanager.R
-import com.example.financemanager.data.SavingsGoal
-import com.example.financemanager.ui.DateFormat
-import com.example.financemanager.ui.MoneyFormat
+import com.example.financemanager.domain.DateFormat
+import com.example.financemanager.domain.MoneyFormat
+import com.example.financemanager.domain.goals.GoalProgress
+import com.example.financemanager.domain.goals.GoalStatus
+import com.example.financemanager.domain.goals.progress
+import com.example.financemanager.model.SavingsGoal
 import com.example.financemanager.ui.budgets.BudgetBar
 import com.example.financemanager.ui.theme.FinanceTheme
 import kotlin.math.roundToInt

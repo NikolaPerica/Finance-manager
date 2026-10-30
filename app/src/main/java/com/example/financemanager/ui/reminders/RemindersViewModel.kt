@@ -3,8 +3,8 @@ package com.example.financemanager.ui.reminders
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financemanager.data.FinanceRepository
-import com.example.financemanager.data.Reminder
 import com.example.financemanager.data.ReminderPayment
+import com.example.financemanager.model.Reminder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted

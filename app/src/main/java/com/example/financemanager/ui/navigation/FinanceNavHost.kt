@@ -29,8 +29,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.financemanager.QuickAction
-import com.example.financemanager.data.Transaction
-import com.example.financemanager.data.TransactionType
+import com.example.financemanager.domain.transactions.PeriodFilter
+import com.example.financemanager.domain.transactions.TransactionFilter
+import com.example.financemanager.model.Transaction
+import com.example.financemanager.model.TransactionType
 import com.example.financemanager.security.AppLock
 import com.example.financemanager.ui.budgets.BudgetsScreen
 import com.example.financemanager.ui.budgets.BudgetsViewModel
@@ -58,8 +60,6 @@ import com.example.financemanager.ui.stats.StatsScreen
 import com.example.financemanager.ui.stats.StatsViewModel
 import com.example.financemanager.ui.transaction.TransactionFormScreen
 import com.example.financemanager.ui.transaction.TransactionFormViewModel
-import com.example.financemanager.ui.transactions.PeriodFilter
-import com.example.financemanager.ui.transactions.TransactionFilter
 import com.example.financemanager.ui.transactions.TransactionsScreen
 import com.example.financemanager.ui.transactions.TransactionsViewModel
 import java.time.LocalDate

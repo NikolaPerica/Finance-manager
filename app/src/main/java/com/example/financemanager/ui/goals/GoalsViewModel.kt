@@ -3,6 +3,11 @@ package com.example.financemanager.ui.goals
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financemanager.data.FinanceRepository
+import com.example.financemanager.domain.goals.GoalProgress
+import com.example.financemanager.domain.goals.GoalStatus
+import com.example.financemanager.domain.goals.GoalsSummary
+import com.example.financemanager.domain.goals.goalsSummary
+import com.example.financemanager.domain.goals.progress
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

@@ -6,12 +6,12 @@ import androidx.glance.appwidget.testing.unit.runGlanceAppWidgetUnitTest
 import androidx.glance.testing.unit.hasText
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.financemanager.data.Transaction
-import com.example.financemanager.data.TransactionType
+import com.example.financemanager.domain.widget.WidgetSummary
+import com.example.financemanager.domain.widget.widgetSummary
+import com.example.financemanager.model.Transaction
+import com.example.financemanager.model.TransactionType
 import com.example.financemanager.widget.FinanceWidget
 import com.example.financemanager.widget.WidgetContent
-import com.example.financemanager.widget.WidgetSummary
-import com.example.financemanager.widget.widgetSummary
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith

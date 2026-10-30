@@ -5,12 +5,12 @@ import android.graphics.Canvas
 import android.graphics.Color
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.financemanager.data.Transaction
-import com.example.financemanager.data.TransactionType
+import com.example.financemanager.domain.export.buildReport
+import com.example.financemanager.domain.stats.StatsPeriod
 import com.example.financemanager.export.PageSink
 import com.example.financemanager.export.PdfReportWriter
-import com.example.financemanager.export.buildReport
-import com.example.financemanager.ui.stats.StatsPeriod
+import com.example.financemanager.model.Transaction
+import com.example.financemanager.model.TransactionType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

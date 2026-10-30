@@ -27,10 +27,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.financemanager.R
-import com.example.financemanager.data.PaymentPeriod
-import com.example.financemanager.data.Reminder
-import com.example.financemanager.ui.DateFormat
-import com.example.financemanager.ui.MoneyFormat
+import com.example.financemanager.domain.DateFormat
+import com.example.financemanager.domain.MoneyFormat
+import com.example.financemanager.domain.reminders.DueStatus
+import com.example.financemanager.model.PaymentPeriod
+import com.example.financemanager.model.Reminder
 import com.example.financemanager.ui.theme.FinanceTheme
 import java.time.LocalDate
 
