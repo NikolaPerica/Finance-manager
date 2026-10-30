@@ -30,7 +30,7 @@ data class FinanceColors(
     val warning: Color,
     val warningContainer: Color,
     val gradient: List<Color>,
-    /** One colour per category slot, see [com.example.financemanager.data.Category.colorIndex]. */
+    /** One colour per category slot, see [com.example.financemanager.model.Category.colorIndex]. */
     val categories: List<Color>,
 )
 

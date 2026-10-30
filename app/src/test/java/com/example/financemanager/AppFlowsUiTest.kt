@@ -18,7 +18,8 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.financemanager.data.TransactionType
+import com.example.financemanager.di.appEntryPoint
+import com.example.financemanager.model.TransactionType
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -41,7 +42,7 @@ class AppFlowsUiTest {
     @get:Rule
     val rule = createAndroidComposeRule<MainActivity>()
 
-    private val appLock get() = (rule.activity.application as FinanceApp).appLock
+    private val appLock get() = rule.activity.appEntryPoint().appLock()
 
     /** Lets animations finish and the screen settle. */
     private fun settle() {
@@ -72,7 +73,7 @@ class AppFlowsUiTest {
     fun addingAnExpenseShowsItOnTheDashboard() {
         // Categories are added beforehand: the add-category dialog focuses its text field, and
         // the blinking cursor keeps Compose from ever going idle in a test.
-        runBlocking { (rule.activity.application as FinanceApp).repository.addCategory("Hrana", TransactionType.EXPENSE) }
+        runBlocking { rule.activity.appEntryPoint().repository().addCategory("Hrana", TransactionType.EXPENSE) }
         rule.onNodeWithText("Rashod").performClick()
         settle()
         rule.onNodeWithText("Novi rashod").assertIsDisplayed()

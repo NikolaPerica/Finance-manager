@@ -9,12 +9,13 @@ import com.example.financemanager.data.backup.parseBackup
 import com.example.financemanager.data.backup.toBackup
 import com.example.financemanager.data.backup.toData
 import com.example.financemanager.data.backup.toJson
-import com.example.financemanager.export.CsvLabels
-import com.example.financemanager.export.Report
-import com.example.financemanager.export.buildReport
-import com.example.financemanager.export.transactionsCsv
-import com.example.financemanager.ui.stats.StatsPeriod
-import com.example.financemanager.ui.stats.StatsRange
+import com.example.financemanager.domain.export.CsvLabels
+import com.example.financemanager.domain.export.Report
+import com.example.financemanager.domain.export.buildReport
+import com.example.financemanager.domain.export.transactionsCsv
+import com.example.financemanager.domain.stats.StatsPeriod
+import com.example.financemanager.domain.stats.StatsRange
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import java.time.LocalDate
 import java.time.LocalDateTime
+import javax.inject.Inject
 
 data class ExportUiState(
     val period: StatsPeriod = StatsPeriod.thisMonth(),
@@ -36,10 +38,14 @@ data class ExportUiState(
 /** A backup that was read and checked, waiting for the user to confirm the restore. */
 data class BackupPreview(val file: BackupFile, val data: FinanceData)
 
+@HiltViewModel
 class ExportViewModel(
     private val repository: FinanceRepository,
     private val today: () -> LocalDate = LocalDate::now,
 ) : ViewModel() {
+    // Hilt uses this one; tests pass their own [today].
+    @Inject
+    constructor(repository: FinanceRepository) : this(repository, LocalDate::now)
 
     private val period = MutableStateFlow(StatsPeriod.thisMonth(today()))
 

@@ -3,7 +3,12 @@ package com.example.financemanager.ui.stats
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financemanager.data.FinanceRepository
-import com.example.financemanager.data.TransactionType
+import com.example.financemanager.domain.stats.StatsPeriod
+import com.example.financemanager.domain.stats.StatsRange
+import com.example.financemanager.domain.stats.StatsUiState
+import com.example.financemanager.domain.stats.buildStats
+import com.example.financemanager.model.TransactionType
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -11,11 +16,16 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import java.time.LocalDate
+import javax.inject.Inject
 
+@HiltViewModel
 class StatsViewModel(
     repository: FinanceRepository,
     private val today: () -> LocalDate = LocalDate::now,
 ) : ViewModel() {
+    // Hilt uses this one; tests pass their own [today].
+    @Inject
+    constructor(repository: FinanceRepository) : this(repository, LocalDate::now)
 
     private val type = MutableStateFlow(TransactionType.EXPENSE)
     private val period = MutableStateFlow(StatsPeriod.thisMonth(today()))

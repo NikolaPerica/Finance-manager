@@ -1,10 +1,10 @@
 package com.example.financemanager
 
 import com.example.financemanager.data.Converters
-import com.example.financemanager.ui.DateFormat
-import com.example.financemanager.ui.MoneyFormat
-import com.example.financemanager.ui.isValidAmountInput
-import com.example.financemanager.ui.parseAmount
+import com.example.financemanager.domain.DateFormat
+import com.example.financemanager.domain.MoneyFormat
+import com.example.financemanager.domain.isValidAmountInput
+import com.example.financemanager.domain.parseAmount
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull

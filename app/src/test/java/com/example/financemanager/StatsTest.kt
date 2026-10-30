@@ -1,12 +1,12 @@
 package com.example.financemanager
 
-import com.example.financemanager.data.Transaction
-import com.example.financemanager.data.TransactionType
-import com.example.financemanager.ui.stats.CategoryStat
-import com.example.financemanager.ui.stats.StatsPeriod
-import com.example.financemanager.ui.stats.StatsRange
+import com.example.financemanager.domain.stats.CategoryStat
+import com.example.financemanager.domain.stats.StatsPeriod
+import com.example.financemanager.domain.stats.StatsRange
+import com.example.financemanager.domain.stats.buildStats
+import com.example.financemanager.model.Transaction
+import com.example.financemanager.model.TransactionType
 import com.example.financemanager.ui.stats.StatsViewModel
-import com.example.financemanager.ui.stats.buildStats
 import com.example.financemanager.ui.stats.niceCeiling
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

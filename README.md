@@ -69,8 +69,9 @@ The interface is in Croatian; amounts are in euros.
 |---|---|
 | Language | Kotlin 2.4 |
 | UI | Jetpack Compose (BOM 2026.09) with Material 3, a single activity with type-safe Navigation Compose |
-| Architecture | MVVM: one ViewModel with a `StateFlow` per screen, over a repository |
-| Database | SQLite through Room 2.8 (KSP), schema exported to `app/schemas`, migrations from version 1 |
+| Architecture | MVVM: one ViewModel with a `StateFlow` per screen, over a repository; four Gradle modules (see below) |
+| Dependency injection | Hilt 2.60 (KSP); screen arguments reach ViewModels through assisted injection |
+| Database | SQLite through Room 2.8 (KSP), schema exported to `core/data/schemas`, migrations from version 1 |
 | Login | AndroidX Biometric (fingerprint, falling back to PIN/pattern/password) |
 | Notifications | `AlarmManager` daily check, re-armed after reboot |
 | Widget | Jetpack Glance 1.2 |
@@ -82,33 +83,45 @@ The interface is in Croatian; amounts are in euros.
 
 ## Project layout
 
+The project is split into four Gradle modules. Each one may only use the modules below it,
+so for example a screen can't reach the database directly and the calculations can't
+touch Android.
+
 ```
-app/src/main/java/com/example/financemanager/
-├── MainActivity.kt        single activity; app lock, widget shortcuts
-├── FinanceApp.kt          Application: database, repository, notification channels
-├── QuickAction.kt         shortcuts into the app (widget buttons)
-├── data/                  Room entities, DAOs, database and migrations, FinanceRepository
-│   └── backup/            JSON backup format
-├── export/                CSV export, report data and PDF drawing
-├── notifications/         payment reminders and budget alerts
-├── receipt/               receipt text recognition and parsing
-├── security/              app lock timing
-├── widget/                home screen widget
-└── ui/
-    ├── navigation/        NavHost, routes, lock screen overlay
-    ├── login/             fingerprint / PIN screen
-    ├── dashboard/         home screen
-    ├── transaction/       add / edit form
-    ├── transactions/      list with search and filters
-    ├── categories/        category management
-    ├── stats/             statistics and chart
-    ├── insights/          insights and forecast
-    ├── budgets/           monthly budgets
-    ├── goals/             savings goals
-    ├── reminders/         payment reminders
-    ├── export/            export and backup screen
-    ├── components/        shared composables
-    └── theme/             colours, typography, shapes
+:app            screens, ViewModels, Hilt wiring, widget, notifications
+ ├─ :core:data      Room database, migrations, FinanceRepository, JSON backup   (Android library)
+ ├─ :core:domain    statistics, budgets, goals, insights, filters, receipts, CSV  (plain Kotlin)
+ └─ :core:model     entities: Transaction, Category, Reminder, SavingsGoal…      (plain Kotlin)
+```
+
+```
+core/model/   …/model/          entities with their Room annotations
+core/domain/  …/domain/         Format.kt (money, dates, amount input)
+              ├── budgets/      budget levels and alerts
+              ├── goals/        goal progress
+              ├── insights/     insights and month-end forecast
+              ├── stats/        statistics periods and totals
+              ├── transactions/ search and filters
+              ├── reminders/    due status
+              ├── receipt/      reading totals, dates and shops from receipt text
+              ├── export/       CSV and report data
+              └── widget/       widget summary
+core/data/    …/data/           database, DAOs, migrations, FinanceRepository
+              └── backup/       JSON backup format
+              schemas/          exported Room schemas (versions 1–5)
+
+app/          …/financemanager/
+              ├── MainActivity.kt   single activity; app lock, widget shortcuts
+              ├── FinanceApp.kt     Application: notification channels, reminder alarm, widget sync
+              ├── QuickAction.kt    shortcuts into the app (widget buttons)
+              ├── di/               Hilt module: database, repository, app lock
+              ├── export/           PDF drawing
+              ├── notifications/    payment reminders and budget alerts
+              ├── receipt/          text recognition with ML Kit
+              ├── security/         app lock timing
+              ├── widget/           home screen widget
+              └── ui/               navigation, login, dashboard, forms, lists, statistics,
+                                    insights, budgets, goals, reminders, export, components, theme
 ```
 
 ## Database
@@ -181,14 +194,15 @@ Requires JDK 17 or newer and the Android SDK with platform 37. Open the project 
 recent Android Studio, or run:
 
 ```
-./gradlew assembleDebug        # build the app
-./gradlew testDebugUnitTest    # all tests
-./gradlew lintDebug            # lint
+./gradlew assembleDebug                          # build the app
+./gradlew testDebugUnitTest :core:domain:test    # all tests
+./gradlew lintDebug                              # lint
 ```
 
-Everything runs on the JVM, so no emulator is needed. That includes the Room and
-migration tests and the Compose UI tests of the main flows, which run through the real
-activity and database on Robolectric.
+Everything runs on the JVM, so no emulator is needed. The tests sit next to what they
+test: the calculations in `:core:domain` on the plain JVM, the Room and migration tests in
+`:core:data` on Robolectric, and the ViewModel tests and the Compose UI tests of the main
+flows, which run through the real activity and database, in `:app`.
 
 ### Continuous integration
 

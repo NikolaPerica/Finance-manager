@@ -3,8 +3,15 @@ package com.example.financemanager.ui.goals
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financemanager.data.FinanceRepository
-import com.example.financemanager.data.GoalContribution
-import com.example.financemanager.ui.parseAmount
+import com.example.financemanager.domain.goals.GoalProgress
+import com.example.financemanager.domain.goals.GoalStatus
+import com.example.financemanager.domain.goals.progress
+import com.example.financemanager.domain.parseAmount
+import com.example.financemanager.model.GoalContribution
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -31,11 +38,20 @@ sealed interface GoalEvent {
     data object GoalDeleted : GoalEvent
 }
 
+@HiltViewModel(assistedFactory = GoalDetailViewModel.Factory::class)
 class GoalDetailViewModel(
     private val goalId: Long,
     private val repository: FinanceRepository,
     private val today: () -> LocalDate = LocalDate::now,
 ) : ViewModel() {
+    // Hilt uses this one; tests pass their own [today].
+    @AssistedInject
+    constructor(@Assisted goalId: Long, repository: FinanceRepository) : this(goalId, repository, LocalDate::now)
+
+    @AssistedFactory
+    interface Factory {
+        fun create(goalId: Long): GoalDetailViewModel
+    }
 
     val state: StateFlow<GoalDetailUiState> =
         combine(repository.goals(), repository.contributions(goalId)) { goals, contributions ->

@@ -2,12 +2,17 @@ package com.example.financemanager.ui.budgets
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.financemanager.data.Category
 import com.example.financemanager.data.FinanceRepository
-import com.example.financemanager.data.TransactionType
+import com.example.financemanager.domain.budgets.BudgetItem
+import com.example.financemanager.domain.budgets.BudgetSummary
+import com.example.financemanager.domain.budgets.budgetItems
+import com.example.financemanager.domain.budgets.budgetSummary
+import com.example.financemanager.domain.parseAmount
+import com.example.financemanager.model.Category
+import com.example.financemanager.model.TransactionType
 import com.example.financemanager.ui.components.CategoryNameError
 import com.example.financemanager.ui.components.categoryNameError
-import com.example.financemanager.ui.parseAmount
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -15,6 +20,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
+import javax.inject.Inject
 
 data class BudgetsUiState(
     val month: YearMonth = YearMonth.now(),
@@ -26,10 +32,14 @@ data class BudgetsUiState(
     val isLoading: Boolean = true,
 )
 
+@HiltViewModel
 class BudgetsViewModel(
     private val repository: FinanceRepository,
     private val today: () -> LocalDate = LocalDate::now,
 ) : ViewModel() {
+    // Hilt uses this one; tests pass their own [today].
+    @Inject
+    constructor(repository: FinanceRepository) : this(repository, LocalDate::now)
 
     val state: StateFlow<BudgetsUiState> =
         combine(repository.categories(TransactionType.EXPENSE), repository.transactions()) { categories, transactions ->

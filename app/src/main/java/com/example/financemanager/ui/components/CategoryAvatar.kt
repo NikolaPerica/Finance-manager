@@ -12,8 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.financemanager.data.Category
-import com.example.financemanager.ui.Croatian
+import com.example.financemanager.domain.Croatian
+import com.example.financemanager.model.Category
 import com.example.financemanager.ui.theme.FinanceTheme
 
 /** The colour a category is drawn with. */

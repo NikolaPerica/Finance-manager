@@ -1,15 +1,15 @@
 package com.example.financemanager
 
-import com.example.financemanager.data.Transaction
-import com.example.financemanager.data.TransactionType.EXPENSE
-import com.example.financemanager.data.TransactionType.INCOME
+import com.example.financemanager.model.Transaction
+import com.example.financemanager.model.TransactionType.EXPENSE
+import com.example.financemanager.model.TransactionType.INCOME
 import com.example.financemanager.ui.dashboard.summarize
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.LocalDate
 
 class DashboardViewModelTest {
-    private fun tx(id: Long, amount: Double, day: Int, type: com.example.financemanager.data.TransactionType) =
+    private fun tx(id: Long, amount: Double, day: Int, type: com.example.financemanager.model.TransactionType) =
         Transaction(id, amount, LocalDate.of(2026, 10, day), "", "Test", type)
 
     @Test

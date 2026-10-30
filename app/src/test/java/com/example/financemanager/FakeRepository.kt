@@ -1,17 +1,17 @@
 package com.example.financemanager
 
-import com.example.financemanager.data.Category
 import com.example.financemanager.data.FinanceData
 import com.example.financemanager.data.FinanceRepository
-import com.example.financemanager.data.GoalContribution
-import com.example.financemanager.data.GoalWithSaved
-import com.example.financemanager.data.PaymentPeriod
-import com.example.financemanager.data.Reminder
 import com.example.financemanager.data.ReminderPayment
-import com.example.financemanager.data.SavingsGoal
-import com.example.financemanager.data.Transaction
-import com.example.financemanager.data.TransactionType
 import com.example.financemanager.data.toExpense
+import com.example.financemanager.model.Category
+import com.example.financemanager.model.GoalContribution
+import com.example.financemanager.model.GoalWithSaved
+import com.example.financemanager.model.PaymentPeriod
+import com.example.financemanager.model.Reminder
+import com.example.financemanager.model.SavingsGoal
+import com.example.financemanager.model.Transaction
+import com.example.financemanager.model.TransactionType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map

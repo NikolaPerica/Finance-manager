@@ -2,20 +2,21 @@ package com.example.financemanager.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.financemanager.data.Category
 import com.example.financemanager.data.FinanceRepository
-import com.example.financemanager.data.GoalWithSaved
-import com.example.financemanager.data.Reminder
-import com.example.financemanager.data.Transaction
-import com.example.financemanager.data.TransactionType
-import com.example.financemanager.ui.budgets.BudgetSummary
-import com.example.financemanager.ui.budgets.budgetItems
-import com.example.financemanager.ui.budgets.budgetSummary
-import com.example.financemanager.ui.goals.GoalProgress
-import com.example.financemanager.ui.insights.Insight
-import com.example.financemanager.ui.insights.buildInsights
-import com.example.financemanager.ui.goals.GoalStatus
-import com.example.financemanager.ui.goals.progress
+import com.example.financemanager.domain.budgets.BudgetSummary
+import com.example.financemanager.domain.budgets.budgetItems
+import com.example.financemanager.domain.budgets.budgetSummary
+import com.example.financemanager.domain.goals.GoalProgress
+import com.example.financemanager.domain.goals.GoalStatus
+import com.example.financemanager.domain.goals.progress
+import com.example.financemanager.domain.insights.Insight
+import com.example.financemanager.domain.insights.buildInsights
+import com.example.financemanager.model.Category
+import com.example.financemanager.model.GoalWithSaved
+import com.example.financemanager.model.Reminder
+import com.example.financemanager.model.Transaction
+import com.example.financemanager.model.TransactionType
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
+import javax.inject.Inject
 
 data class DashboardUiState(
     val income: Double = 0.0,
@@ -73,7 +75,8 @@ fun summarize(
     isLoading = false,
 )
 
-class DashboardViewModel(private val repository: FinanceRepository) : ViewModel() {
+@HiltViewModel
+class DashboardViewModel @Inject constructor(private val repository: FinanceRepository) : ViewModel() {
 
     val state: StateFlow<DashboardUiState> = combine(
         repository.transactions(),

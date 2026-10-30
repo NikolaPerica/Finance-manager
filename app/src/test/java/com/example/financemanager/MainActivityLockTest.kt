@@ -4,6 +4,7 @@ import android.os.Build
 import android.view.WindowManager
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.example.financemanager.di.appEntryPoint
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -15,21 +16,21 @@ import org.robolectric.annotation.Config
 @RunWith(AndroidJUnit4::class)
 class MainActivityLockTest {
 
-    private val app get() = ApplicationProvider.getApplicationContext<FinanceApp>()
+    private val appLock get() = ApplicationProvider.getApplicationContext<FinanceApp>().appEntryPoint().appLock()
 
     @Test
     fun rotatingDoesNotLockButLeavingDoes() {
         val controller = Robolectric.buildActivity(MainActivity::class.java).setup()
-        assertTrue(app.appLock.locked.value)
-        app.appLock.unlock()
+        assertTrue(appLock.locked.value)
+        appLock.unlock()
 
         controller.configurationChange(android.content.res.Configuration().apply { orientation = android.content.res.Configuration.ORIENTATION_LANDSCAPE })
-        assertFalse(app.appLock.locked.value)
+        assertFalse(appLock.locked.value)
 
         // Leaving and coming back right away keeps it open (the timeout is minutes).
         controller.pause().stop()
         controller.start().resume()
-        assertFalse(app.appLock.locked.value)
+        assertFalse(appLock.locked.value)
         controller.pause().stop().destroy()
     }
 

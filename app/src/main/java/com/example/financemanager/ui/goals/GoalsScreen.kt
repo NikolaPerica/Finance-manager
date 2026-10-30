@@ -40,7 +40,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financemanager.R
-import com.example.financemanager.ui.MoneyFormat
+import com.example.financemanager.domain.MoneyFormat
+import com.example.financemanager.domain.goals.GoalsSummary
+import com.example.financemanager.domain.goals.progress
 import com.example.financemanager.ui.budgets.BudgetBar
 import com.example.financemanager.ui.theme.FinanceTheme
 

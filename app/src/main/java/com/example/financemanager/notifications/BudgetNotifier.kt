@@ -9,9 +9,9 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.financemanager.MainActivity
 import com.example.financemanager.R
-import com.example.financemanager.ui.MoneyFormat
-import com.example.financemanager.ui.budgets.BudgetAlert
-import com.example.financemanager.ui.budgets.BudgetLevel
+import com.example.financemanager.domain.MoneyFormat
+import com.example.financemanager.domain.budgets.BudgetAlert
+import com.example.financemanager.domain.budgets.BudgetLevel
 import kotlin.math.roundToInt
 
 /** Tells the user that a category is close to or over its monthly budget. */

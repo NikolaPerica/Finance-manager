@@ -13,9 +13,9 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.example.financemanager.MainActivity
 import com.example.financemanager.R
-import com.example.financemanager.data.Reminder
-import com.example.financemanager.ui.MoneyFormat
-import com.example.financemanager.ui.reminders.DueStatus
+import com.example.financemanager.domain.MoneyFormat
+import com.example.financemanager.domain.reminders.DueStatus
+import com.example.financemanager.model.Reminder
 
 /** Posts "payment due" notifications, one per reminder, grouped together. */
 class ReminderNotifier(private val context: Context) {

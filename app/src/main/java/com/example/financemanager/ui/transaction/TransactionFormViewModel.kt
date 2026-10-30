@@ -2,19 +2,23 @@ package com.example.financemanager.ui.transaction
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.financemanager.data.Category
 import com.example.financemanager.data.FinanceRepository
-import com.example.financemanager.data.Transaction
-import com.example.financemanager.data.TransactionType
-import com.example.financemanager.receipt.ReceiptData
-import com.example.financemanager.ui.amountInputText
-import com.example.financemanager.ui.budgets.BudgetAlert
-import com.example.financemanager.ui.budgets.budgetAlert
-import com.example.financemanager.ui.budgets.spentByCategory
+import com.example.financemanager.domain.amountInputText
+import com.example.financemanager.domain.budgets.BudgetAlert
+import com.example.financemanager.domain.budgets.budgetAlert
+import com.example.financemanager.domain.budgets.spentByCategory
+import com.example.financemanager.domain.isValidAmountInput
+import com.example.financemanager.domain.parseAmount
+import com.example.financemanager.domain.receipt.ReceiptData
+import com.example.financemanager.model.Category
+import com.example.financemanager.model.Transaction
+import com.example.financemanager.model.TransactionType
 import com.example.financemanager.ui.components.CategoryNameError
 import com.example.financemanager.ui.components.categoryNameError
-import com.example.financemanager.ui.isValidAmountInput
-import com.example.financemanager.ui.parseAmount
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -54,12 +58,25 @@ sealed interface FormEvent {
 }
 
 /** Form for a new transaction ([transactionId] null) or for editing an existing one. */
+@HiltViewModel(assistedFactory = TransactionFormViewModel.Factory::class)
 class TransactionFormViewModel(
     val type: TransactionType,
     private val repository: FinanceRepository,
     private val transactionId: Long? = null,
     private val today: () -> LocalDate = LocalDate::now,
 ) : ViewModel() {
+    // Hilt uses this one; tests pass their own [today].
+    @AssistedInject
+    constructor(
+        @Assisted type: TransactionType,
+        repository: FinanceRepository,
+        @Assisted transactionId: Long?,
+    ) : this(type, repository, transactionId, LocalDate::now)
+
+    @AssistedFactory
+    interface Factory {
+        fun create(type: TransactionType, transactionId: Long?): TransactionFormViewModel
+    }
 
     val isEditing: Boolean get() = transactionId != null
     private var existing: Transaction? = null

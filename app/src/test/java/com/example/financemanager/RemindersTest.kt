@@ -1,12 +1,12 @@
 package com.example.financemanager
 
-import com.example.financemanager.data.Category
-import com.example.financemanager.data.PaymentPeriod
-import com.example.financemanager.data.Reminder
-import com.example.financemanager.data.TransactionType
 import com.example.financemanager.data.toExpense
+import com.example.financemanager.domain.reminders.DueStatus
+import com.example.financemanager.model.Category
+import com.example.financemanager.model.PaymentPeriod
+import com.example.financemanager.model.Reminder
+import com.example.financemanager.model.TransactionType
 import com.example.financemanager.ui.components.CategoryNameError
-import com.example.financemanager.ui.reminders.DueStatus
 import com.example.financemanager.ui.reminders.ReminderFormViewModel
 import com.example.financemanager.ui.reminders.RemindersEvent
 import com.example.financemanager.ui.reminders.RemindersViewModel

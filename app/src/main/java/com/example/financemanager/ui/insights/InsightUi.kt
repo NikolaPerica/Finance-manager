@@ -21,9 +21,10 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.financemanager.R
-import com.example.financemanager.ui.Croatian
-import com.example.financemanager.ui.DateFormat
-import com.example.financemanager.ui.MoneyFormat
+import com.example.financemanager.domain.Croatian
+import com.example.financemanager.domain.DateFormat
+import com.example.financemanager.domain.MoneyFormat
+import com.example.financemanager.domain.insights.Insight
 import com.example.financemanager.ui.theme.FinanceTheme
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
