@@ -21,20 +21,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.CreationExtras
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.financemanager.FinanceApp
 import com.example.financemanager.QuickAction
-import com.example.financemanager.data.FinanceRepository
 import com.example.financemanager.data.Transaction
 import com.example.financemanager.data.TransactionType
 import com.example.financemanager.security.AppLock
@@ -144,8 +138,6 @@ data class ReminderFormRoute(val id: Long = NEW) {
 
 private fun Transaction.editRoute() = TransactionFormRoute(isIncome = type == TransactionType.INCOME, id = id)
 
-private fun CreationExtras.repository(): FinanceRepository = (this[APPLICATION_KEY] as FinanceApp).repository
-
 /**
  * The app's screens with the fingerprint/PIN screen on top of them while [appLock] is
  * locked, so unlocking returns to wherever the user was.
@@ -223,7 +215,7 @@ private fun AppNavHost(
     ) {
         composable<DashboardRoute>(enterTransition = { fadeIn(tween(400)) }) {
             DashboardScreen(
-                viewModel = viewModel(factory = viewModelFactory { initializer { DashboardViewModel(repository()) } }),
+                viewModel = hiltViewModel<DashboardViewModel>(),
                 onAddIncome = { navController.navigate(TransactionFormRoute(isIncome = true)) },
                 onAddExpense = { navController.navigate(TransactionFormRoute(isIncome = false)) },
                 onOpenReminders = { navController.navigate(RemindersRoute) },
@@ -246,7 +238,7 @@ private fun AppNavHost(
             val type = if (route.isIncome) TransactionType.INCOME else TransactionType.EXPENSE
             val id = route.id.takeIf { it != TransactionFormRoute.NEW }
             TransactionFormScreen(
-                viewModel = viewModel(factory = viewModelFactory { initializer { TransactionFormViewModel(type, repository(), id) } }),
+                viewModel = hiltViewModel<TransactionFormViewModel, TransactionFormViewModel.Factory> { it.create(type, id) },
                 // Back to wherever the form was opened from (dashboard or the transaction list).
                 onBack = { if (navController.currentDestination?.hasRoute<TransactionFormRoute>() == true) navController.popBackStack() },
             )
@@ -254,7 +246,7 @@ private fun AppNavHost(
         composable<TransactionsRoute> { entry ->
             val filter = entry.toRoute<TransactionsRoute>().filter()
             TransactionsScreen(
-                viewModel = viewModel(factory = viewModelFactory { initializer { TransactionsViewModel(repository(), filter) } }),
+                viewModel = hiltViewModel<TransactionsViewModel, TransactionsViewModel.Factory> { it.create(filter) },
                 // Back to the dashboard or to the statistics it was opened from.
                 onBack = { if (navController.currentDestination?.hasRoute<TransactionsRoute>() == true) navController.popBackStack() },
                 onEdit = { navController.navigate(it.editRoute()) },
@@ -262,25 +254,25 @@ private fun AppNavHost(
         }
         composable<CategoriesRoute> {
             CategoriesScreen(
-                viewModel = viewModel(factory = viewModelFactory { initializer { CategoriesViewModel(repository()) } }),
+                viewModel = hiltViewModel<CategoriesViewModel>(),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
             )
         }
         composable<InsightsRoute> {
             InsightsScreen(
-                viewModel = viewModel(factory = viewModelFactory { initializer { InsightsViewModel(repository()) } }),
+                viewModel = hiltViewModel<InsightsViewModel>(),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
             )
         }
         composable<ExportRoute> {
             ExportScreen(
-                viewModel = viewModel(factory = viewModelFactory { initializer { ExportViewModel(repository()) } }),
+                viewModel = hiltViewModel<ExportViewModel>(),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
             )
         }
         composable<GoalsRoute> {
             GoalsScreen(
-                viewModel = viewModel(factory = viewModelFactory { initializer { GoalsViewModel(repository()) } }),
+                viewModel = hiltViewModel<GoalsViewModel>(),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
                 onOpen = { navController.navigate(GoalRoute(it)) },
                 onAdd = { navController.navigate(GoalFormRoute()) },
@@ -289,7 +281,7 @@ private fun AppNavHost(
         composable<GoalRoute> { entry ->
             val id = entry.toRoute<GoalRoute>().id
             GoalDetailScreen(
-                viewModel = viewModel(factory = viewModelFactory { initializer { GoalDetailViewModel(id, repository()) } }),
+                viewModel = hiltViewModel<GoalDetailViewModel, GoalDetailViewModel.Factory> { it.create(id) },
                 onBack = { if (navController.currentDestination?.hasRoute<GoalRoute>() == true) navController.popBackStack() },
                 onEdit = { navController.navigate(GoalFormRoute(id)) },
             )
@@ -297,19 +289,19 @@ private fun AppNavHost(
         composable<GoalFormRoute> { entry ->
             val id = entry.toRoute<GoalFormRoute>().id.takeIf { it != GoalFormRoute.NEW }
             GoalFormScreen(
-                viewModel = viewModel(factory = viewModelFactory { initializer { GoalFormViewModel(id, repository()) } }),
+                viewModel = hiltViewModel<GoalFormViewModel, GoalFormViewModel.Factory> { it.create(id) },
                 onBack = { if (navController.currentDestination?.hasRoute<GoalFormRoute>() == true) navController.popBackStack() },
             )
         }
         composable<BudgetsRoute> {
             BudgetsScreen(
-                viewModel = viewModel(factory = viewModelFactory { initializer { BudgetsViewModel(repository()) } }),
+                viewModel = hiltViewModel<BudgetsViewModel>(),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
             )
         }
         composable<StatsRoute> {
             StatsScreen(
-                viewModel = viewModel(factory = viewModelFactory { initializer { StatsViewModel(repository()) } }),
+                viewModel = hiltViewModel<StatsViewModel>(),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
                 onOpenCategory = { category, type, period ->
                     val dates = period.dates
@@ -321,7 +313,7 @@ private fun AppNavHost(
         }
         composable<RemindersRoute> {
             RemindersScreen(
-                viewModel = viewModel(factory = viewModelFactory { initializer { RemindersViewModel(repository()) } }),
+                viewModel = hiltViewModel<RemindersViewModel>(),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
                 onAdd = { navController.navigate(ReminderFormRoute()) },
                 onEdit = { navController.navigate(ReminderFormRoute(it.id)) },
@@ -330,7 +322,7 @@ private fun AppNavHost(
         composable<ReminderFormRoute> { entry ->
             val id = entry.toRoute<ReminderFormRoute>().id.takeIf { it != ReminderFormRoute.NEW }
             ReminderFormScreen(
-                viewModel = viewModel(factory = viewModelFactory { initializer { ReminderFormViewModel(id, repository()) } }),
+                viewModel = hiltViewModel<ReminderFormViewModel, ReminderFormViewModel.Factory> { it.create(id) },
                 onBack = { if (navController.currentDestination?.hasRoute<ReminderFormRoute>() == true) navController.popBackStack() },
             )
         }

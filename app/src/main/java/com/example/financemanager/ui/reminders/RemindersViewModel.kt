@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.financemanager.data.FinanceRepository
 import com.example.financemanager.data.Reminder
 import com.example.financemanager.data.ReminderPayment
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
+import javax.inject.Inject
 
 data class RemindersUiState(
     /** Soonest due first. */
@@ -38,10 +40,14 @@ sealed interface RemindersEvent {
     data class Deleted(val reminder: Reminder) : RemindersEvent
 }
 
+@HiltViewModel
 class RemindersViewModel(
     private val repository: FinanceRepository,
     private val today: () -> LocalDate = LocalDate::now,
 ) : ViewModel() {
+    // Hilt uses this one; tests pass their own [today].
+    @Inject
+    constructor(repository: FinanceRepository) : this(repository, LocalDate::now)
 
     val state: StateFlow<RemindersUiState> = repository.reminders()
         .map { summarizeReminders(it, today()) }

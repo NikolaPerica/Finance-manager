@@ -15,6 +15,10 @@ import com.example.financemanager.ui.components.CategoryNameError
 import com.example.financemanager.ui.components.categoryNameError
 import com.example.financemanager.ui.isValidAmountInput
 import com.example.financemanager.ui.parseAmount
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -54,12 +58,25 @@ sealed interface FormEvent {
 }
 
 /** Form for a new transaction ([transactionId] null) or for editing an existing one. */
+@HiltViewModel(assistedFactory = TransactionFormViewModel.Factory::class)
 class TransactionFormViewModel(
     val type: TransactionType,
     private val repository: FinanceRepository,
     private val transactionId: Long? = null,
     private val today: () -> LocalDate = LocalDate::now,
 ) : ViewModel() {
+    // Hilt uses this one; tests pass their own [today].
+    @AssistedInject
+    constructor(
+        @Assisted type: TransactionType,
+        repository: FinanceRepository,
+        @Assisted transactionId: Long?,
+    ) : this(type, repository, transactionId, LocalDate::now)
+
+    @AssistedFactory
+    interface Factory {
+        fun create(type: TransactionType, transactionId: Long?): TransactionFormViewModel
+    }
 
     val isEditing: Boolean get() = transactionId != null
     private var existing: Transaction? = null

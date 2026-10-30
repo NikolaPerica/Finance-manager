@@ -37,10 +37,10 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import com.example.financemanager.FinanceApp
 import com.example.financemanager.MainActivity
 import com.example.financemanager.QuickAction
 import com.example.financemanager.R
+import com.example.financemanager.di.appEntryPoint
 import com.example.financemanager.ui.MoneyFormat
 import kotlinx.coroutines.flow.first
 
@@ -50,8 +50,7 @@ class FinanceWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Responsive(setOf(Compact, Wide))
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val app = context.applicationContext as FinanceApp
-        val summary = widgetSummary(app.repository.transactions().first())
+        val summary = widgetSummary(context.appEntryPoint().repository().transactions().first())
         provideContent { WidgetContent(summary) }
     }
 

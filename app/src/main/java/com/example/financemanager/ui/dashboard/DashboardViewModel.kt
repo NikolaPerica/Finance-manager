@@ -16,6 +16,7 @@ import com.example.financemanager.ui.insights.Insight
 import com.example.financemanager.ui.insights.buildInsights
 import com.example.financemanager.ui.goals.GoalStatus
 import com.example.financemanager.ui.goals.progress
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
+import javax.inject.Inject
 
 data class DashboardUiState(
     val income: Double = 0.0,
@@ -73,7 +75,8 @@ fun summarize(
     isLoading = false,
 )
 
-class DashboardViewModel(private val repository: FinanceRepository) : ViewModel() {
+@HiltViewModel
+class DashboardViewModel @Inject constructor(private val repository: FinanceRepository) : ViewModel() {
 
     val state: StateFlow<DashboardUiState> = combine(
         repository.transactions(),

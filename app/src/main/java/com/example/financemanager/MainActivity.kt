@@ -7,14 +7,19 @@ import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.fragment.app.FragmentActivity
+import com.example.financemanager.security.AppLock
 import com.example.financemanager.ui.navigation.FinanceNavHost
 import com.example.financemanager.ui.theme.FinanceTheme
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
+import javax.inject.Inject
 
 // FragmentActivity rather than ComponentActivity because BiometricPrompt needs one.
+@AndroidEntryPoint
 class MainActivity : FragmentActivity() {
 
-    private val appLock get() = (application as FinanceApp).appLock
+    @Inject
+    lateinit var appLock: AppLock
 
     /** A shortcut from the widget waiting to be carried out, see [QuickAction]. */
     private val quickAction = MutableStateFlow<QuickAction?>(null)

@@ -6,6 +6,10 @@ import com.example.financemanager.data.Category
 import com.example.financemanager.data.FinanceRepository
 import com.example.financemanager.data.Transaction
 import com.example.financemanager.data.TransactionType
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -28,11 +32,21 @@ data class TransactionsUiState(
     val isLoading: Boolean = true,
 )
 
+@HiltViewModel(assistedFactory = TransactionsViewModel.Factory::class)
 class TransactionsViewModel(
     private val repository: FinanceRepository,
     initialFilter: TransactionFilter = TransactionFilter(),
     private val today: () -> LocalDate = LocalDate::now,
 ) : ViewModel() {
+    // Hilt uses this one; tests pass their own [today].
+    @AssistedInject
+    constructor(repository: FinanceRepository, @Assisted initialFilter: TransactionFilter) :
+        this(repository, initialFilter, LocalDate::now)
+
+    @AssistedFactory
+    interface Factory {
+        fun create(initialFilter: TransactionFilter): TransactionsViewModel
+    }
 
     private val filter = MutableStateFlow(initialFilter)
 

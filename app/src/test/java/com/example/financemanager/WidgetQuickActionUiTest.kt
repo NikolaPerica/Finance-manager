@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.example.financemanager.di.appEntryPoint
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -24,6 +25,7 @@ class WidgetQuickActionUiTest {
     val rule = createEmptyComposeRule()
 
     private val app get() = ApplicationProvider.getApplicationContext<FinanceApp>()
+    private val appLock get() = app.appEntryPoint().appLock()
 
     private fun settle() {
         rule.mainClock.advanceTimeBy(2_000)
@@ -35,8 +37,8 @@ class WidgetQuickActionUiTest {
         // Cold start from the "add expense" button: the form waits behind the lock screen.
         val controller = Robolectric.buildActivity(MainActivity::class.java, QuickAction.ADD_EXPENSE.intent(app)).setup()
         settle()
-        assertTrue(app.appLock.locked.value)
-        app.appLock.unlock()
+        assertTrue(appLock.locked.value)
+        appLock.unlock()
         settle()
         rule.onNodeWithText("Novi rashod").assertIsDisplayed()
 

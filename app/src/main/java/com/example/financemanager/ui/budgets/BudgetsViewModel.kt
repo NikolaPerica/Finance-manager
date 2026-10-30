@@ -8,6 +8,7 @@ import com.example.financemanager.data.TransactionType
 import com.example.financemanager.ui.components.CategoryNameError
 import com.example.financemanager.ui.components.categoryNameError
 import com.example.financemanager.ui.parseAmount
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
+import javax.inject.Inject
 
 data class BudgetsUiState(
     val month: YearMonth = YearMonth.now(),
@@ -26,10 +28,14 @@ data class BudgetsUiState(
     val isLoading: Boolean = true,
 )
 
+@HiltViewModel
 class BudgetsViewModel(
     private val repository: FinanceRepository,
     private val today: () -> LocalDate = LocalDate::now,
 ) : ViewModel() {
+    // Hilt uses this one; tests pass their own [today].
+    @Inject
+    constructor(repository: FinanceRepository) : this(repository, LocalDate::now)
 
     val state: StateFlow<BudgetsUiState> =
         combine(repository.categories(TransactionType.EXPENSE), repository.transactions()) { categories, transactions ->

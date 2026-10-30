@@ -3,11 +3,13 @@ package com.example.financemanager.ui.goals
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financemanager.data.FinanceRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDate
+import javax.inject.Inject
 
 data class GoalsUiState(
     /** Unfinished goals first (nearest deadline first), reached ones last. */
@@ -16,7 +18,12 @@ data class GoalsUiState(
     val isLoading: Boolean = true,
 )
 
+@HiltViewModel
 class GoalsViewModel(repository: FinanceRepository, today: () -> LocalDate = LocalDate::now) : ViewModel() {
+    // Hilt uses this one; tests pass their own [today].
+    @Inject
+    constructor(repository: FinanceRepository) : this(repository, LocalDate::now)
+
     val state: StateFlow<GoalsUiState> = repository.goals().map { goals ->
         val progress = goals.map { it.progress(today()) }.sortedBy { it.status == GoalStatus.REACHED }
         GoalsUiState(progress, goalsSummary(progress), isLoading = false)

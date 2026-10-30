@@ -8,6 +8,7 @@ import com.example.financemanager.data.Transaction
 import com.example.financemanager.data.TransactionType
 import com.example.financemanager.ui.components.CategoryNameError
 import com.example.financemanager.ui.components.categoryNameError
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /** A category with how much it has been used. */
 data class CategoryUsage(val category: Category, val count: Int, val total: Double)
@@ -36,7 +38,8 @@ fun categoryUsage(categories: List<Category>, transactions: List<Transaction>): 
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class CategoriesViewModel(private val repository: FinanceRepository) : ViewModel() {
+@HiltViewModel
+class CategoriesViewModel @Inject constructor(private val repository: FinanceRepository) : ViewModel() {
 
     private val type = MutableStateFlow(TransactionType.EXPENSE)
 

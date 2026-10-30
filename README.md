@@ -70,6 +70,7 @@ The interface is in Croatian; amounts are in euros.
 | Language | Kotlin 2.4 |
 | UI | Jetpack Compose (BOM 2026.09) with Material 3, a single activity with type-safe Navigation Compose |
 | Architecture | MVVM: one ViewModel with a `StateFlow` per screen, over a repository |
+| Dependency injection | Hilt 2.60 (KSP); screen arguments reach ViewModels through assisted injection |
 | Database | SQLite through Room 2.8 (KSP), schema exported to `app/schemas`, migrations from version 1 |
 | Login | AndroidX Biometric (fingerprint, falling back to PIN/pattern/password) |
 | Notifications | `AlarmManager` daily check, re-armed after reboot |
@@ -85,7 +86,8 @@ The interface is in Croatian; amounts are in euros.
 ```
 app/src/main/java/com/example/financemanager/
 ├── MainActivity.kt        single activity; app lock, widget shortcuts
-├── FinanceApp.kt          Application: database, repository, notification channels
+├── FinanceApp.kt          Application: notification channels, reminder alarm, widget sync
+├── di/                    Hilt module: database, repository, app lock
 ├── QuickAction.kt         shortcuts into the app (widget buttons)
 ├── data/                  Room entities, DAOs, database and migrations, FinanceRepository
 │   └── backup/            JSON backup format

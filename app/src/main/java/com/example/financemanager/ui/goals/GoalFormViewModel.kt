@@ -8,6 +8,10 @@ import com.example.financemanager.data.SavingsGoal
 import com.example.financemanager.ui.amountInputText
 import com.example.financemanager.ui.isValidAmountInput
 import com.example.financemanager.ui.parseAmount
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,11 +38,20 @@ data class GoalFormState(
 )
 
 /** Form for a new goal ([goalId] null) or for editing one. */
+@HiltViewModel(assistedFactory = GoalFormViewModel.Factory::class)
 class GoalFormViewModel(
     private val goalId: Long?,
     private val repository: FinanceRepository,
     private val today: () -> LocalDate = LocalDate::now,
 ) : ViewModel() {
+    // Hilt uses this one; tests pass their own [today].
+    @AssistedInject
+    constructor(@Assisted goalId: Long?, repository: FinanceRepository) : this(goalId, repository, LocalDate::now)
+
+    @AssistedFactory
+    interface Factory {
+        fun create(goalId: Long?): GoalFormViewModel
+    }
 
     val isEditing: Boolean get() = goalId != null
     private var existing: SavingsGoal? = null

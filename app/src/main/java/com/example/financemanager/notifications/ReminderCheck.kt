@@ -6,8 +6,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.edit
-import com.example.financemanager.FinanceApp
 import com.example.financemanager.data.Reminder
+import com.example.financemanager.di.appEntryPoint
 import com.example.financemanager.ui.reminders.DueStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -97,7 +97,7 @@ object ReminderCheck {
         } else {
             emptySet()
         }
-        val reminders = (context as FinanceApp).repository.reminders().first()
+        val reminders = context.appEntryPoint().repository().reminders().first()
         val due = dueForNotification(reminders, today, notified)
         notifier.notify(due)
 

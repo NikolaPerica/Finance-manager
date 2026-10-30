@@ -3,7 +3,7 @@ package com.example.financemanager.widget
 import android.content.Context
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.updateAll
-import com.example.financemanager.FinanceApp
+import com.example.financemanager.di.appEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -30,10 +30,10 @@ object WidgetSync {
 
     fun start(context: Context) {
         if (!started.compareAndSet(false, true)) return
-        val app = context.applicationContext as FinanceApp
+        val app = context.applicationContext
         scope.launch {
             // The first value is what the widget already shows.
-            app.repository.transactions().distinctUntilChanged().drop(1).collect { FinanceWidget().updateAll(app) }
+            app.appEntryPoint().repository().transactions().distinctUntilChanged().drop(1).collect { FinanceWidget().updateAll(app) }
         }
     }
 }

@@ -12,6 +12,10 @@ import com.example.financemanager.ui.components.CategoryNameError
 import com.example.financemanager.ui.components.categoryNameError
 import com.example.financemanager.ui.isValidAmountInput
 import com.example.financemanager.ui.parseAmount
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -40,10 +44,15 @@ data class ReminderFormState(
 )
 
 /** Form for a new reminder ([reminderId] null) or for editing an existing one. */
-class ReminderFormViewModel(
-    private val reminderId: Long?,
+@HiltViewModel(assistedFactory = ReminderFormViewModel.Factory::class)
+class ReminderFormViewModel @AssistedInject constructor(
+    @Assisted private val reminderId: Long?,
     private val repository: FinanceRepository,
 ) : ViewModel() {
+    @AssistedFactory
+    interface Factory {
+        fun create(reminderId: Long?): ReminderFormViewModel
+    }
 
     val isEditing: Boolean get() = reminderId != null
     private var existing: Reminder? = null
