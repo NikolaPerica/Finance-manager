@@ -1,5 +1,10 @@
 package com.example.financemanager.ui.theme
 
+import android.graphics.Color as AndroidColor
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.compose.LocalActivity
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
@@ -10,6 +15,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -135,8 +141,15 @@ private val AppShapes = Shapes(
 
 @Composable
 fun FinanceTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
+    // The theme set in the app can differ from the system's, so the bar icons follow the app.
+    val activity = LocalActivity.current as? ComponentActivity
+    DisposableEffect(activity, darkTheme) {
+        activity?.matchSystemBars(darkTheme)
+        onDispose {}
+    }
     CompositionLocalProvider(
         LocalFinanceColors provides if (darkTheme) DarkFinanceColors else LightFinanceColors,
+        LocalDarkTheme provides darkTheme,
     ) {
         MaterialTheme(
             colorScheme = if (darkTheme) DarkScheme else LightScheme,
@@ -150,5 +163,23 @@ fun FinanceTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composabl
 object FinanceTheme {
     val colors: FinanceColors
         @Composable @ReadOnlyComposable get() = LocalFinanceColors.current
+
+    /** Whether the app is drawn dark, which follows the setting rather than the system. */
+    val isDark: Boolean
+        @Composable @ReadOnlyComposable get() = LocalDarkTheme.current
 }
+
+private val LocalDarkTheme = staticCompositionLocalOf { false }
+
+/** Status and navigation bar icons that suit a light or dark app, over a transparent bar. */
+fun ComponentActivity.matchSystemBars(darkTheme: Boolean) {
+    enableEdgeToEdge(
+        statusBarStyle = SystemBarStyle.auto(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT) { darkTheme },
+        // The same scrims as enableEdgeToEdge's defaults, for three-button navigation.
+        navigationBarStyle = SystemBarStyle.auto(LightNavigationScrim, DarkNavigationScrim) { darkTheme },
+    )
+}
+
+private val LightNavigationScrim = AndroidColor.argb(0xe6, 0xFF, 0xFF, 0xFF)
+private val DarkNavigationScrim = AndroidColor.argb(0x80, 0x1b, 0x1b, 0x1b)
 

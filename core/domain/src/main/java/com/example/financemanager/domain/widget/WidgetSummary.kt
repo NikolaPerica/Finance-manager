@@ -1,9 +1,9 @@
 package com.example.financemanager.domain.widget
 
+import com.example.financemanager.domain.BudgetMonths
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
 import java.time.LocalDate
-import java.time.YearMonth
 
 /** What the home screen widget shows. */
 data class WidgetSummary(
@@ -13,10 +13,14 @@ data class WidgetSummary(
     val monthExpense: Double,
 )
 
-fun widgetSummary(transactions: List<Transaction>, today: LocalDate = LocalDate.now()): WidgetSummary {
-    val month = YearMonth.from(today)
+fun widgetSummary(
+    transactions: List<Transaction>,
+    today: LocalDate = LocalDate.now(),
+    months: BudgetMonths = BudgetMonths(),
+): WidgetSummary {
+    val month = months.of(today)
     fun List<Transaction>.total(type: TransactionType) = filter { it.type == type }.sumOf { it.amount }
-    val thisMonth = transactions.filter { YearMonth.from(it.date) == month }
+    val thisMonth = transactions.filter { months.of(it.date) == month }
     return WidgetSummary(
         balance = transactions.total(TransactionType.INCOME) - transactions.total(TransactionType.EXPENSE),
         monthIncome = thisMonth.total(TransactionType.INCOME),

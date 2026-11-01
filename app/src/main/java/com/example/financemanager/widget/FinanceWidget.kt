@@ -41,6 +41,7 @@ import com.example.financemanager.MainActivity
 import com.example.financemanager.QuickAction
 import com.example.financemanager.R
 import com.example.financemanager.di.appEntryPoint
+import com.example.financemanager.domain.BudgetMonths
 import com.example.financemanager.domain.MoneyFormat
 import com.example.financemanager.domain.widget.WidgetSummary
 import com.example.financemanager.domain.widget.widgetSummary
@@ -52,7 +53,9 @@ class FinanceWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Responsive(setOf(Compact, Wide))
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val summary = widgetSummary(context.appEntryPoint().repository().transactions().first())
+        val app = context.appEntryPoint()
+        val months = BudgetMonths(app.settings().settings.first().monthStartDay)
+        val summary = widgetSummary(app.repository().transactions().first(), months = months)
         provideContent { WidgetContent(summary) }
     }
 

@@ -57,6 +57,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financemanager.R
+import com.example.financemanager.domain.MoneyFormat
 import com.example.financemanager.model.Category
 import com.example.financemanager.model.PaymentPeriod
 import com.example.financemanager.ui.components.AddCategoryDialog
@@ -158,7 +159,7 @@ fun ReminderFormScreen(viewModel: ReminderFormViewModel, onBack: () -> Unit) {
                 label = { Text(stringResource(R.string.iznos)) },
                 placeholder = { Text(stringResource(R.string.amount_hint)) },
                 leadingIcon = { Icon(painterResource(R.drawable.ic_wallet), contentDescription = null) },
-                suffix = { Text(stringResource(R.string.currency_symbol)) },
+                suffix = { Text(MoneyFormat.symbol) },
                 isError = state.amountError,
                 supportingText = if (state.amountError) {
                     { Text(stringResource(R.string.error_amount)) }

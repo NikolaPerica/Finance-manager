@@ -11,11 +11,12 @@ import kotlin.time.Duration.Companion.minutes
  * Whether the app is locked behind the fingerprint/PIN screen.
  *
  * It starts locked, and locks again when the app comes back after being in the
- * background for [lockAfter] or longer. Time is measured with [now] (by default the
+ * background for [lockAfter] or longer (zero locks every time). Time is measured with [now] (by default the
  * time since boot), so changing the phone's clock can't skip the lock.
  */
 class AppLock(
-    private val lockAfter: Duration = DEFAULT_LOCK_AFTER,
+    /** Follows the setting while the app runs. */
+    @Volatile var lockAfter: Duration = DEFAULT_LOCK_AFTER,
     private val now: () -> Long = SystemClock::elapsedRealtime,
 ) {
     private val _locked = MutableStateFlow(true)

@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.edit
 import com.example.financemanager.di.appEntryPoint
+import com.example.financemanager.model.Settings
 import com.example.financemanager.domain.reminders.DueStatus
 import com.example.financemanager.model.Reminder
 import kotlinx.coroutines.CoroutineScope
@@ -24,13 +25,11 @@ import java.time.ZoneId
 /**
  * Daily check for payments that are due tomorrow, today or overdue.
  *
- * An alarm fires at [NOTIFY_AT]. If that was missed (phone off, app force-stopped),
+ * An alarm fires at the time chosen in the settings. If that was missed (phone off, app force-stopped),
  * the next app start or reboot catches up. The check also runs right after the user
  * turns notifications on. Each reminder is announced at most once a day.
  */
 object ReminderCheck {
-    val NOTIFY_AT: LocalTime = LocalTime.of(9, 0)
-
     private const val PREFS = "reminder_check"
     private const val KEY_LAST_CHECK = "last_check"
     private const val KEY_NOTIFIED_DAY = "notified_day"
@@ -39,9 +38,9 @@ object ReminderCheck {
     private val mutex = Mutex()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    /** When the next check should run: now if today's was missed, otherwise the next [NOTIFY_AT]. */
-    fun nextRun(now: LocalDateTime, lastCheck: LocalDate?): LocalDateTime {
-        val todayAt = now.toLocalDate().atTime(NOTIFY_AT)
+    /** When the next check should run: now if today's was missed, otherwise the next [notifyAt]. */
+    fun nextRun(now: LocalDateTime, lastCheck: LocalDate?, notifyAt: LocalTime = Settings().reminderTime): LocalDateTime {
+        val todayAt = now.toLocalDate().atTime(notifyAt)
         return when {
             now.isBefore(todayAt) -> todayAt
             lastCheck == null || lastCheck.isBefore(now.toLocalDate()) -> now
@@ -61,9 +60,21 @@ object ReminderCheck {
         .sortedBy { (reminder, _) -> reminder.nextDueDate }
 
     /** Sets the alarm for the next check. Safe to call any number of times. */
-    fun schedule(context: Context) {
+    fun schedule(context: Context, onDone: () -> Unit = {}) {
+        val app = context.applicationContext
+        scope.launch {
+            try {
+                scheduleNow(app)
+            } finally {
+                onDone()
+            }
+        }
+    }
+
+    private suspend fun scheduleNow(context: Context) {
+        val notifyAt = context.appEntryPoint().settings().settings.first().reminderTime
         val lastCheck = prefs(context).getString(KEY_LAST_CHECK, null)?.let(LocalDate::parse)
-        val next = nextRun(LocalDateTime.now(), lastCheck)
+        val next = nextRun(LocalDateTime.now(), lastCheck, notifyAt)
         val millis = next.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
         // Inexact but allowed in Doze, and needs no special alarm permission.
         context.getSystemService(AlarmManager::class.java)
@@ -77,7 +88,7 @@ object ReminderCheck {
             try {
                 mutex.withLock { check(app) }
             } finally {
-                schedule(app)
+                scheduleNow(app)
                 onDone()
             }
         }
@@ -126,7 +137,10 @@ class ReminderReceiver : BroadcastReceiver() {
                 ReminderCheck.run(context) { pending.finish() }
             }
             // Alarms are cleared on reboot; schedule() also catches up if today's check was missed.
-            else -> ReminderCheck.schedule(context)
+            else -> {
+                val pending = goAsync()
+                ReminderCheck.schedule(context) { pending.finish() }
+            }
         }
     }
 

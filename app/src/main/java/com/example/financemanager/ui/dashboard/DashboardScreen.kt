@@ -103,6 +103,7 @@ fun DashboardScreen(
     onOpenExport: () -> Unit,
     onLock: () -> Unit,
     onOpenInsights: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
@@ -133,7 +134,7 @@ fun DashboardScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             item(key = "header") {
-                Header(onOpenStats, onOpenCategories, onOpenBudgets, onOpenGoals, onOpenReminders, onOpenExport, onLock, onOpenInsights, Modifier.contentWidth().staggeredEntrance(0, playIntro))
+                Header(onOpenStats, onOpenCategories, onOpenBudgets, onOpenGoals, onOpenReminders, onOpenExport, onLock, onOpenInsights, onOpenSettings, Modifier.contentWidth().staggeredEntrance(0, playIntro))
             }
             item(key = "balance") {
                 BalanceCard(state, Modifier.contentWidth().padding(top = 8.dp).staggeredEntrance(1, playIntro))
@@ -258,6 +259,7 @@ private fun Header(
     onOpenExport: () -> Unit,
     onLock: () -> Unit,
     onOpenInsights: () -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier,
 ) {
     val greeting = when (LocalTime.now().hour) {
@@ -288,6 +290,7 @@ private fun Header(
                     Triple(R.string.reminders_title, R.drawable.ic_bell, onOpenReminders),
                     Triple(R.string.insights_title, R.drawable.ic_lightbulb, onOpenInsights),
                     Triple(R.string.export_menu, R.drawable.ic_file_download, onOpenExport),
+                    Triple(R.string.settings_title, R.drawable.ic_settings, onOpenSettings),
                     Triple(R.string.lock_now, R.drawable.ic_lock, onLock),
                 ).forEach { (label, icon, action) ->
                     DropdownMenuItem(

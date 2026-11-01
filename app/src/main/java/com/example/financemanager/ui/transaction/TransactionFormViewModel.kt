@@ -3,6 +3,8 @@ package com.example.financemanager.ui.transaction
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financemanager.data.FinanceRepository
+import com.example.financemanager.data.SettingsRepository
+import com.example.financemanager.domain.BudgetMonths
 import com.example.financemanager.domain.amountInputText
 import com.example.financemanager.domain.budgets.BudgetAlert
 import com.example.financemanager.domain.budgets.budgetAlert
@@ -13,6 +15,7 @@ import com.example.financemanager.domain.receipt.ReceiptData
 import com.example.financemanager.model.Category
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
+import com.example.financemanager.ui.budgetMonths
 import com.example.financemanager.ui.components.CategoryNameError
 import com.example.financemanager.ui.components.categoryNameError
 import dagger.assisted.Assisted
@@ -20,17 +23,18 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.YearMonth
 
 data class TransactionFormState(
     val amount: String = "",
@@ -63,6 +67,7 @@ class TransactionFormViewModel(
     val type: TransactionType,
     private val repository: FinanceRepository,
     private val transactionId: Long? = null,
+    private val months: Flow<BudgetMonths> = flowOf(BudgetMonths()),
     private val today: () -> LocalDate = LocalDate::now,
 ) : ViewModel() {
     // Hilt uses this one; tests pass their own [today].
@@ -70,8 +75,9 @@ class TransactionFormViewModel(
     constructor(
         @Assisted type: TransactionType,
         repository: FinanceRepository,
+        settings: SettingsRepository,
         @Assisted transactionId: Long?,
-    ) : this(type, repository, transactionId, LocalDate::now)
+    ) : this(type, repository, transactionId, settings.budgetMonths, LocalDate::now)
 
     @AssistedFactory
     interface Factory {
@@ -81,7 +87,7 @@ class TransactionFormViewModel(
     val isEditing: Boolean get() = transactionId != null
     private var existing: Transaction? = null
 
-    private val _state = MutableStateFlow(TransactionFormState(isLoaded = transactionId == null))
+    private val _state = MutableStateFlow(TransactionFormState(date = today(), isLoaded = transactionId == null))
     val state: StateFlow<TransactionFormState> = _state.asStateFlow()
 
     val categories: StateFlow<List<Category>> = repository.categories(type)
@@ -193,12 +199,13 @@ class TransactionFormViewModel(
 
     /** Whether saving [transaction] pushes its category over a budget threshold this month. */
     private suspend fun budgetAlertFor(transaction: Transaction): BudgetAlert? {
-        val month = YearMonth.from(today())
-        if (type != TransactionType.EXPENSE || YearMonth.from(transaction.date) != month) return null
+        val months = months.first()
+        val month = months.of(today())
+        if (type != TransactionType.EXPENSE || months.of(transaction.date) != month) return null
         val budget = repository.categories(type).first()
             .find { it.name == transaction.category }?.monthlyBudget ?: return null
         val others = repository.transactions().first().filter { it.id != existing?.id }
-        val before = spentByCategory(others, month)[transaction.category] ?: 0.0
+        val before = spentByCategory(others, month, months)[transaction.category] ?: 0.0
         return budgetAlert(transaction.category, budget, before, before + transaction.amount)
     }
 }

@@ -22,6 +22,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -53,6 +54,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -63,12 +65,13 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.withResumed
 import com.example.financemanager.R
 import com.example.financemanager.ui.components.EmphasizedDecelerate
 import com.example.financemanager.ui.components.shakeOn
 import com.example.financemanager.ui.components.staggeredEntrance
 import com.example.financemanager.ui.theme.FinanceTheme
+import com.example.financemanager.ui.theme.matchSystemBars
 import kotlinx.coroutines.delay
 
 private val LoginError = Color(0xFFFFD6D8)
@@ -83,7 +86,7 @@ private sealed interface LoginStatus {
 
 @Composable
 fun LoginScreen(onUnlocked: () -> Unit) {
-    val activity = LocalActivity.current as FragmentActivity
+    val activity = LocalActivity.current as ComponentActivity
     val currentOnUnlocked by rememberUpdatedState(onUnlocked)
 
     LightSystemBarIcons(activity)
@@ -94,13 +97,15 @@ fun LoginScreen(onUnlocked: () -> Unit) {
 
     val auth = remember(activity) {
         BiometricAuth(
-            activity = activity,
+            context = activity,
             title = activity.getString(R.string.biometric_title),
             subtitle = activity.getString(R.string.biometric_subtitle),
+            cancel = activity.getString(R.string.odustani),
         ) { result ->
             when (result) {
                 AuthResult.Success -> status = LoginStatus.Success
                 AuthResult.Cancelled -> status = LoginStatus.Idle
+                AuthResult.Unavailable -> status = LoginStatus.Unavailable
                 AuthResult.Rejected -> {
                     status = LoginStatus.Failed(failedText)
                     shake++
@@ -120,7 +125,9 @@ fun LoginScreen(onUnlocked: () -> Unit) {
         } else if (!autoPrompted) {
             autoPrompted = true
             delay(750)
-            auth.authenticate()
+            // The prompt can't open while the app is in the background, so if it was left
+            // meanwhile, open it once the app is back.
+            activity.lifecycle.withResumed { auth.authenticate() }
         }
     }
     LaunchedEffect(status) {
@@ -211,7 +218,14 @@ fun LoginScreen(onUnlocked: () -> Unit) {
 @Composable
 private fun FingerprintButton(succeeded: Boolean, enabled: Boolean, modifier: Modifier, onClick: () -> Unit) {
     val pulse = rememberInfiniteTransition(label = "pulse")
-    Box(modifier = modifier.size(180.dp), contentAlignment = Alignment.Center) {
+    // The rings around the circle look like part of the button, so a tap on them counts too.
+    Box(
+        modifier = modifier
+            .size(180.dp)
+            .clip(CircleShape)
+            .clickable(enabled = enabled && !succeeded, role = Role.Button, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
         if (!succeeded && enabled) {
             repeat(2) { ring ->
                 val progress by pulse.animateFloat(
@@ -245,8 +259,6 @@ private fun FingerprintButton(succeeded: Boolean, enabled: Boolean, modifier: Mo
             }
         }
         Surface(
-            onClick = onClick,
-            enabled = enabled && !succeeded,
             shape = CircleShape,
             color = Color.White.copy(alpha = 0.15f),
             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.25f)),
@@ -302,11 +314,12 @@ private fun Blob(size: Dp, modifier: Modifier) {
 /** The gradient is dark in both themes, so keep the status/navigation bar icons light while shown. */
 @Composable
 private fun LightSystemBarIcons(activity: ComponentActivity) {
+    val darkTheme by rememberUpdatedState(FinanceTheme.isDark)
     DisposableEffect(activity) {
         activity.enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
         )
-        onDispose { activity.enableEdgeToEdge() }
+        onDispose { activity.matchSystemBars(darkTheme) }
     }
 }

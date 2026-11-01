@@ -56,6 +56,8 @@ import com.example.financemanager.ui.reminders.ReminderFormScreen
 import com.example.financemanager.ui.reminders.ReminderFormViewModel
 import com.example.financemanager.ui.reminders.RemindersScreen
 import com.example.financemanager.ui.reminders.RemindersViewModel
+import com.example.financemanager.ui.settings.SettingsScreen
+import com.example.financemanager.ui.settings.SettingsViewModel
 import com.example.financemanager.ui.stats.StatsScreen
 import com.example.financemanager.ui.stats.StatsViewModel
 import com.example.financemanager.ui.transaction.TransactionFormScreen
@@ -118,6 +120,9 @@ data object ExportRoute
 data object InsightsRoute
 
 @Serializable
+data object SettingsRoute
+
+@Serializable
 data class GoalRoute(val id: Long)
 
 /** [id] of the goal to edit, or [NEW] for a new one. */
@@ -175,10 +180,14 @@ fun FinanceNavHost(
     }
 }
 
-/** Swallows every touch so nothing underneath can be used. */
+/**
+ * Takes every touch so nothing underneath can be used: of overlapping layouts only the top
+ * one gets a touch. The touches are not consumed, as that would cancel taps on the lock screen
+ * itself; a finger always moves a little while pressing, and a consumed move ends a tap.
+ */
 private fun Modifier.blockTouches() = pointerInput(Unit) {
     awaitPointerEventScope {
-        while (true) awaitPointerEvent().changes.forEach { it.consume() }
+        while (true) awaitPointerEvent()
     }
 }
 
@@ -229,6 +238,7 @@ private fun AppNavHost(
                 onOpenExport = { navController.navigate(ExportRoute) },
                 onLock = onLock,
                 onOpenInsights = { navController.navigate(InsightsRoute) },
+                onOpenSettings = { navController.navigate(SettingsRoute) },
                 onOpenGoal = { navController.navigate(GoalRoute(it)) },
                 onAddGoal = { navController.navigate(GoalFormRoute()) },
             )
@@ -261,6 +271,12 @@ private fun AppNavHost(
         composable<InsightsRoute> {
             InsightsScreen(
                 viewModel = hiltViewModel<InsightsViewModel>(),
+                onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
+            )
+        }
+        composable<SettingsRoute> {
+            SettingsScreen(
+                viewModel = hiltViewModel<SettingsViewModel>(),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
             )
         }

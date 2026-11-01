@@ -1,5 +1,6 @@
 package com.example.financemanager.domain.insights
 
+import com.example.financemanager.domain.BudgetMonths
 import com.example.financemanager.model.Category
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
@@ -9,7 +10,8 @@ import kotlin.math.abs
 
 /*
  * Insights compare this month with how the previous months went, always for the same part
- * of the month: on the 10th, the 1st-10th of this month against the 1st-10th of earlier ones.
+ * of the month: on its 10th day, the first ten days of this month against the first ten of
+ * earlier ones. Months start on the day set in [BudgetMonths], so "the 1st" may be payday.
  * That keeps the comparison fair mid-month (rent paid on the 1st doesn't make the first week
  * look expensive) and lets the rest of earlier months predict the rest of this one.
  */
@@ -61,19 +63,24 @@ sealed interface Insight {
 }
 
 /** Earlier months that the data fully covers, newest first (at most [HISTORY_MONTHS]). */
-fun historyMonths(transactions: List<Transaction>, today: LocalDate): List<YearMonth> {
+fun historyMonths(
+    transactions: List<Transaction>,
+    today: LocalDate,
+    months: BudgetMonths = BudgetMonths(),
+): List<YearMonth> {
     val first = transactions.minOfOrNull { it.date } ?: return emptyList()
-    val current = YearMonth.from(today)
+    val current = months.of(today)
     // A month counts only if the data starts on or before its first day; a half-recorded
     // first month would make "usual" look too low.
-    return (1..HISTORY_MONTHS).map { current.minusMonths(it.toLong()) }.filter { !first.isAfter(it.atDay(1)) }
+    return (1..HISTORY_MONTHS).map { current.minusMonths(it.toLong()) }.filter { !first.isAfter(months.first(it)) }
 }
 
-/** The same days of [month] as 1..[day] of the current month (shorter months stop at their end). */
-private fun YearMonth.upTo(day: Int): ClosedRange<LocalDate> = atDay(1)..atDay(minOf(day, lengthOfMonth()))
+/** The first [day] days of [month], like the current month so far (shorter months stop at their end). */
+private fun BudgetMonths.upTo(month: YearMonth, day: Int): ClosedRange<LocalDate> =
+    first(month)..first(month).plusDays(minOf(day, length(month)) - 1L)
 
-private fun YearMonth.after(day: Int): ClosedRange<LocalDate>? =
-    if (day >= lengthOfMonth()) null else atDay(day + 1)..atEndOfMonth()
+private fun BudgetMonths.after(month: YearMonth, day: Int): ClosedRange<LocalDate>? =
+    if (day >= length(month)) null else first(month).plusDays(day.toLong())..last(month)
 
 private fun List<Transaction>.sum(type: TransactionType, dates: ClosedRange<LocalDate>?, category: String? = null) =
     if (dates == null) {
@@ -86,24 +93,25 @@ fun buildInsights(
     transactions: List<Transaction>,
     categories: List<Category>,
     today: LocalDate = LocalDate.now(),
+    months: BudgetMonths = BudgetMonths(),
 ): List<Insight> {
     if (transactions.isEmpty()) return emptyList()
-    val month = YearMonth.from(today)
-    val day = today.dayOfMonth
-    val soFar = month.atDay(1)..today
-    val history = historyMonths(transactions, today)
+    val month = months.of(today)
+    val day = months.dayOf(today)
+    val soFar = months.first(month)..today
+    val history = historyMonths(transactions, today, months)
     val expenses = transactions.filter { it.type == TransactionType.EXPENSE }
 
     val insights = mutableListOf<Insight>()
 
-    forecast(transactions, today, history)?.let(insights::add)
+    forecast(transactions, today, history, months)?.let(insights::add)
 
     if (history.isNotEmpty()) {
         // Categories that changed most, in euros, first.
         expenses.map { it.category }.distinct()
             .mapNotNull { category ->
                 val current = transactions.sum(TransactionType.EXPENSE, soFar, category)
-                val usual = history.map { transactions.sum(TransactionType.EXPENSE, it.upTo(day), category) }.average()
+                val usual = history.map { transactions.sum(TransactionType.EXPENSE, months.upTo(it, day), category) }.average()
                 Insight.CategoryTrend(category, current, usual).takeIf {
                     usual >= MIN_AMOUNT && maxOf(current, usual) >= MIN_AMOUNT && abs(it.change) >= NOTABLE_CHANGE
                 }
@@ -115,7 +123,7 @@ fun buildInsights(
         categories.filter { it.type == TransactionType.EXPENSE && it.monthlyBudget != null }.forEach { category ->
             val budget = category.monthlyBudget!!
             val spent = transactions.sum(TransactionType.EXPENSE, soFar, category.name)
-            val rest = history.map { transactions.sum(TransactionType.EXPENSE, it.after(day), category.name) }.average()
+            val rest = history.map { transactions.sum(TransactionType.EXPENSE, months.after(it, day), category.name) }.average()
             val projected = spent + rest
             // Only a warning while it can still be avoided.
             if (spent <= budget && projected > budget) insights += Insight.BudgetRisk(category.name, budget, projected)
@@ -125,7 +133,7 @@ fun buildInsights(
     unusualExpense(expenses, soFar)?.let(insights::add)
 
     val last = month.minusMonths(1)
-    val lastDates = last.atDay(1)..last.atEndOfMonth()
+    val lastDates = months.dates(last)
     if (last in history) {
         insights += Insight.LastMonth(
             last,
@@ -136,24 +144,29 @@ fun buildInsights(
     return insights
 }
 
-private fun forecast(transactions: List<Transaction>, today: LocalDate, history: List<YearMonth>): Insight.MonthEndForecast? {
-    val month = YearMonth.from(today)
-    val day = today.dayOfMonth
+private fun forecast(
+    transactions: List<Transaction>,
+    today: LocalDate,
+    history: List<YearMonth>,
+    months: BudgetMonths,
+): Insight.MonthEndForecast? {
+    val month = months.of(today)
+    val day = months.dayOf(today)
     // The same balance the dashboard shows.
     val balance = transactions.sumOf { if (it.type == TransactionType.INCOME) it.amount else -it.amount }
     if (history.isNotEmpty()) {
         return Insight.MonthEndForecast(
             balanceNow = balance,
-            expectedIncome = history.map { transactions.sum(TransactionType.INCOME, it.after(day)) }.average(),
-            expectedExpense = history.map { transactions.sum(TransactionType.EXPENSE, it.after(day)) }.average(),
+            expectedIncome = history.map { transactions.sum(TransactionType.INCOME, months.after(it, day)) }.average(),
+            expectedExpense = history.map { transactions.sum(TransactionType.EXPENSE, months.after(it, day)) }.average(),
             basedOnMonths = history.size,
         )
     }
     // No earlier month yet: after the first week, continue this month's spending pace.
     if (day < 7) return null
-    val spent = transactions.sum(TransactionType.EXPENSE, month.atDay(1)..today)
+    val spent = transactions.sum(TransactionType.EXPENSE, months.first(month)..today)
     if (spent <= 0) return null
-    val daysLeft = month.lengthOfMonth() - day
+    val daysLeft = months.length(month) - day
     return Insight.MonthEndForecast(balance, expectedIncome = 0.0, expectedExpense = spent / day * daysLeft, basedOnMonths = 0)
 }
 

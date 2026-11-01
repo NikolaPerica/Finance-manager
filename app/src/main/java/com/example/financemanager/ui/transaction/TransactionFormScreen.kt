@@ -385,7 +385,7 @@ private fun AmountCard(
                     value = amount,
                     onValueChange = onAmountChange,
                     placeholder = { Text(stringResource(R.string.amount_hint), style = MaterialTheme.typography.displaySmall) },
-                    suffix = { Text(stringResource(R.string.currency_symbol), style = MaterialTheme.typography.headlineSmall, color = accent) },
+                    suffix = { Text(MoneyFormat.symbol, style = MaterialTheme.typography.headlineSmall, color = accent) },
                     textStyle = MaterialTheme.typography.displaySmall,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),

@@ -19,8 +19,11 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.financemanager.di.appEntryPoint
+import com.example.financemanager.model.ThemeMode
 import com.example.financemanager.model.TransactionType
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -122,6 +125,7 @@ class AppFlowsUiTest {
             "Podsjetnici za plaćanje" to "Podsjetnici za plaćanje",
             "Uvidi" to "Uvidi",
             "Izvoz i kopija" to "Izvoz i sigurnosna kopija",
+            "Postavke" to "Postavke",
         ).forEach { (entry, title) ->
             rule.onNodeWithContentDescription("Više opcija").performClick()
             settle()
@@ -135,8 +139,30 @@ class AppFlowsUiTest {
         }
     }
 
+    private fun storedSettings() = runBlocking { rule.activity.appEntryPoint().settings().settings.first() }
+
+    @Test
+    fun settingsAreSavedRightAway() {
+        rule.onNodeWithContentDescription("Više opcija").performClick()
+        settle()
+        rule.onNode(hasText("Postavke") and hasClickAction()).performClick()
+        settle()
+
+        rule.onNodeWithText("Tamna").performClick()
+        rule.onNodeWithText("Mjesec počinje").performClick()
+        settle()
+        rule.onNodeWithText("15").performClick()
+
+        // DataStore writes in the background.
+        rule.waitUntil(timeoutMillis = 5_000) { storedSettings().monthStartDay == 15 }
+        assertEquals(ThemeMode.DARK, storedSettings().theme)
+        settle()
+        rule.onNodeWithText("15. u mjesecu").assertIsDisplayed()
+    }
+
     @Test
     fun lockingFromTheMenuHidesTheAppUntilUnlocked() {
+        val addExpense = rule.onNodeWithText("Rashod").fetchSemanticsNode().boundsInRoot.center
         rule.onNodeWithContentDescription("Više opcija").performClick()
         settle()
         rule.onNodeWithText("Zaključaj").performClick()
@@ -144,13 +170,20 @@ class AppFlowsUiTest {
         assertTrue(appLock.locked.value)
         // The dashboard is still underneath but neither visible to screen readers nor usable.
         assertTrue(rule.onAllNodesWithText("Vaš pregled").fetchSemanticsNodes().isEmpty())
-        rule.onRoot().performTouchInput { click(Offset(width / 2f, height / 2f)) }
+        // A tap on the "Rashod" button underneath, moving a little the way a finger does.
+        rule.onRoot().performTouchInput {
+            down(addExpense)
+            moveBy(Offset(3f, 3f))
+            up()
+        }
         settle()
 
         rule.runOnIdle { appLock.unlock() }
         settle()
         assertFalse(appLock.locked.value)
+        // Still on the dashboard: the tap didn't open the expense form.
         rule.onNodeWithText("Vaš pregled").assertIsDisplayed()
+        assertTrue(rule.onAllNodesWithText("Novi rashod").fetchSemanticsNodes().isEmpty())
     }
 
 }

@@ -60,7 +60,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financemanager.R
+import com.example.financemanager.domain.BudgetMonths
 import com.example.financemanager.domain.Croatian
+import com.example.financemanager.domain.DateFormat
 import com.example.financemanager.domain.MoneyFormat
 import com.example.financemanager.domain.amountInputText
 import com.example.financemanager.domain.budgets.BudgetItem
@@ -111,7 +113,7 @@ fun BudgetsScreen(viewModel: BudgetsViewModel, onBack: () -> Unit) {
             item(key = "summary") {
                 val summary = state.summary
                 if (summary != null) {
-                    SummaryCard(state.month, summary, Modifier.contentWidth())
+                    SummaryCard(state.month, state.months, summary, Modifier.contentWidth())
                 } else if (!state.isLoading) {
                     IntroCard(Modifier.contentWidth())
                 }
@@ -174,7 +176,7 @@ private fun SectionTitle(text: String, modifier: Modifier) {
 }
 
 @Composable
-private fun SummaryCard(month: YearMonth, summary: BudgetSummary, modifier: Modifier) {
+private fun SummaryCard(month: YearMonth, months: BudgetMonths, summary: BudgetSummary, modifier: Modifier) {
     val white = Color.White
     Column(
         modifier
@@ -187,6 +189,9 @@ private fun SummaryCard(month: YearMonth, summary: BudgetSummary, modifier: Modi
             style = MaterialTheme.typography.bodyLarge,
             color = white.copy(alpha = 0.75f),
         )
+        if (!months.isCalendar) {
+            Text(DateFormat.range(months.dates(month)), style = MaterialTheme.typography.bodySmall, color = white.copy(alpha = 0.75f))
+        }
         Spacer(Modifier.height(4.dp))
         Row(verticalAlignment = Alignment.Bottom) {
             Text(MoneyFormat.format(summary.spent), style = MaterialTheme.typography.headlineSmall, color = white)
@@ -371,7 +376,7 @@ private fun BudgetDialog(item: BudgetItem, isValid: (String) -> Boolean, onDismi
                     },
                     label = { Text(stringResource(R.string.monthly_budget)) },
                     placeholder = { Text(stringResource(R.string.amount_hint)) },
-                    suffix = { Text(stringResource(R.string.currency_symbol)) },
+                    suffix = { Text(MoneyFormat.symbol) },
                     isError = error,
                     supportingText = {
                         Text(

@@ -9,7 +9,7 @@ in your own categories, and shown in statistics, budgets, savings goals and insi
 All data stays on the phone, in a local database, and the app needs no account or
 internet connection. It is locked with a fingerprint or the phone's PIN.
 
-The interface is in Croatian; amounts are in euros.
+The interface is in Croatian; amounts are in euros unless another currency is chosen in the settings.
 
 ## Features
 
@@ -58,10 +58,19 @@ The interface is in Croatian; amounts are in euros.
 
 **Security and convenience**
 - Fingerprint or device PIN to open the app, and again after two minutes in the
-  background. "Zaključaj" in the menu locks it at once.
+  background (adjustable). "Zaključaj" in the menu locks it at once.
 - Content is hidden in the recent apps overview.
 - **Home screen widget:** shows the balance and this month's totals, with buttons to add
   income or an expense.
+
+**Settings**
+- Theme: the system's, light or dark.
+- Currency: the sign shown with amounts (€, $, £, CHF, KM and others). Amounts are not converted.
+- The day months start on (1st–28th), e.g. payday. Budgets, statistics, insights, filters,
+  exports and the widget all count months from it; each month is named after the calendar
+  month it starts in.
+- The time of the daily payment reminder.
+- How long the app may stay in the background before it locks again.
 
 ## Tech stack
 
@@ -71,8 +80,9 @@ The interface is in Croatian; amounts are in euros.
 | UI | Jetpack Compose (BOM 2026.09) with Material 3, a single activity with type-safe Navigation Compose |
 | Architecture | MVVM: one ViewModel with a `StateFlow` per screen, over a repository; four Gradle modules (see below) |
 | Dependency injection | Hilt 2.60 (KSP); screen arguments reach ViewModels through assisted injection |
+| Settings | Jetpack DataStore (Preferences) |
 | Database | SQLite through Room 2.8 (KSP), schema exported to `core/data/schemas`, migrations from version 1 |
-| Login | AndroidX Biometric (fingerprint, falling back to PIN/pattern/password) |
+| Login | Android's BiometricPrompt (fingerprint, falling back to PIN/pattern/password) |
 | Notifications | `AlarmManager` daily check, re-armed after reboot |
 | Widget | Jetpack Glance 1.2 |
 | Receipts | ML Kit text recognition through Google Play services |
@@ -103,10 +113,11 @@ core/domain/  …/domain/         Format.kt (money, dates, amount input)
               ├── stats/        statistics periods and totals
               ├── transactions/ search and filters
               ├── reminders/    due status
+              ├── BudgetMonths  months that start on a chosen day
               ├── receipt/      reading totals, dates and shops from receipt text
               ├── export/       CSV and report data
               └── widget/       widget summary
-core/data/    …/data/           database, DAOs, migrations, FinanceRepository
+core/data/    …/data/           database, DAOs, migrations, FinanceRepository, settings (DataStore)
               └── backup/       JSON backup format
               schemas/          exported Room schemas (versions 1–5)
 
@@ -121,7 +132,8 @@ app/          …/financemanager/
               ├── security/         app lock timing
               ├── widget/           home screen widget
               └── ui/               navigation, login, dashboard, forms, lists, statistics,
-                                    insights, budgets, goals, reminders, export, components, theme
+                                    insights, budgets, goals, reminders, export, settings,
+                                    components, theme
 ```
 
 ## Database

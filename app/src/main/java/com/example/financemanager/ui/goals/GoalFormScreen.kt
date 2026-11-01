@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financemanager.R
 import com.example.financemanager.domain.DateFormat
+import com.example.financemanager.domain.MoneyFormat
 import com.example.financemanager.ui.components.ColorPicker
 import com.example.financemanager.ui.components.DatePickerSheet
 import com.example.financemanager.ui.components.FieldShape
@@ -129,7 +130,7 @@ fun GoalFormScreen(viewModel: GoalFormViewModel, onBack: () -> Unit) {
                 label = { Text(stringResource(R.string.goal_target)) },
                 placeholder = { Text(stringResource(R.string.amount_hint)) },
                 leadingIcon = { Icon(painterResource(R.drawable.ic_wallet), contentDescription = null) },
-                suffix = { Text(stringResource(R.string.currency_symbol)) },
+                suffix = { Text(MoneyFormat.symbol) },
                 isError = state.targetError,
                 supportingText = if (state.targetError) {
                     { Text(stringResource(R.string.error_amount)) }
@@ -156,7 +157,7 @@ fun GoalFormScreen(viewModel: GoalFormViewModel, onBack: () -> Unit) {
                     label = { Text(stringResource(R.string.goal_already_saved)) },
                     placeholder = { Text(stringResource(R.string.amount_hint)) },
                     leadingIcon = { Icon(painterResource(R.drawable.ic_add), contentDescription = null) },
-                    suffix = { Text(stringResource(R.string.currency_symbol)) },
+                    suffix = { Text(MoneyFormat.symbol) },
                     singleLine = true,
                     shape = FieldShape,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),

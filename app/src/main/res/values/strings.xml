@@ -43,7 +43,6 @@
     <string name="novi_rashod">Novi rashod</string>
     <string name="iznos">Iznos</string>
     <string name="amount_hint">0,00</string>
-    <string name="currency_symbol">€</string>
     <string name="datum">Datum</string>
     <string name="kategorija">Kategorija</string>
     <string name="napomena">Napomena (opcionalno)</string>
@@ -279,7 +278,7 @@
     <string name="restore_invalid">Datoteka nije ispravna sigurnosna kopija</string>
     <!-- Uvidi -->
     <string name="insights_title">Uvidi</string>
-    <string name="insights_about">Uvidi uspoređuju ovaj mjesec s prethodna 3 mjeseca, uvijek za isti dio mjeseca: danas se 1. – %1$d. ovog mjeseca uspoređuje s 1. – %1$d. u prethodnim mjesecima. Predviđanje dodaje trenutnom stanju ono što se u prethodnim mjesecima obično događalo u ostatku mjeseca.</string>
+    <string name="insights_about">Uvidi uspoređuju ovaj mjesec s prethodna 3 mjeseca, uvijek za isti dio mjeseca: danas je dan %1$d. ovog mjeseca, pa se dosadašnji dio mjeseca uspoređuje s istim brojem dana na početku prethodnih mjeseci. Predviđanje dodaje trenutnom stanju ono što se u prethodnim mjesecima obično događalo u ostatku mjeseca.</string>
     <string name="insights_need_history">Usporedbe s prošlim mjesecima pojavit će se kad aplikacija bude imala podatke za barem jedan cijeli mjesec.</string>
     <string name="insight_forecast_title">Na kraju mjeseca: oko %1$s</string>
     <string name="insight_forecast_body">%1$s do kraja mjeseca obično stigne još oko %2$s, a potroši se oko %3$s.</string>
@@ -313,4 +312,37 @@
     <string name="scan_failed">Slika se ne može pročitati.</string>
     <string name="scan_model_downloading">Prepoznavanje teksta još se preuzima preko Google Play usluga. Pokušaj ponovno za minutu.</string>
     <string name="scan_no_camera">Nema aplikacije za kameru.</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Postavke</string>
+    <string name="settings_look">Izgled</string>
+    <string name="settings_theme">Tema</string>
+    <string name="theme_system">Sustavna</string>
+    <string name="theme_light">Svijetla</string>
+    <string name="theme_dark">Tamna</string>
+    <string name="settings_money">Novac</string>
+    <string name="settings_currency">Valuta</string>
+    <string name="settings_currency_note">Mijenja se samo oznaka uz iznose. Iznosi se ne preračunavaju.</string>
+    <string name="currency_eur">Euro</string>
+    <string name="currency_usd">Američki dolar</string>
+    <string name="currency_gbp">Britanska funta</string>
+    <string name="currency_chf">Švicarski franak</string>
+    <string name="currency_bam">Konvertibilna marka</string>
+    <string name="currency_rsd">Srpski dinar</string>
+    <string name="currency_huf">Mađarska forinta</string>
+    <string name="currency_czk">Češka kruna</string>
+    <string name="currency_pln">Poljski zlot</string>
+    <string name="currency_option">%1$s (%2$s)</string>
+    <string name="settings_month_start">Mjesec počinje</string>
+    <string name="settings_month_start_value">%1$d. u mjesecu</string>
+    <string name="settings_month_start_calendar">1. u mjesecu (kalendarski mjesec)</string>
+    <string name="settings_month_start_note">Budžeti, statistika, uvidi i widget računaju mjesec od ovog dana, npr. od dana kad stiže plaća. Mjesec nosi ime po mjesecu u kojem počinje.</string>
+    <string name="settings_reminders">Podsjetnici</string>
+    <string name="settings_reminder_time">Vrijeme obavijesti</string>
+    <string name="settings_reminder_time_note">Svaki dan u ovo vrijeme stiže obavijest o plaćanjima koja dospijevaju sutra, danas ili kasne.</string>
+    <string name="settings_security">Sigurnost</string>
+    <string name="settings_lock_after">Ponovno zaključavanje</string>
+    <string name="settings_lock_after_note">Koliko aplikacija smije biti u pozadini prije nego što ponovno zatraži otisak prsta ili PIN.</string>
+    <string name="lock_after_now">Odmah</string>
+    <string name="lock_after_minutes">Nakon %1$d min</string>
 </resources>

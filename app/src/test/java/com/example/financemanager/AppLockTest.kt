@@ -39,6 +39,14 @@ class AppLockTest {
     }
 
     @Test
+    fun aTimeoutOfZeroLocksEveryTime() {
+        lock.lockAfter = 0.minutes
+        lock.unlock()
+        away(1.seconds)
+        assertTrue(lock.locked.value)
+    }
+
+    @Test
     fun eachTripIsTimedOnItsOwn() {
         lock.unlock()
         away(90.seconds)

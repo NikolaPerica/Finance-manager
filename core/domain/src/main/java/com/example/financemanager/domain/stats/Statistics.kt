@@ -1,5 +1,6 @@
 package com.example.financemanager.domain.stats
 
+import com.example.financemanager.domain.BudgetMonths
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
 import java.time.LocalDate
@@ -7,12 +8,15 @@ import java.time.YearMonth
 
 enum class StatsRange { MONTH, YEAR, ALL }
 
-/** The period being looked at: one month, the year that [month] is in, or all time. */
-data class StatsPeriod(val range: StatsRange, val month: YearMonth) {
+/**
+ * The period being looked at: one month, the year that [month] is in, or all time. Months
+ * (and so years) start on the day set in [months].
+ */
+data class StatsPeriod(val range: StatsRange, val month: YearMonth, val months: BudgetMonths = BudgetMonths()) {
 
     operator fun contains(date: LocalDate): Boolean = when (range) {
-        StatsRange.MONTH -> YearMonth.from(date) == month
-        StatsRange.YEAR -> date.year == month.year
+        StatsRange.MONTH -> months.of(date) == month
+        StatsRange.YEAR -> months.of(date).year == month.year
         StatsRange.ALL -> true
     }
 
@@ -26,20 +30,21 @@ data class StatsPeriod(val range: StatsRange, val month: YearMonth) {
     /** First and last day of the period, or null for all time. */
     val dates: ClosedRange<LocalDate>?
         get() = when (range) {
-            StatsRange.MONTH -> month.atDay(1)..month.atEndOfMonth()
-            StatsRange.YEAR -> month.withMonth(1).atDay(1)..month.withMonth(12).atEndOfMonth()
+            StatsRange.MONTH -> months.dates(month)
+            StatsRange.YEAR -> months.first(month.withMonth(1))..months.last(month.withMonth(12))
             StatsRange.ALL -> null
         }
 
     /** Whether the period starts after [today], so there is nothing to show yet. */
     fun isFuture(today: LocalDate): Boolean = when (range) {
-        StatsRange.MONTH -> month > YearMonth.from(today)
-        StatsRange.YEAR -> month.year > today.year
+        StatsRange.MONTH -> month > months.of(today)
+        StatsRange.YEAR -> month.year > months.of(today).year
         StatsRange.ALL -> false
     }
 
     companion object {
-        fun thisMonth(today: LocalDate = LocalDate.now()) = StatsPeriod(StatsRange.MONTH, YearMonth.from(today))
+        fun thisMonth(today: LocalDate = LocalDate.now(), months: BudgetMonths = BudgetMonths()) =
+            StatsPeriod(StatsRange.MONTH, months.of(today), months)
     }
 }
 
@@ -87,11 +92,12 @@ fun buildStats(
 
     val trendPeriods = when (period.range) {
         StatsRange.MONTH -> (MONTHS_IN_TREND - 1 downTo 0).map { period.copy(month = period.month.minusMonths(it.toLong())) }
-        StatsRange.YEAR -> (1..12).map { StatsPeriod(StatsRange.MONTH, YearMonth.of(period.month.year, it)) }
+        StatsRange.YEAR -> (1..12).map { StatsPeriod(StatsRange.MONTH, YearMonth.of(period.month.year, it), period.months) }
         StatsRange.ALL -> {
-            val lastYear = maxOf(today.year, ofType.maxOfOrNull { it.date.year } ?: today.year)
-            val firstYear = (ofType.minOfOrNull { it.date.year } ?: lastYear).coerceAtLeast(lastYear - YEARS_IN_TREND + 1)
-            (firstYear..lastYear).map { StatsPeriod(StatsRange.YEAR, YearMonth.of(it, 1)) }
+            fun year(date: LocalDate) = period.months.of(date).year
+            val lastYear = maxOf(year(today), ofType.maxOfOrNull { year(it.date) } ?: year(today))
+            val firstYear = (ofType.minOfOrNull { year(it.date) } ?: lastYear).coerceAtLeast(lastYear - YEARS_IN_TREND + 1)
+            (firstYear..lastYear).map { StatsPeriod(StatsRange.YEAR, YearMonth.of(it, 1), period.months) }
         }
     }
 

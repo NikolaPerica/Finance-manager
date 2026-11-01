@@ -66,6 +66,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financemanager.R
 import com.example.financemanager.domain.Croatian
+import com.example.financemanager.domain.DateFormat
 import com.example.financemanager.domain.MoneyFormat
 import com.example.financemanager.domain.stats.CategoryStat
 import com.example.financemanager.domain.stats.StatsPeriod
@@ -216,12 +217,12 @@ internal fun PeriodSwitcher(period: StatsPeriod, canGoForward: Boolean, onShift:
                 tint = if (movable) MaterialTheme.colorScheme.onSurface else Color.Transparent,
             )
         }
-        Text(
-            periodLabel(period),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.weight(1f),
-            textAlign = TextAlign.Center,
-        )
+        Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(periodLabel(period), style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+            customDates(period)?.let {
+                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
         IconButton(onClick = { onShift(1) }, enabled = movable && canGoForward) {
             Icon(
                 painterResource(R.drawable.ic_chevron_right),
@@ -235,6 +236,10 @@ internal fun PeriodSwitcher(period: StatsPeriod, canGoForward: Boolean, onShift:
         }
     }
 }
+
+/** The days a period covers, worth showing only when months don't start on the 1st. */
+internal fun customDates(period: StatsPeriod): String? =
+    period.dates?.takeUnless { period.months.isCalendar }?.let(DateFormat::range)
 
 @Composable
 private fun periodLabel(period: StatsPeriod): String = when (period.range) {
@@ -442,7 +447,7 @@ private fun TrendChart(bars: List<TrendBar>, accent: Color, onSelect: (StatsPeri
                 strokeWidth = 1.dp.toPx(),
             )
             if (value > 0) {
-                val text = measurer.measure(AxisFormat.get()!!.format(value), labelStyle)
+                val text = measurer.measure("${AxisFormat.get()!!.format(value)}\u00A0${MoneyFormat.symbol}", labelStyle)
                 drawText(text, topLeft = Offset(0f, y - text.size.height / 2f))
             }
         }
@@ -508,4 +513,4 @@ internal fun niceCeiling(max: Double): Double {
 private val MonthTitle = DateTimeFormatter.ofPattern("LLLL yyyy.", Croatian)
 private val MonthShort = DateTimeFormatter.ofPattern("LLL", Croatian)
 private val AxisFormat: ThreadLocal<DecimalFormat> =
-    ThreadLocal.withInitial { DecimalFormat("#,##0 €", DecimalFormatSymbols(Croatian)) }
+    ThreadLocal.withInitial { DecimalFormat("#,##0", DecimalFormatSymbols(Croatian)) }
