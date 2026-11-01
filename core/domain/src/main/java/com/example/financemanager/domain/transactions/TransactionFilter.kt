@@ -1,12 +1,12 @@
 package com.example.financemanager.domain.transactions
 
+import com.example.financemanager.domain.BudgetMonths
 import com.example.financemanager.domain.MoneyFormat
 import com.example.financemanager.domain.amountInputText
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
 import java.text.Normalizer
 import java.time.LocalDate
-import java.time.YearMonth
 
 /** Which dates to show. */
 sealed interface PeriodFilter {
@@ -17,10 +17,10 @@ sealed interface PeriodFilter {
     data class Range(val from: LocalDate, val to: LocalDate) : PeriodFilter
 
     /** The dates included, or null for all of them. */
-    fun dates(today: LocalDate): ClosedRange<LocalDate>? = when (this) {
+    fun dates(today: LocalDate, months: BudgetMonths = BudgetMonths()): ClosedRange<LocalDate>? = when (this) {
         All -> null
-        ThisMonth -> YearMonth.from(today).let { it.atDay(1)..it.atEndOfMonth() }
-        LastMonth -> YearMonth.from(today).minusMonths(1).let { it.atDay(1)..it.atEndOfMonth() }
+        ThisMonth -> months.dates(months.of(today))
+        LastMonth -> months.dates(months.of(today).minusMonths(1))
         ThisYear -> today.withDayOfYear(1)..today.withDayOfYear(today.lengthOfYear())
         is Range -> minOf(from, to)..maxOf(from, to)
     }
@@ -40,8 +40,13 @@ data class TransactionFilter(
 /** One day of the list, newest transactions first. */
 data class DayGroup(val date: LocalDate, val transactions: List<Transaction>)
 
-fun applyFilter(transactions: List<Transaction>, filter: TransactionFilter, today: LocalDate): List<Transaction> {
-    val dates = filter.period.dates(today)
+fun applyFilter(
+    transactions: List<Transaction>,
+    filter: TransactionFilter,
+    today: LocalDate,
+    months: BudgetMonths = BudgetMonths(),
+): List<Transaction> {
+    val dates = filter.period.dates(today, months)
     val query = normalize(filter.query.trim())
     return transactions.filter { transaction ->
         (filter.type == null || transaction.type == filter.type) &&

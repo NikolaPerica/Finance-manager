@@ -3,6 +3,8 @@ package com.example.financemanager.ui.budgets
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financemanager.data.FinanceRepository
+import com.example.financemanager.data.SettingsRepository
+import com.example.financemanager.domain.BudgetMonths
 import com.example.financemanager.domain.budgets.BudgetItem
 import com.example.financemanager.domain.budgets.BudgetSummary
 import com.example.financemanager.domain.budgets.budgetItems
@@ -10,12 +12,15 @@ import com.example.financemanager.domain.budgets.budgetSummary
 import com.example.financemanager.domain.parseAmount
 import com.example.financemanager.model.Category
 import com.example.financemanager.model.TransactionType
+import com.example.financemanager.ui.budgetMonths
 import com.example.financemanager.ui.components.CategoryNameError
 import com.example.financemanager.ui.components.categoryNameError
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -24,6 +29,7 @@ import javax.inject.Inject
 
 data class BudgetsUiState(
     val month: YearMonth = YearMonth.now(),
+    val months: BudgetMonths = BudgetMonths(),
     /** Categories with a budget, the most used-up first. */
     val budgeted: List<BudgetItem> = emptyList(),
     /** Expense categories without a budget, by name. */
@@ -35,24 +41,30 @@ data class BudgetsUiState(
 @HiltViewModel
 class BudgetsViewModel(
     private val repository: FinanceRepository,
+    months: Flow<BudgetMonths> = flowOf(BudgetMonths()),
     private val today: () -> LocalDate = LocalDate::now,
 ) : ViewModel() {
     // Hilt uses this one; tests pass their own [today].
     @Inject
-    constructor(repository: FinanceRepository) : this(repository, LocalDate::now)
+    constructor(repository: FinanceRepository, settings: SettingsRepository) :
+        this(repository, settings.budgetMonths, LocalDate::now)
 
-    val state: StateFlow<BudgetsUiState> =
-        combine(repository.categories(TransactionType.EXPENSE), repository.transactions()) { categories, transactions ->
-            val month = YearMonth.from(today())
-            val items = budgetItems(categories, transactions, month)
-            BudgetsUiState(
-                month = month,
-                budgeted = items.filter { it.budget != null }.sortedByDescending { it.fraction },
-                unbudgeted = items.filter { it.budget == null },
-                summary = budgetSummary(items),
-                isLoading = false,
-            )
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), BudgetsUiState(month = YearMonth.from(today())))
+    val state: StateFlow<BudgetsUiState> = combine(
+        repository.categories(TransactionType.EXPENSE),
+        repository.transactions(),
+        months,
+    ) { categories, transactions, months ->
+        val month = months.of(today())
+        val items = budgetItems(categories, transactions, month, months)
+        BudgetsUiState(
+            month = month,
+            months = months,
+            budgeted = items.filter { it.budget != null }.sortedByDescending { it.fraction },
+            unbudgeted = items.filter { it.budget == null },
+            summary = budgetSummary(items),
+            isLoading = false,
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), BudgetsUiState(month = YearMonth.from(today())))
 
     /** Whether [text] can be saved as a budget: a positive amount, or blank to remove it. */
     fun isValidBudget(text: String): Boolean = text.isBlank() || parseAmount(text) != null

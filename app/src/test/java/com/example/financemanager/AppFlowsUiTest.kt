@@ -19,8 +19,11 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.financemanager.di.appEntryPoint
+import com.example.financemanager.model.ThemeMode
 import com.example.financemanager.model.TransactionType
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -122,6 +125,7 @@ class AppFlowsUiTest {
             "Podsjetnici za plaćanje" to "Podsjetnici za plaćanje",
             "Uvidi" to "Uvidi",
             "Izvoz i kopija" to "Izvoz i sigurnosna kopija",
+            "Postavke" to "Postavke",
         ).forEach { (entry, title) ->
             rule.onNodeWithContentDescription("Više opcija").performClick()
             settle()
@@ -133,6 +137,25 @@ class AppFlowsUiTest {
             back()
             rule.onNodeWithText("Vaš pregled").assertIsDisplayed()
         }
+    }
+
+    @Test
+    fun settingsAreSavedRightAway() {
+        rule.onNodeWithContentDescription("Više opcija").performClick()
+        settle()
+        rule.onNode(hasText("Postavke") and hasClickAction()).performClick()
+        settle()
+
+        rule.onNodeWithText("Tamna").performClick()
+        rule.onNodeWithText("Mjesec počinje").performClick()
+        settle()
+        rule.onNodeWithText("15").performClick()
+        settle()
+
+        val settings = runBlocking { rule.activity.appEntryPoint().settings().settings.first() }
+        assertEquals(ThemeMode.DARK, settings.theme)
+        assertEquals(15, settings.monthStartDay)
+        rule.onNodeWithText("15. u mjesecu").assertIsDisplayed()
     }
 
     @Test

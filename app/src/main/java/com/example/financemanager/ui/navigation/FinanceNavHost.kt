@@ -56,6 +56,8 @@ import com.example.financemanager.ui.reminders.ReminderFormScreen
 import com.example.financemanager.ui.reminders.ReminderFormViewModel
 import com.example.financemanager.ui.reminders.RemindersScreen
 import com.example.financemanager.ui.reminders.RemindersViewModel
+import com.example.financemanager.ui.settings.SettingsScreen
+import com.example.financemanager.ui.settings.SettingsViewModel
 import com.example.financemanager.ui.stats.StatsScreen
 import com.example.financemanager.ui.stats.StatsViewModel
 import com.example.financemanager.ui.transaction.TransactionFormScreen
@@ -116,6 +118,9 @@ data object ExportRoute
 
 @Serializable
 data object InsightsRoute
+
+@Serializable
+data object SettingsRoute
 
 @Serializable
 data class GoalRoute(val id: Long)
@@ -229,6 +234,7 @@ private fun AppNavHost(
                 onOpenExport = { navController.navigate(ExportRoute) },
                 onLock = onLock,
                 onOpenInsights = { navController.navigate(InsightsRoute) },
+                onOpenSettings = { navController.navigate(SettingsRoute) },
                 onOpenGoal = { navController.navigate(GoalRoute(it)) },
                 onAddGoal = { navController.navigate(GoalFormRoute()) },
             )
@@ -261,6 +267,12 @@ private fun AppNavHost(
         composable<InsightsRoute> {
             InsightsScreen(
                 viewModel = hiltViewModel<InsightsViewModel>(),
+                onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
+            )
+        }
+        composable<SettingsRoute> {
+            SettingsScreen(
+                viewModel = hiltViewModel<SettingsViewModel>(),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
             )
         }

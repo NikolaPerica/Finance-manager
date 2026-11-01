@@ -15,6 +15,7 @@ import com.example.financemanager.domain.stats.CategoryStat
 import com.example.financemanager.domain.stats.StatsPeriod
 import com.example.financemanager.domain.stats.StatsRange
 import com.example.financemanager.model.TransactionType
+import com.example.financemanager.ui.stats.customDates
 import java.io.OutputStream
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -106,7 +107,8 @@ class PdfReportWriter(private val context: Context) {
             y += 34f
             canvas.drawText(context.getString(R.string.report_title), MARGIN, y, paint(22f, Ink, bold = true))
             y += 22f
-            canvas.drawText(periodTitle(period), MARGIN, y, paint(13f, Ink))
+            val dates = customDates(period)?.let { " ($it)" }.orEmpty()
+            canvas.drawText(periodTitle(period) + dates, MARGIN, y, paint(13f, Ink))
             canvas.drawText(
                 context.getString(R.string.report_generated, DateFormat.long(generatedOn)),
                 PAGE_WIDTH - MARGIN,

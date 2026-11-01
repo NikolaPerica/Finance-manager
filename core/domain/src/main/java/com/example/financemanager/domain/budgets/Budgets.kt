@@ -1,5 +1,6 @@
 package com.example.financemanager.domain.budgets
 
+import com.example.financemanager.domain.BudgetMonths
 import com.example.financemanager.model.Category
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
@@ -33,13 +34,22 @@ data class BudgetSummary(val spent: Double, val budget: Double, val exceeded: In
 }
 
 /** Expenses in [month], summed per category name. */
-fun spentByCategory(transactions: List<Transaction>, month: YearMonth): Map<String, Double> = transactions
-    .filter { it.type == TransactionType.EXPENSE && YearMonth.from(it.date) == month }
+fun spentByCategory(
+    transactions: List<Transaction>,
+    month: YearMonth,
+    months: BudgetMonths = BudgetMonths(),
+): Map<String, Double> = transactions
+    .filter { it.type == TransactionType.EXPENSE && months.of(it.date) == month }
     .groupBy { it.category }
     .mapValues { (_, list) -> list.sumOf { it.amount } }
 
-fun budgetItems(categories: List<Category>, transactions: List<Transaction>, month: YearMonth): List<BudgetItem> {
-    val spent = spentByCategory(transactions, month)
+fun budgetItems(
+    categories: List<Category>,
+    transactions: List<Transaction>,
+    month: YearMonth,
+    months: BudgetMonths = BudgetMonths(),
+): List<BudgetItem> {
+    val spent = spentByCategory(transactions, month, months)
     return categories
         .filter { it.type == TransactionType.EXPENSE }
         .map { BudgetItem(it, spent[it.name] ?: 0.0) }

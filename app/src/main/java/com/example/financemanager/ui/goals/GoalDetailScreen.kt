@@ -341,7 +341,7 @@ private fun MoneyDialog(
                 },
                 label = { Text(stringResource(R.string.iznos)) },
                 placeholder = { Text(stringResource(R.string.amount_hint)) },
-                suffix = { Text(stringResource(R.string.currency_symbol)) },
+                suffix = { Text(MoneyFormat.symbol) },
                 isError = error != null,
                 supportingText = error?.let {
                     {

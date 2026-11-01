@@ -3,6 +3,8 @@ package com.example.financemanager.ui.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financemanager.data.FinanceRepository
+import com.example.financemanager.data.SettingsRepository
+import com.example.financemanager.domain.BudgetMonths
 import com.example.financemanager.domain.budgets.BudgetSummary
 import com.example.financemanager.domain.budgets.budgetItems
 import com.example.financemanager.domain.budgets.budgetSummary
@@ -16,14 +18,16 @@ import com.example.financemanager.model.GoalWithSaved
 import com.example.financemanager.model.Reminder
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
+import com.example.financemanager.ui.budgetMonths
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.YearMonth
 import javax.inject.Inject
 
 data class DashboardUiState(
@@ -60,6 +64,7 @@ fun summarize(
     categories: List<Category> = emptyList(),
     goals: List<GoalWithSaved> = emptyList(),
     today: LocalDate = LocalDate.now(),
+    months: BudgetMonths = BudgetMonths(),
 ) = DashboardUiState(
     income = transactions.filter { it.type == TransactionType.INCOME }.sumOf { it.amount },
     expense = transactions.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount },
@@ -68,24 +73,34 @@ fun summarize(
     transactionCount = transactions.size,
     categories = categories,
     upcoming = reminders.sortedBy { it.nextDueDate }.take(UPCOMING_COUNT),
-    budget = budgetSummary(budgetItems(categories.filter { it.type == TransactionType.EXPENSE }, transactions, YearMonth.from(today))),
+    budget = budgetSummary(budgetItems(categories.filter { it.type == TransactionType.EXPENSE }, transactions, months.of(today), months)),
     goals = goals.map { it.progress(today) }.filter { it.status != GoalStatus.REACHED }.take(GOALS_COUNT),
     hasGoals = goals.isNotEmpty(),
-    insights = buildInsights(transactions, categories, today).take(INSIGHTS_COUNT),
+    insights = buildInsights(transactions, categories, today, months).take(INSIGHTS_COUNT),
     isLoading = false,
 )
 
 @HiltViewModel
-class DashboardViewModel @Inject constructor(private val repository: FinanceRepository) : ViewModel() {
+class DashboardViewModel(
+    private val repository: FinanceRepository,
+    months: Flow<BudgetMonths> = flowOf(BudgetMonths()),
+) : ViewModel() {
+    @Inject
+    constructor(repository: FinanceRepository, settings: SettingsRepository) : this(repository, settings.budgetMonths)
+
+    private val categories = combine(
+        repository.categories(TransactionType.EXPENSE),
+        repository.categories(TransactionType.INCOME),
+    ) { expense, income -> expense + income }
 
     val state: StateFlow<DashboardUiState> = combine(
         repository.transactions(),
         repository.reminders(),
-        repository.categories(TransactionType.EXPENSE),
-        repository.categories(TransactionType.INCOME),
+        categories,
         repository.goals(),
-    ) { transactions, reminders, expenseCategories, incomeCategories, goals ->
-        summarize(transactions, reminders, expenseCategories + incomeCategories, goals)
+        months,
+    ) { transactions, reminders, categories, goals, months ->
+        summarize(transactions, reminders, categories, goals, months = months)
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DashboardUiState())
 

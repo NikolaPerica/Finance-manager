@@ -2,8 +2,10 @@ package com.example.financemanager.di
 
 import android.content.Context
 import com.example.financemanager.data.AppDatabase
+import com.example.financemanager.data.DataStoreSettingsRepository
 import com.example.financemanager.data.FinanceRepository
 import com.example.financemanager.data.RoomFinanceRepository
+import com.example.financemanager.data.SettingsRepository
 import com.example.financemanager.security.AppLock
 import dagger.Module
 import dagger.Provides
@@ -14,7 +16,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-/** One database, repository and lock for the whole app. */
+/** One database, repository, settings store and lock for the whole app. */
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
@@ -25,6 +27,10 @@ object AppModule {
     @Provides
     @Singleton
     fun repository(database: AppDatabase): FinanceRepository = RoomFinanceRepository(database)
+
+    @Provides
+    @Singleton
+    fun settings(@ApplicationContext context: Context): SettingsRepository = DataStoreSettingsRepository(context)
 
     /** Lives as long as the process, so rotating the screen doesn't lock the app. */
     @Provides
@@ -37,6 +43,7 @@ object AppModule {
 @InstallIn(SingletonComponent::class)
 interface AppEntryPoint {
     fun repository(): FinanceRepository
+    fun settings(): SettingsRepository
     fun appLock(): AppLock
 }
 

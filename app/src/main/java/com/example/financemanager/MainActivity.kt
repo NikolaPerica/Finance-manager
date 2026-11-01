@@ -6,12 +6,24 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.getValue
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.example.financemanager.data.SettingsRepository
+import com.example.financemanager.domain.MoneyFormat
+import com.example.financemanager.model.ThemeMode
 import com.example.financemanager.security.AppLock
 import com.example.financemanager.ui.navigation.FinanceNavHost
 import com.example.financemanager.ui.theme.FinanceTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 // FragmentActivity rather than ComponentActivity because BiometricPrompt needs one.
@@ -20,6 +32,9 @@ class MainActivity : FragmentActivity() {
 
     @Inject
     lateinit var appLock: AppLock
+
+    @Inject
+    lateinit var settingsRepository: SettingsRepository
 
     /** A shortcut from the widget waiting to be carried out, see [QuickAction]. */
     private val quickAction = MutableStateFlow<QuickAction?>(null)
@@ -32,8 +47,30 @@ class MainActivity : FragmentActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) setRecentsScreenshotEnabled(false)
         // After a rotation the shortcut has already been handled.
         if (savedInstanceState == null) quickAction.value = QuickAction.from(intent)
+
+        // Already read when the app started, so this doesn't wait.
+        val initial = runBlocking { settingsRepository.settings.first() }
+        // Amounts are formatted as they are drawn, so a new currency needs everything redrawn.
+        // Recreating keeps the screen the user is on, and it doesn't count as leaving the app.
+        val drawnSymbol = MoneyFormat.symbol
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                settingsRepository.settings.collect { settings ->
+                    if (settings.currency.symbol != drawnSymbol) {
+                        MoneyFormat.symbol = settings.currency.symbol
+                        recreate()
+                    }
+                }
+            }
+        }
         setContent {
-            FinanceTheme {
+            val settings by settingsRepository.settings.collectAsStateWithLifecycle(initial)
+            val darkTheme = when (settings.theme) {
+                ThemeMode.SYSTEM -> isSystemInDarkTheme()
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+            }
+            FinanceTheme(darkTheme) {
                 FinanceNavHost(appLock, quickAction, onQuickActionHandled = { quickAction.value = null })
             }
         }

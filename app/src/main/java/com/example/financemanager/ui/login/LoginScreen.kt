@@ -69,6 +69,7 @@ import com.example.financemanager.ui.components.EmphasizedDecelerate
 import com.example.financemanager.ui.components.shakeOn
 import com.example.financemanager.ui.components.staggeredEntrance
 import com.example.financemanager.ui.theme.FinanceTheme
+import com.example.financemanager.ui.theme.matchSystemBars
 import kotlinx.coroutines.delay
 
 private val LoginError = Color(0xFFFFD6D8)
@@ -302,11 +303,12 @@ private fun Blob(size: Dp, modifier: Modifier) {
 /** The gradient is dark in both themes, so keep the status/navigation bar icons light while shown. */
 @Composable
 private fun LightSystemBarIcons(activity: ComponentActivity) {
+    val darkTheme by rememberUpdatedState(FinanceTheme.isDark)
     DisposableEffect(activity) {
         activity.enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
         )
-        onDispose { activity.enableEdgeToEdge() }
+        onDispose { activity.matchSystemBars(darkTheme) }
     }
 }

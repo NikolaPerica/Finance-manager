@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financemanager.R
 import com.example.financemanager.domain.insights.Insight
-import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,7 +68,7 @@ fun InsightsScreen(viewModel: InsightsViewModel, onBack: () -> Unit) {
                 item(key = "about") {
                     Text(
                         if (state.hasHistory) {
-                            stringResource(R.string.insights_about, LocalDate.now().dayOfMonth)
+                            stringResource(R.string.insights_about, state.day)
                         } else {
                             stringResource(R.string.insights_need_history)
                         },

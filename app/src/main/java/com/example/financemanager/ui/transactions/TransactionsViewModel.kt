@@ -3,6 +3,8 @@ package com.example.financemanager.ui.transactions
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financemanager.data.FinanceRepository
+import com.example.financemanager.data.SettingsRepository
+import com.example.financemanager.domain.BudgetMonths
 import com.example.financemanager.domain.transactions.DayGroup
 import com.example.financemanager.domain.transactions.PeriodFilter
 import com.example.financemanager.domain.transactions.TransactionFilter
@@ -11,14 +13,17 @@ import com.example.financemanager.domain.transactions.groupByDay
 import com.example.financemanager.model.Category
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
+import com.example.financemanager.ui.budgetMonths
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -41,12 +46,13 @@ data class TransactionsUiState(
 class TransactionsViewModel(
     private val repository: FinanceRepository,
     initialFilter: TransactionFilter = TransactionFilter(),
+    months: Flow<BudgetMonths> = flowOf(BudgetMonths()),
     private val today: () -> LocalDate = LocalDate::now,
 ) : ViewModel() {
     // Hilt uses this one; tests pass their own [today].
     @AssistedInject
-    constructor(repository: FinanceRepository, @Assisted initialFilter: TransactionFilter) :
-        this(repository, initialFilter, LocalDate::now)
+    constructor(repository: FinanceRepository, settings: SettingsRepository, @Assisted initialFilter: TransactionFilter) :
+        this(repository, initialFilter, settings.budgetMonths, LocalDate::now)
 
     @AssistedFactory
     interface Factory {
@@ -60,8 +66,9 @@ class TransactionsViewModel(
         repository.categories(TransactionType.EXPENSE),
         repository.categories(TransactionType.INCOME),
         filter,
-    ) { transactions, expenseCategories, incomeCategories, filter ->
-        val shown = applyFilter(transactions, filter, today())
+        months,
+    ) { transactions, expenseCategories, incomeCategories, filter, months ->
+        val shown = applyFilter(transactions, filter, today(), months)
         TransactionsUiState(
             filter = filter,
             groups = groupByDay(shown),
