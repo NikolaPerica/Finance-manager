@@ -18,9 +18,13 @@ class MainActivityLockTest {
 
     private val appLock get() = ApplicationProvider.getApplicationContext<FinanceApp>().appEntryPoint().appLock()
 
+    // Created, started and resumed but never drawn: the lock screen's endless pulse animation
+    // would otherwise keep Robolectric busy for minutes in setup().
+    private fun started() = Robolectric.buildActivity(MainActivity::class.java).create().start().postCreate(null).resume()
+
     @Test
     fun rotatingDoesNotLockButLeavingDoes() {
-        val controller = Robolectric.buildActivity(MainActivity::class.java).setup()
+        val controller = started()
         assertTrue(appLock.locked.value)
         appLock.unlock()
 
@@ -37,7 +41,7 @@ class MainActivityLockTest {
     @Test
     @Config(sdk = [Build.VERSION_CODES.S])
     fun olderAndroidHidesTheWindowOnlyWhileInTheBackground() {
-        val controller = Robolectric.buildActivity(MainActivity::class.java).setup()
+        val controller = started()
         val flags = { controller.get().window.attributes.flags and WindowManager.LayoutParams.FLAG_SECURE }
         assertEquals(0, flags())
         controller.pause()

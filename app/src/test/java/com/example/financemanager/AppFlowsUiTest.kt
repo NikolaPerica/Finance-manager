@@ -139,6 +139,8 @@ class AppFlowsUiTest {
         }
     }
 
+    private fun storedSettings() = runBlocking { rule.activity.appEntryPoint().settings().settings.first() }
+
     @Test
     fun settingsAreSavedRightAway() {
         rule.onNodeWithContentDescription("Više opcija").performClick()
@@ -150,16 +152,17 @@ class AppFlowsUiTest {
         rule.onNodeWithText("Mjesec počinje").performClick()
         settle()
         rule.onNodeWithText("15").performClick()
-        settle()
 
-        val settings = runBlocking { rule.activity.appEntryPoint().settings().settings.first() }
-        assertEquals(ThemeMode.DARK, settings.theme)
-        assertEquals(15, settings.monthStartDay)
+        // DataStore writes in the background.
+        rule.waitUntil(timeoutMillis = 5_000) { storedSettings().monthStartDay == 15 }
+        assertEquals(ThemeMode.DARK, storedSettings().theme)
+        settle()
         rule.onNodeWithText("15. u mjesecu").assertIsDisplayed()
     }
 
     @Test
     fun lockingFromTheMenuHidesTheAppUntilUnlocked() {
+        val addExpense = rule.onNodeWithText("Rashod").fetchSemanticsNode().boundsInRoot.center
         rule.onNodeWithContentDescription("Više opcija").performClick()
         settle()
         rule.onNodeWithText("Zaključaj").performClick()
@@ -167,13 +170,20 @@ class AppFlowsUiTest {
         assertTrue(appLock.locked.value)
         // The dashboard is still underneath but neither visible to screen readers nor usable.
         assertTrue(rule.onAllNodesWithText("Vaš pregled").fetchSemanticsNodes().isEmpty())
-        rule.onRoot().performTouchInput { click(Offset(width / 2f, height / 2f)) }
+        // A tap on the "Rashod" button underneath, moving a little the way a finger does.
+        rule.onRoot().performTouchInput {
+            down(addExpense)
+            moveBy(Offset(3f, 3f))
+            up()
+        }
         settle()
 
         rule.runOnIdle { appLock.unlock() }
         settle()
         assertFalse(appLock.locked.value)
+        // Still on the dashboard: the tap didn't open the expense form.
         rule.onNodeWithText("Vaš pregled").assertIsDisplayed()
+        assertTrue(rule.onAllNodesWithText("Novi rashod").fetchSemanticsNodes().isEmpty())
     }
 
 }

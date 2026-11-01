@@ -180,10 +180,14 @@ fun FinanceNavHost(
     }
 }
 
-/** Swallows every touch so nothing underneath can be used. */
+/**
+ * Takes every touch so nothing underneath can be used: of overlapping layouts only the top
+ * one gets a touch. The touches are not consumed, as that would cancel taps on the lock screen
+ * itself; a finger always moves a little while pressing, and a consumed move ends a tap.
+ */
 private fun Modifier.blockTouches() = pointerInput(Unit) {
     awaitPointerEventScope {
-        while (true) awaitPointerEvent().changes.forEach { it.consume() }
+        while (true) awaitPointerEvent()
     }
 }
 

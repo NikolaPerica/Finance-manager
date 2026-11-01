@@ -82,7 +82,7 @@ The interface is in Croatian; amounts are in euros unless another currency is ch
 | Dependency injection | Hilt 2.60 (KSP); screen arguments reach ViewModels through assisted injection |
 | Settings | Jetpack DataStore (Preferences) |
 | Database | SQLite through Room 2.8 (KSP), schema exported to `core/data/schemas`, migrations from version 1 |
-| Login | AndroidX Biometric (fingerprint, falling back to PIN/pattern/password) |
+| Login | Android's BiometricPrompt (fingerprint, falling back to PIN/pattern/password) |
 | Notifications | `AlarmManager` daily check, re-armed after reboot |
 | Widget | Jetpack Glance 1.2 |
 | Receipts | ML Kit text recognition through Google Play services |

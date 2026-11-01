@@ -87,7 +87,7 @@ class TransactionFormViewModel(
     val isEditing: Boolean get() = transactionId != null
     private var existing: Transaction? = null
 
-    private val _state = MutableStateFlow(TransactionFormState(isLoaded = transactionId == null))
+    private val _state = MutableStateFlow(TransactionFormState(date = today(), isLoaded = transactionId == null))
     val state: StateFlow<TransactionFormState> = _state.asStateFlow()
 
     val categories: StateFlow<List<Category>> = repository.categories(type)
