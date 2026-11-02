@@ -64,7 +64,6 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
 
-    implementation(libs.androidx.glance.appwidget)
     implementation(libs.mlkit.text.recognition)
 
     testImplementation(libs.junit)
@@ -74,7 +73,6 @@ dependencies {
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    testImplementation(libs.androidx.glance.appwidget.testing)
     testImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.test.espresso)

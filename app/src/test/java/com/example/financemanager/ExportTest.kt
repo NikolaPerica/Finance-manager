@@ -1,6 +1,7 @@
 package com.example.financemanager
 
 import com.example.financemanager.data.FinanceData
+import com.example.financemanager.data.SettingsRepository
 import com.example.financemanager.data.backup.InvalidBackupException
 import com.example.financemanager.data.backup.parseBackup
 import com.example.financemanager.data.backup.toBackup
@@ -11,17 +12,21 @@ import com.example.financemanager.domain.export.buildReport
 import com.example.financemanager.domain.export.transactionsCsv
 import com.example.financemanager.domain.stats.StatsPeriod
 import com.example.financemanager.domain.stats.StatsRange
+import com.example.financemanager.model.AppCurrency
 import com.example.financemanager.model.Category
 import com.example.financemanager.model.GoalContribution
 import com.example.financemanager.model.PaymentPeriod
 import com.example.financemanager.model.Reminder
 import com.example.financemanager.model.SavingsGoal
+import com.example.financemanager.model.Settings
+import com.example.financemanager.model.ThemeMode
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType.EXPENSE
 import com.example.financemanager.model.TransactionType.INCOME
 import com.example.financemanager.ui.export.ExportViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -130,5 +135,32 @@ class ExportTest {
 
         // And a backup made now gives the same data back.
         assertEquals(data, viewModel.readBackup(viewModel.backupJson()).data)
+    }
+
+    @Test
+    fun backupsCarryTheSettings() = runTest(UnconfinedTestDispatcher()) {
+        val chosen = Settings(theme = ThemeMode.DARK, currency = AppCurrency.BAM, monthStartDay = 15, hideWidgetAmounts = true)
+        val oldPhone = FakeSettings(chosen)
+        val backup = ExportViewModel(FakeRepository(), oldPhone) { today }.backupJson()
+
+        // A new phone starts with the defaults and gets the settings back with the data.
+        val newPhone = FakeSettings(Settings())
+        val viewModel = ExportViewModel(FakeRepository(), newPhone) { today }
+        val preview = viewModel.readBackup(backup)
+        assertEquals(chosen, preview.settings)
+        viewModel.restore(preview)
+        assertEquals(chosen, newPhone.settings.value)
+
+        // A backup without settings leaves them as they are.
+        viewModel.restore(viewModel.readBackup(data.toBackup().toJson()))
+        assertEquals(chosen, newPhone.settings.value)
+    }
+}
+
+private class FakeSettings(initial: Settings) : SettingsRepository {
+    override val settings = MutableStateFlow(initial)
+
+    override suspend fun update(transform: (Settings) -> Settings) {
+        settings.value = transform(settings.value)
     }
 }

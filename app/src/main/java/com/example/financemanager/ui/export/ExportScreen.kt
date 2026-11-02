@@ -287,7 +287,7 @@ fun ExportScreen(viewModel: ExportViewModel, onBack: () -> Unit) {
                         data.categories.size,
                         data.reminders.size,
                         data.goals.size,
-                    ),
+                    ) + if (backup.settings != null) "\n\n" + stringResource(R.string.restore_settings) else "",
                 )
             },
             confirmButton = {

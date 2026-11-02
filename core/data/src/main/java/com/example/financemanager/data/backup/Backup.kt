@@ -1,11 +1,14 @@
 package com.example.financemanager.data.backup
 
 import com.example.financemanager.data.FinanceData
+import com.example.financemanager.model.AppCurrency
 import com.example.financemanager.model.Category
 import com.example.financemanager.model.GoalContribution
 import com.example.financemanager.model.PaymentPeriod
 import com.example.financemanager.model.Reminder
 import com.example.financemanager.model.SavingsGoal
+import com.example.financemanager.model.Settings
+import com.example.financemanager.model.ThemeMode
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
 import kotlinx.serialization.SerialName
@@ -14,11 +17,13 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 /*
  * Backup file format: plain JSON, readable and independent of the database layout,
  * so a backup made by one version of the app can be restored by a later one.
- * Dates are ISO strings ("2026-10-21").
+ * Dates are ISO strings ("2026-10-21"). The settings are optional: older backups don't
+ * have them, and older versions of the app skip them.
  */
 
 const val BACKUP_FORMAT = "finance-manager-backup"
@@ -35,6 +40,19 @@ data class BackupFile(
     val reminders: List<ReminderDto> = emptyList(),
     val goals: List<GoalDto> = emptyList(),
     @SerialName("goalContributions") val contributions: List<ContributionDto> = emptyList(),
+    val settings: SettingsDto? = null,
+)
+
+/** Every field has a default, so a value a later version adds or drops doesn't break a restore. */
+@Serializable
+data class SettingsDto(
+    val theme: String = Settings().theme.name,
+    val currency: String = Settings().currency.name,
+    val monthStartDay: Int = Settings().monthStartDay,
+    /** "HH:mm". */
+    val reminderTime: String = Settings().reminderTime.toString(),
+    val lockAfterMinutes: Int = Settings().lockAfterMinutes,
+    val hideWidgetAmounts: Boolean = Settings().hideWidgetAmounts,
 )
 
 @Serializable
@@ -70,8 +88,11 @@ private val json = Json {
     encodeDefaults = true
 }
 
-fun FinanceData.toBackup(createdAt: LocalDateTime = LocalDateTime.now()) = BackupFile(
+fun FinanceData.toBackup(createdAt: LocalDateTime = LocalDateTime.now(), settings: Settings? = null) = BackupFile(
     createdAt = createdAt.withNano(0).toString(),
+    settings = settings?.let {
+        SettingsDto(it.theme.name, it.currency.name, it.monthStartDay, it.reminderTime.toString(), it.lockAfterMinutes, it.hideWidgetAmounts)
+    },
     categories = categories.map { CategoryDto(it.id, it.name, it.type.name, it.monthlyBudget, it.color) },
     transactions = transactions.map { TransactionDto(it.id, it.amount, it.date.toString(), it.note, it.category, it.type.name) },
     reminders = reminders.map {
@@ -119,6 +140,22 @@ fun BackupFile.toData(): FinanceData = try {
 } catch (e: Exception) {
     // Unknown enum names, malformed dates and the like.
     throw InvalidBackupException("Damaged backup: ${e.message}", e)
+}
+
+/**
+ * The backup's settings, or null if it has none. A value that can't be used keeps the
+ * default rather than failing the whole restore: the data matters more than a preference.
+ */
+fun BackupFile.toSettings(): Settings? = settings?.let { dto ->
+    val defaults = Settings()
+    Settings(
+        theme = ThemeMode.entries.find { it.name == dto.theme } ?: defaults.theme,
+        currency = AppCurrency.entries.find { it.name == dto.currency } ?: defaults.currency,
+        monthStartDay = dto.monthStartDay.takeIf { it in 1..28 } ?: defaults.monthStartDay,
+        reminderTime = runCatching { LocalTime.parse(dto.reminderTime) }.getOrNull() ?: defaults.reminderTime,
+        lockAfterMinutes = dto.lockAfterMinutes.takeIf { it >= 0 } ?: defaults.lockAfterMinutes,
+        hideWidgetAmounts = dto.hideWidgetAmounts,
+    )
 }
 
 /** The date-time the backup was made, if readable. */

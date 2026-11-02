@@ -53,8 +53,8 @@ The interface is in Croatian; amounts are in euros unless another currency is ch
 **Data**
 - **Export:** a PDF report (A4, for sharing or printing) and a CSV table that opens in Excel
   with Croatian settings, for a month, a year or all time.
-- **Backup and restore:** all data in one JSON file, which can be saved to Google Drive.
-  The file is checked before anything is replaced.
+- **Backup and restore:** all data and the settings in one JSON file, which can be saved to
+  Google Drive. The file is checked before anything is replaced.
 
 **Security and convenience**
 - Fingerprint or device PIN to open the app, and again after two minutes in the
@@ -71,6 +71,7 @@ The interface is in Croatian; amounts are in euros unless another currency is ch
   month it starts in.
 - The time of the daily payment reminder.
 - How long the app may stay in the background before it locks again.
+- Hiding the amounts on the home screen widget, which anyone holding the phone can see.
 
 ## Tech stack
 
@@ -84,12 +85,12 @@ The interface is in Croatian; amounts are in euros unless another currency is ch
 | Database | SQLite through Room 2.8 (KSP), schema exported to `core/data/schemas`, migrations from version 1 |
 | Login | Android's BiometricPrompt (fingerprint, falling back to PIN/pattern/password) |
 | Notifications | `AlarmManager` daily check, re-armed after reboot |
-| Widget | Jetpack Glance 1.2 |
+| Widget | AppWidget with RemoteViews, redrawn directly whenever data or settings change |
 | Receipts | ML Kit text recognition through Google Play services |
 | Export | Android `PdfDocument`, kotlinx.serialization (JSON backup) |
 | Build | Gradle 9.8 (Kotlin DSL, version catalog), Android Gradle Plugin 9.4 |
 | Android | minSdk 28 (Android 9), compileSdk / targetSdk 37 |
-| Tests | JUnit 4, Robolectric 4.17, Compose UI tests, Glance tests |
+| Tests | JUnit 4, Robolectric 4.17, Compose UI tests, widget layout tests |
 
 ## Project layout
 

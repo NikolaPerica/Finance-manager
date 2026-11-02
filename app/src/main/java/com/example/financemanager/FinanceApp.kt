@@ -1,7 +1,6 @@
 package com.example.financemanager
 
 import android.app.Application
-import androidx.glance.appwidget.updateAll
 import com.example.financemanager.data.SettingsRepository
 import com.example.financemanager.domain.MoneyFormat
 import com.example.financemanager.model.Settings
@@ -9,7 +8,6 @@ import com.example.financemanager.notifications.BudgetNotifier
 import com.example.financemanager.notifications.ReminderCheck
 import com.example.financemanager.notifications.ReminderNotifier
 import com.example.financemanager.security.AppLock
-import com.example.financemanager.widget.FinanceWidget
 import com.example.financemanager.widget.WidgetSync
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
@@ -49,9 +47,9 @@ class FinanceApp : Application() {
                 settings = new
                 apply(new)
                 if (new.reminderTime != old.reminderTime) ReminderCheck.schedule(this@FinanceApp)
-                if (new.currency != old.currency || new.monthStartDay != old.monthStartDay) {
-                    FinanceWidget().updateAll(this@FinanceApp)
-                }
+                val widgetChanged = new.currency != old.currency || new.monthStartDay != old.monthStartDay ||
+                    new.hideWidgetAmounts != old.hideWidgetAmounts
+                if (widgetChanged) WidgetSync.refresh(this@FinanceApp)
             }
         }
     }

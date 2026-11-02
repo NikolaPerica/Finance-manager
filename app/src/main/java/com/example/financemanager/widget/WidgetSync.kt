@@ -1,8 +1,6 @@
 package com.example.financemanager.widget
 
 import android.content.Context
-import androidx.glance.appwidget.GlanceAppWidgetManager
-import androidx.glance.appwidget.updateAll
 import com.example.financemanager.di.appEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,10 +20,7 @@ object WidgetSync {
 
     /** Starts syncing if the user has placed a widget. Call on app start. */
     fun startIfPlaced(context: Context) {
-        val app = context.applicationContext
-        scope.launch {
-            if (GlanceAppWidgetManager(app).getGlanceIds(FinanceWidget::class.java).isNotEmpty()) start(app)
-        }
+        if (FinanceWidget.isPlaced(context)) start(context)
     }
 
     fun start(context: Context) {
@@ -33,7 +28,19 @@ object WidgetSync {
         val app = context.applicationContext
         scope.launch {
             // The first value is what the widget already shows.
-            app.appEntryPoint().repository().transactions().distinctUntilChanged().drop(1).collect { FinanceWidget().updateAll(app) }
+            app.appEntryPoint().repository().transactions().distinctUntilChanged().drop(1).collect { FinanceWidget.updateAll(app) }
+        }
+    }
+
+    /** Redraws the widget with the current data and settings, then calls [onDone]. */
+    fun refresh(context: Context, onDone: () -> Unit = {}) {
+        val app = context.applicationContext
+        scope.launch {
+            try {
+                FinanceWidget.updateAll(app)
+            } finally {
+                onDone()
+            }
         }
     }
 }
