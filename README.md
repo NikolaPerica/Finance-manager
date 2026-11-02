@@ -85,12 +85,12 @@ The interface is in Croatian; amounts are in euros unless another currency is ch
 | Database | SQLite through Room 2.8 (KSP), schema exported to `core/data/schemas`, migrations from version 1 |
 | Login | Android's BiometricPrompt (fingerprint, falling back to PIN/pattern/password) |
 | Notifications | `AlarmManager` daily check, re-armed after reboot |
-| Widget | Jetpack Glance 1.2 |
+| Widget | AppWidget with RemoteViews, redrawn directly whenever data or settings change |
 | Receipts | ML Kit text recognition through Google Play services |
 | Export | Android `PdfDocument`, kotlinx.serialization (JSON backup) |
 | Build | Gradle 9.8 (Kotlin DSL, version catalog), Android Gradle Plugin 9.4 |
 | Android | minSdk 28 (Android 9), compileSdk / targetSdk 37 |
-| Tests | JUnit 4, Robolectric 4.17, Compose UI tests, Glance tests |
+| Tests | JUnit 4, Robolectric 4.17, Compose UI tests, widget layout tests |
 
 ## Project layout
 

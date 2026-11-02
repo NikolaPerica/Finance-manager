@@ -1,9 +1,9 @@
 package com.example.financemanager
 
-import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
-import androidx.glance.appwidget.testing.unit.runGlanceAppWidgetUnitTest
-import androidx.glance.testing.unit.hasText
+import android.content.Context
+import android.view.View
+import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.financemanager.domain.widget.WidgetSummary
@@ -11,7 +11,6 @@ import com.example.financemanager.domain.widget.widgetSummary
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
 import com.example.financemanager.widget.FinanceWidget
-import com.example.financemanager.widget.WidgetContent
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -20,7 +19,16 @@ import java.time.LocalDate
 @RunWith(AndroidJUnit4::class)
 class WidgetTest {
 
+    private val context = ApplicationProvider.getApplicationContext<Context>()
     private val summary = WidgetSummary(balance = 1221.6, monthIncome = 1850.0, monthExpense = 628.4)
+
+    /** The widget as the launcher would draw it. */
+    private fun draw(wide: Boolean, hideAmounts: Boolean = false): View =
+        FinanceWidget.layout(context, summary, hideAmounts, wide).apply(context, FrameLayout(context))
+
+    private fun View.text(id: Int) = findViewById<TextView>(id).text.toString()
+
+    private fun View.isShown(id: Int) = findViewById<View>(id).visibility == View.VISIBLE
 
     @Test
     fun balanceIsAllTimeAndTotalsAreThisMonth() {
@@ -37,39 +45,29 @@ class WidgetTest {
     }
 
     @Test
-    fun wideWidgetShowsTheMonthAndFullButtonLabels() = runGlanceAppWidgetUnitTest {
-        setContext(ApplicationProvider.getApplicationContext())
-        setAppWidgetSize(DpSize(250.dp, 120.dp))
-        provideComposable { WidgetContent(summary) }
-
-        onNode(hasText("Trenutno stanje")).assertExists()
-        onNode(hasText("1.221,60\u00A0€")).assertExists()
-        onNode(hasText("Ovaj mjesec +1.850,00\u00A0€ · −628,40\u00A0€")).assertExists()
-        onNode(hasText("Dodaj prihod")).assertExists()
-        onNode(hasText("Dodaj rashod")).assertExists()
+    fun wideWidgetShowsTheMonthAndFullButtonLabels() {
+        val widget = draw(wide = true)
+        assertEquals("1.221,60 €", widget.text(R.id.widget_balance))
+        assertEquals(true, widget.isShown(R.id.widget_month))
+        assertEquals("Ovaj mjesec +1.850,00 € · −628,40 €", widget.text(R.id.widget_month))
+        assertEquals("Dodaj prihod", widget.text(R.id.widget_add_income_label))
+        assertEquals("Dodaj rashod", widget.text(R.id.widget_add_expense_label))
     }
 
     @Test
-    fun compactWidgetKeepsOnlyTheEssentials() = runGlanceAppWidgetUnitTest {
-        setContext(ApplicationProvider.getApplicationContext())
-        setAppWidgetSize(FinanceWidget.Compact)
-        provideComposable { WidgetContent(summary) }
-
-        onNode(hasText("1.221,60\u00A0€")).assertExists()
-        onNode(hasText("Ovaj mjesec")).assertDoesNotExist()
-        onNode(hasText("Prihod")).assertExists()
-        onNode(hasText("Rashod")).assertExists()
+    fun compactWidgetKeepsOnlyTheEssentials() {
+        val widget = draw(wide = false)
+        assertEquals("1.221,60 €", widget.text(R.id.widget_balance))
+        assertEquals(false, widget.isShown(R.id.widget_month))
+        assertEquals("Prihod", widget.text(R.id.widget_add_income_label))
+        assertEquals("Rashod", widget.text(R.id.widget_add_expense_label))
     }
 
     @Test
-    fun hiddenAmountsShowDotsInstead() = runGlanceAppWidgetUnitTest {
-        setContext(ApplicationProvider.getApplicationContext())
-        setAppWidgetSize(DpSize(250.dp, 120.dp))
-        provideComposable { WidgetContent(summary, hideAmounts = true) }
-
-        onNode(hasText("••••\u00A0€")).assertExists()
-        onNode(hasText("1.221,60\u00A0€")).assertDoesNotExist()
-        onNode(hasText("Iznosi su skriveni")).assertExists()
-        onNode(hasText("Dodaj rashod")).assertExists()
+    fun hiddenAmountsShowDotsInstead() {
+        val widget = draw(wide = true, hideAmounts = true)
+        assertEquals("•••• €", widget.text(R.id.widget_balance))
+        assertEquals("Iznosi su skriveni", widget.text(R.id.widget_month))
+        assertEquals("Dodaj rashod", widget.text(R.id.widget_add_expense_label))
     }
 }

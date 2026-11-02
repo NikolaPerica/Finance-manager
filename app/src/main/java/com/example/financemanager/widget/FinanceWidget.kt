@@ -1,42 +1,17 @@
 package com.example.financemanager.widget
 
+import android.app.PendingIntent
+import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProvider
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.glance.ColorFilter
-import androidx.glance.GlanceId
-import androidx.glance.GlanceModifier
-import androidx.glance.Image
-import androidx.glance.ImageProvider
-import androidx.glance.LocalContext
-import androidx.glance.LocalSize
-import androidx.glance.action.Action
-import androidx.glance.action.clickable
-import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.GlanceAppWidgetReceiver
-import androidx.glance.appwidget.SizeMode
-import androidx.glance.appwidget.action.actionStartActivity
-import androidx.glance.appwidget.cornerRadius
-import androidx.glance.appwidget.provideContent
-import androidx.glance.background
-import androidx.glance.layout.Alignment
-import androidx.glance.layout.Column
-import androidx.glance.layout.Row
-import androidx.glance.layout.Spacer
-import androidx.glance.layout.fillMaxSize
-import androidx.glance.layout.fillMaxWidth
-import androidx.glance.layout.height
-import androidx.glance.layout.padding
-import androidx.glance.layout.size
-import androidx.glance.layout.width
-import androidx.glance.text.FontWeight
-import androidx.glance.text.Text
-import androidx.glance.text.TextStyle
-import androidx.glance.unit.ColorProvider
+import android.os.Build
+import android.os.Bundle
+import android.util.SizeF
+import android.util.TypedValue
+import android.view.View
+import android.widget.RemoteViews
 import com.example.financemanager.MainActivity
 import com.example.financemanager.QuickAction
 import com.example.financemanager.R
@@ -47,69 +22,58 @@ import com.example.financemanager.domain.widget.WidgetSummary
 import com.example.financemanager.domain.widget.widgetSummary
 import kotlinx.coroutines.flow.first
 
-/** Home screen widget: the balance, this month's totals and buttons to add income or an expense. */
-class FinanceWidget : GlanceAppWidget() {
+/**
+ * Home screen widget: the balance, this month's totals and buttons to add income or an expense.
+ *
+ * Drawn with plain RemoteViews and handed straight to the launcher, so a change shows at once.
+ * (Jetpack Glance, used before, redraws through a session that it starts with WorkManager; on
+ * Samsung phones that could take half a minute, or an update was lost altogether.)
+ */
+object FinanceWidget {
+    /** Two cells wide: balance and buttons only, in dp. */
+    val Compact = SizeF(110f, 110f)
 
-    override val sizeMode = SizeMode.Responsive(setOf(Compact, Wide))
+    /** Three or more cells: also this month's income and expenses. */
+    val Wide = SizeF(220f, 110f)
 
-    override suspend fun provideGlance(context: Context, id: GlanceId) {
+    /** Redraws every placed widget with the current data and settings. */
+    suspend fun updateAll(context: Context) {
+        val manager = AppWidgetManager.getInstance(context)
+        val ids = manager.getAppWidgetIds(ComponentName(context, FinanceWidgetReceiver::class.java))
+        if (ids.isEmpty()) return
         val app = context.appEntryPoint()
         val settings = app.settings().settings.first()
         val summary = widgetSummary(app.repository().transactions().first(), months = BudgetMonths(settings.monthStartDay))
-        provideContent { WidgetContent(summary, hideAmounts = settings.hideWidgetAmounts) }
+        ids.forEach { id ->
+            manager.updateAppWidget(id, views(context, summary, settings.hideWidgetAmounts, manager.getAppWidgetOptions(id)))
+        }
     }
 
-    companion object {
-        /** Two cells wide: balance and buttons only. */
-        val Compact = DpSize(110.dp, 110.dp)
+    fun isPlaced(context: Context): Boolean =
+        AppWidgetManager.getInstance(context).getAppWidgetIds(ComponentName(context, FinanceWidgetReceiver::class.java)).isNotEmpty()
 
-        /** Three or more cells: also this month's income and expenses. */
-        val Wide = DpSize(220.dp, 110.dp)
-    }
-}
+    private fun views(context: Context, summary: WidgetSummary, hideAmounts: Boolean, options: Bundle?): RemoteViews =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // The launcher picks the layout that fits as the widget is resized.
+            RemoteViews(
+                mapOf(
+                    Compact to layout(context, summary, hideAmounts, wide = false),
+                    Wide to layout(context, summary, hideAmounts, wide = true),
+                ),
+            )
+        } else {
+            val width = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH) ?: 0
+            layout(context, summary, hideAmounts, wide = width >= Wide.width)
+        }
 
-class FinanceWidgetReceiver : GlanceAppWidgetReceiver() {
-    override val glanceAppWidget: GlanceAppWidget = FinanceWidget()
-
-    override fun onEnabled(context: Context) {
-        super.onEnabled(context)
-        // The first widget was just placed: keep it up to date from now on.
-        WidgetSync.start(context)
-    }
-}
-
-private val White = ColorProvider(Color.White)
-
-/** Takes the place of an amount, keeping the currency so it still reads as money. */
-private val HiddenAmount get() = "••••\u00A0${MoneyFormat.symbol}"
-private val WhiteSoft = ColorProvider(Color.White.copy(alpha = 0.75f))
-
-/** With [hideAmounts], dots stand in for every amount. */
-@Composable
-internal fun WidgetContent(summary: WidgetSummary, hideAmounts: Boolean = false) {
-    val context = LocalContext.current
-    val wide = LocalSize.current.width >= FinanceWidget.Wide.width
-    val openApp = actionStartActivity(
-        Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
-    )
-
-    Column(
-        modifier = GlanceModifier
-            .fillMaxSize()
-            .background(ImageProvider(R.drawable.widget_background))
-            .cornerRadius(24.dp)
-            .padding(16.dp)
-            .clickable(openApp),
-    ) {
-        Text(context.getString(R.string.trenutno_stanje), style = TextStyle(color = WhiteSoft, fontSize = 13.sp), maxLines = 1)
-        Text(
-            if (hideAmounts) HiddenAmount else MoneyFormat.format(summary.balance),
-            style = TextStyle(color = White, fontSize = if (wide) 26.sp else 20.sp, fontWeight = FontWeight.Bold),
-            maxLines = 1,
-        )
-        if (wide) {
-            Spacer(GlanceModifier.height(2.dp))
-            Text(
+    /** One size of the widget. With [hideAmounts], dots stand in for every amount. */
+    internal fun layout(context: Context, summary: WidgetSummary, hideAmounts: Boolean, wide: Boolean) =
+        RemoteViews(context.packageName, R.layout.widget_finance).apply {
+            setTextViewText(R.id.widget_balance, if (hideAmounts) hiddenAmount() else MoneyFormat.format(summary.balance))
+            setTextViewTextSize(R.id.widget_balance, TypedValue.COMPLEX_UNIT_SP, if (wide) 26f else 20f)
+            setViewVisibility(R.id.widget_month, if (wide) View.VISIBLE else View.GONE)
+            setTextViewText(
+                R.id.widget_month,
                 if (hideAmounts) {
                     context.getString(R.string.widget_amounts_hidden)
                 } else {
@@ -119,45 +83,39 @@ internal fun WidgetContent(summary: WidgetSummary, hideAmounts: Boolean = false)
                         MoneyFormat.signed(summary.monthExpense, isIncome = false),
                     )
                 },
-                style = TextStyle(color = WhiteSoft, fontSize = 12.sp),
-                maxLines = 1,
             )
+            setTextViewText(R.id.widget_add_income_label, context.getString(if (wide) R.string.dodaj_prihod else R.string.prihod))
+            setTextViewText(R.id.widget_add_expense_label, context.getString(if (wide) R.string.dodaj_rashod else R.string.rashod))
+
+            val openApp = Intent(context, MainActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            setOnClickPendingIntent(R.id.widget_root, activity(context, 0, openApp))
+            setOnClickPendingIntent(R.id.widget_add_income, activity(context, 1, QuickAction.ADD_INCOME.intent(context)))
+            setOnClickPendingIntent(R.id.widget_add_expense, activity(context, 2, QuickAction.ADD_EXPENSE.intent(context)))
         }
-        Spacer(GlanceModifier.defaultWeight())
-        Row(modifier = GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            QuickButton(
-                label = context.getString(if (wide) R.string.dodaj_prihod else R.string.prihod),
-                action = actionStartActivity(QuickAction.ADD_INCOME.intent(context)),
-                modifier = GlanceModifier.defaultWeight(),
-            )
-            Spacer(GlanceModifier.width(8.dp))
-            QuickButton(
-                label = context.getString(if (wide) R.string.dodaj_rashod else R.string.rashod),
-                action = actionStartActivity(QuickAction.ADD_EXPENSE.intent(context)),
-                modifier = GlanceModifier.defaultWeight(),
-            )
-        }
-    }
+
+    /** Takes the place of an amount, keeping the currency so it still reads as money. */
+    private fun hiddenAmount() = "•••• ${MoneyFormat.symbol}"
+
+    // Each button needs its own request code, or they would share one PendingIntent.
+    private fun activity(context: Context, requestCode: Int, intent: Intent): PendingIntent =
+        PendingIntent.getActivity(context, requestCode, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 }
 
-@Composable
-private fun QuickButton(label: String, action: Action, modifier: GlanceModifier) {
-    Row(
-        modifier = modifier
-            .background(ImageProvider(R.drawable.widget_button))
-            .cornerRadius(16.dp)
-            .padding(horizontal = 10.dp, vertical = 8.dp)
-            .clickable(action),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Image(
-            provider = ImageProvider(R.drawable.ic_widget_add),
-            contentDescription = null,
-            colorFilter = ColorFilter.tint(White),
-            modifier = GlanceModifier.size(16.dp),
-        )
-        Spacer(GlanceModifier.width(4.dp))
-        Text(label, style = TextStyle(color = White, fontSize = 13.sp, fontWeight = FontWeight.Medium), maxLines = 1)
+class FinanceWidgetReceiver : AppWidgetProvider() {
+    override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) = redraw(context)
+
+    // Below Android 12 the layout is chosen here, from the width the launcher reports.
+    override fun onAppWidgetOptionsChanged(context: Context, manager: AppWidgetManager, id: Int, options: Bundle) = redraw(context)
+
+    override fun onEnabled(context: Context) {
+        super.onEnabled(context)
+        // The first widget was just placed: keep it up to date from now on.
+        WidgetSync.start(context)
+    }
+
+    private fun redraw(context: Context) {
+        val pending = goAsync()
+        WidgetSync.refresh(context) { pending.finish() }
     }
 }
