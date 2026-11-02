@@ -49,9 +49,9 @@ class FinanceApp : Application() {
                 settings = new
                 apply(new)
                 if (new.reminderTime != old.reminderTime) ReminderCheck.schedule(this@FinanceApp)
-                if (new.currency != old.currency || new.monthStartDay != old.monthStartDay) {
-                    FinanceWidget().updateAll(this@FinanceApp)
-                }
+                val widgetChanged = new.currency != old.currency || new.monthStartDay != old.monthStartDay ||
+                    new.hideWidgetAmounts != old.hideWidgetAmounts
+                if (widgetChanged) FinanceWidget().updateAll(this@FinanceApp)
             }
         }
     }

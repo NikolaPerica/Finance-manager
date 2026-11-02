@@ -54,9 +54,9 @@ class FinanceWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val app = context.appEntryPoint()
-        val months = BudgetMonths(app.settings().settings.first().monthStartDay)
-        val summary = widgetSummary(app.repository().transactions().first(), months = months)
-        provideContent { WidgetContent(summary) }
+        val settings = app.settings().settings.first()
+        val summary = widgetSummary(app.repository().transactions().first(), months = BudgetMonths(settings.monthStartDay))
+        provideContent { WidgetContent(summary, hideAmounts = settings.hideWidgetAmounts) }
     }
 
     companion object {
@@ -79,10 +79,14 @@ class FinanceWidgetReceiver : GlanceAppWidgetReceiver() {
 }
 
 private val White = ColorProvider(Color.White)
+
+/** Takes the place of an amount, keeping the currency so it still reads as money. */
+private val HiddenAmount get() = "••••\u00A0${MoneyFormat.symbol}"
 private val WhiteSoft = ColorProvider(Color.White.copy(alpha = 0.75f))
 
+/** With [hideAmounts], dots stand in for every amount. */
 @Composable
-internal fun WidgetContent(summary: WidgetSummary) {
+internal fun WidgetContent(summary: WidgetSummary, hideAmounts: Boolean = false) {
     val context = LocalContext.current
     val wide = LocalSize.current.width >= FinanceWidget.Wide.width
     val openApp = actionStartActivity(
@@ -99,18 +103,22 @@ internal fun WidgetContent(summary: WidgetSummary) {
     ) {
         Text(context.getString(R.string.trenutno_stanje), style = TextStyle(color = WhiteSoft, fontSize = 13.sp), maxLines = 1)
         Text(
-            MoneyFormat.format(summary.balance),
+            if (hideAmounts) HiddenAmount else MoneyFormat.format(summary.balance),
             style = TextStyle(color = White, fontSize = if (wide) 26.sp else 20.sp, fontWeight = FontWeight.Bold),
             maxLines = 1,
         )
         if (wide) {
             Spacer(GlanceModifier.height(2.dp))
             Text(
-                context.getString(
-                    R.string.widget_this_month,
-                    MoneyFormat.signed(summary.monthIncome, isIncome = true),
-                    MoneyFormat.signed(summary.monthExpense, isIncome = false),
-                ),
+                if (hideAmounts) {
+                    context.getString(R.string.widget_amounts_hidden)
+                } else {
+                    context.getString(
+                        R.string.widget_this_month,
+                        MoneyFormat.signed(summary.monthIncome, isIncome = true),
+                        MoneyFormat.signed(summary.monthExpense, isIncome = false),
+                    )
+                },
                 style = TextStyle(color = WhiteSoft, fontSize = 12.sp),
                 maxLines = 1,
             )

@@ -10,6 +10,7 @@ import com.example.financemanager.data.backup.parseBackup
 import com.example.financemanager.data.backup.toBackup
 import com.example.financemanager.data.backup.toData
 import com.example.financemanager.data.backup.toJson
+import com.example.financemanager.data.backup.toSettings
 import com.example.financemanager.domain.BudgetMonths
 import com.example.financemanager.domain.export.CsvLabels
 import com.example.financemanager.domain.export.Report
@@ -17,6 +18,7 @@ import com.example.financemanager.domain.export.buildReport
 import com.example.financemanager.domain.export.transactionsCsv
 import com.example.financemanager.domain.stats.StatsPeriod
 import com.example.financemanager.domain.stats.StatsRange
+import com.example.financemanager.model.Settings
 import com.example.financemanager.ui.budgetMonths
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -39,19 +41,21 @@ data class ExportUiState(
     val isLoading: Boolean = true,
 )
 
-/** A backup that was read and checked, waiting for the user to confirm the restore. */
-data class BackupPreview(val file: BackupFile, val data: FinanceData)
+/** A backup that was read and checked, waiting for the user to confirm the restore. [settings] is null if it has none. */
+data class BackupPreview(val file: BackupFile, val data: FinanceData, val settings: Settings? = null)
 
 @HiltViewModel
 class ExportViewModel(
     private val repository: FinanceRepository,
+    /** Saved into backups and restored from them; tests without it back up the data only. */
+    private val settings: SettingsRepository? = null,
     months: Flow<BudgetMonths> = flowOf(BudgetMonths()),
     private val today: () -> LocalDate = LocalDate::now,
 ) : ViewModel() {
     // Hilt uses this one; tests pass their own [today].
     @Inject
     constructor(repository: FinanceRepository, settings: SettingsRepository) :
-        this(repository, settings.budgetMonths, LocalDate::now)
+        this(repository, settings, settings.budgetMonths, LocalDate::now)
 
     /** Null until the user picks a period: then the current month is used. */
     private val picked = MutableStateFlow<StatsPeriod?>(null)
@@ -95,14 +99,19 @@ class ExportViewModel(
 
     suspend fun report(): Report = buildReport(repository.transactions().first(), period, today())
 
-    suspend fun backupJson(now: LocalDateTime = LocalDateTime.now()): String = repository.snapshot().toBackup(now).toJson()
+    suspend fun backupJson(now: LocalDateTime = LocalDateTime.now()): String =
+        repository.snapshot().toBackup(now, settings?.settings?.first()).toJson()
 
     /** Reads and checks a backup without changing anything; throws InvalidBackupException if it can't be used. */
     fun readBackup(text: String): BackupPreview {
         val file = parseBackup(text)
-        return BackupPreview(file, file.toData())
+        return BackupPreview(file, file.toData(), file.toSettings())
     }
 
     /** Replaces all data with the backup's. */
-    suspend fun restore(preview: BackupPreview) = repository.replaceAll(preview.data)
+    suspend fun restore(preview: BackupPreview) {
+        repository.replaceAll(preview.data)
+        // A backup without settings keeps the current ones.
+        preview.settings?.let { restored -> settings?.update { restored } }
+    }
 }

@@ -265,7 +265,7 @@
     <string name="report_note">Napomena</string>
     <string name="report_page">Stranica %1$d</string>
     <string name="backup_section">Sigurnosna kopija</string>
-    <string name="backup_section_text">Spremite sve podatke (transakcije, kategorije, budžete, podsjetnike i ciljeve) u jednu datoteku, npr. prije promjene mobitela. Pri spremanju možete odabrati i Google Drive.</string>
+    <string name="backup_section_text">Spremite sve podatke (transakcije, kategorije, budžete, podsjetnike i ciljeve) i postavke u jednu datoteku, npr. prije promjene mobitela. Pri spremanju možete odabrati i Google Drive.</string>
     <string name="backup_save">Spremi kopiju</string>
     <string name="backup_restore">Vrati</string>
     <string name="backup_restore_from_file">Vrati iz kopije</string>
@@ -273,6 +273,7 @@
     <string name="backup_failed">Spremanje kopije nije uspjelo</string>
     <string name="restore_title">Vratiti podatke iz kopije?</string>
     <string name="restore_message">Kopija od %1$s sadrži %2$s, kategorija: %3$d, podsjetnika: %4$d i ciljeva: %5$d.\n\nSvi trenutni podaci u aplikaciji bit će zamijenjeni podacima iz kopije.</string>
+    <string name="restore_settings">Vratit će se i postavke iz kopije: tema, valuta, početak mjeseca, vrijeme obavijesti, zaključavanje i widget.</string>
     <string name="restore_done">Podaci su vraćeni iz kopije</string>
     <string name="restore_failed">Vraćanje nije uspjelo, podaci nisu promijenjeni</string>
     <string name="restore_invalid">Datoteka nije ispravna sigurnosna kopija</string>
@@ -345,4 +346,7 @@
     <string name="settings_lock_after_note">Koliko aplikacija smije biti u pozadini prije nego što ponovno zatraži otisak prsta ili PIN.</string>
     <string name="lock_after_now">Odmah</string>
     <string name="lock_after_minutes">Nakon %1$d min</string>
+    <string name="settings_hide_widget">Sakrij iznose na widgetu</string>
+    <string name="settings_hide_widget_note">Widget na početnom zaslonu vidi svatko tko uzme mobitel, i dok je aplikacija zaključana. Umjesto iznosa tada pokazuje točkice.</string>
+    <string name="widget_amounts_hidden">Iznosi su skriveni</string>
 </resources>

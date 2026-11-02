@@ -35,6 +35,8 @@ class SettingsViewModel @Inject constructor(private val repository: SettingsRepo
 
     fun setLockAfterMinutes(minutes: Int) = update { it.copy(lockAfterMinutes = minutes.coerceAtLeast(0)) }
 
+    fun setHideWidgetAmounts(hide: Boolean) = update { it.copy(hideWidgetAmounts = hide) }
+
     private fun update(transform: (Settings) -> Settings) {
         viewModelScope.launch { repository.update(transform) }
     }

@@ -46,10 +46,18 @@ class SettingsRepositoryTest {
                 monthStartDay = 15,
                 reminderTime = LocalTime.of(7, 30),
                 lockAfterMinutes = 0,
+                hideWidgetAmounts = true,
             )
         }
         assertEquals(
-            Settings(ThemeMode.DARK, AppCurrency.BAM, monthStartDay = 15, reminderTime = LocalTime.of(7, 30), lockAfterMinutes = 0),
+            Settings(
+                ThemeMode.DARK,
+                AppCurrency.BAM,
+                monthStartDay = 15,
+                reminderTime = LocalTime.of(7, 30),
+                lockAfterMinutes = 0,
+                hideWidgetAmounts = true,
+            ),
             repository.settings.first(),
         )
     }

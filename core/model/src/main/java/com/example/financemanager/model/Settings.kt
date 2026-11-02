@@ -29,4 +29,6 @@ data class Settings(
     val reminderTime: LocalTime = LocalTime.of(9, 0),
     /** How long the app may stay in the background before it asks for the fingerprint again; 0 locks right away. */
     val lockAfterMinutes: Int = 2,
+    /** The home screen widget shows dots instead of amounts, as anyone holding the phone can see it. */
+    val hideWidgetAmounts: Boolean = false,
 )

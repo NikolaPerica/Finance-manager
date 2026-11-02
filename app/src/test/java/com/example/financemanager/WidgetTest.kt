@@ -60,4 +60,16 @@ class WidgetTest {
         onNode(hasText("Prihod")).assertExists()
         onNode(hasText("Rashod")).assertExists()
     }
+
+    @Test
+    fun hiddenAmountsShowDotsInstead() = runGlanceAppWidgetUnitTest {
+        setContext(ApplicationProvider.getApplicationContext())
+        setAppWidgetSize(DpSize(250.dp, 120.dp))
+        provideComposable { WidgetContent(summary, hideAmounts = true) }
+
+        onNode(hasText("••••\u00A0€")).assertExists()
+        onNode(hasText("1.221,60\u00A0€")).assertDoesNotExist()
+        onNode(hasText("Iznosi su skriveni")).assertExists()
+        onNode(hasText("Dodaj rashod")).assertExists()
+    }
 }

@@ -53,8 +53,8 @@ The interface is in Croatian; amounts are in euros unless another currency is ch
 **Data**
 - **Export:** a PDF report (A4, for sharing or printing) and a CSV table that opens in Excel
   with Croatian settings, for a month, a year or all time.
-- **Backup and restore:** all data in one JSON file, which can be saved to Google Drive.
-  The file is checked before anything is replaced.
+- **Backup and restore:** all data and the settings in one JSON file, which can be saved to
+  Google Drive. The file is checked before anything is replaced.
 
 **Security and convenience**
 - Fingerprint or device PIN to open the app, and again after two minutes in the
@@ -71,6 +71,7 @@ The interface is in Croatian; amounts are in euros unless another currency is ch
   month it starts in.
 - The time of the daily payment reminder.
 - How long the app may stay in the background before it locks again.
+- Hiding the amounts on the home screen widget, which anyone holding the phone can see.
 
 ## Tech stack
 
