@@ -8,6 +8,7 @@ import com.example.financemanager.model.PaymentPeriod
 import com.example.financemanager.model.Reminder
 import com.example.financemanager.model.SavingsGoal
 import com.example.financemanager.model.Settings
+import com.example.financemanager.model.Template
 import com.example.financemanager.model.ThemeMode
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
@@ -40,7 +41,19 @@ data class BackupFile(
     val reminders: List<ReminderDto> = emptyList(),
     val goals: List<GoalDto> = emptyList(),
     @SerialName("goalContributions") val contributions: List<ContributionDto> = emptyList(),
+    val templates: List<TemplateDto> = emptyList(),
     val settings: SettingsDto? = null,
+)
+
+@Serializable
+data class TemplateDto(
+    val id: Long,
+    val name: String,
+    val amount: Double,
+    val type: String,
+    val category: String = "",
+    val note: String = "",
+    val uses: Int = 0,
 )
 
 /** Every field has a default, so a value a later version adds or drops doesn't break a restore. */
@@ -100,6 +113,7 @@ fun FinanceData.toBackup(createdAt: LocalDateTime = LocalDateTime.now(), setting
     },
     goals = goals.map { GoalDto(it.id, it.name, it.target, it.deadline?.toString(), it.color) },
     contributions = contributions.map { ContributionDto(it.id, it.goalId, it.amount, it.date.toString()) },
+    templates = templates.map { TemplateDto(it.id, it.name, it.amount, it.type.name, it.category, it.note, it.uses) },
 )
 
 fun BackupFile.toJson(): String = json.encodeToString(BackupFile.serializer(), this)
@@ -133,6 +147,9 @@ fun BackupFile.toData(): FinanceData = try {
         contributions = contributions.map {
             if (it.goalId !in goalIds) throw InvalidBackupException("Contribution ${it.id} belongs to no goal")
             GoalContribution(it.id, it.goalId, it.amount, LocalDate.parse(it.date))
+        },
+        templates = templates.map {
+            Template(it.id, it.name, it.amount, TransactionType.valueOf(it.type), it.category, it.note, it.uses)
         },
     )
 } catch (e: InvalidBackupException) {

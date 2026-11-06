@@ -11,12 +11,14 @@ import com.example.financemanager.data.MIGRATION_1_2
 import com.example.financemanager.data.MIGRATION_2_3
 import com.example.financemanager.data.MIGRATION_3_4
 import com.example.financemanager.data.MIGRATION_4_5
+import com.example.financemanager.data.MIGRATION_5_6
 import com.example.financemanager.data.RoomFinanceRepository
 import com.example.financemanager.model.Category
 import com.example.financemanager.model.GoalContribution
 import com.example.financemanager.model.PaymentPeriod
 import com.example.financemanager.model.Reminder
 import com.example.financemanager.model.SavingsGoal
+import com.example.financemanager.model.Template
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
 import kotlinx.coroutines.flow.first
@@ -42,7 +44,12 @@ class DatabaseMigrationTest {
             val entities = schema.getJSONArray("entities")
             for (i in 0 until entities.length()) {
                 val entity = entities.getJSONObject(i)
-                db.execSQL(entity.getString("createSql").replace("\${TABLE_NAME}", entity.getString("tableName")))
+                val table = entity.getString("tableName")
+                db.execSQL(entity.getString("createSql").replace("\${TABLE_NAME}", table))
+                val indices = entity.optJSONArray("indices") ?: continue
+                for (j in 0 until indices.length()) {
+                    db.execSQL(indices.getJSONObject(j).getString("createSql").replace("\${TABLE_NAME}", table))
+                }
             }
             val setup = schema.getJSONArray("setupQueries")
             for (i in 0 until setup.length()) db.execSQL(setup.getString(i))
@@ -63,7 +70,7 @@ class DatabaseMigrationTest {
 
         // Room checks the migrated tables against the current schema when it opens.
         val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
             .build()
         try {
             val transaction = db.transactionDao().observeAll().first().single()
@@ -92,7 +99,7 @@ class DatabaseMigrationTest {
         }
 
         val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
             .build()
         try {
             val repository = RoomFinanceRepository(db)
@@ -115,7 +122,7 @@ class DatabaseMigrationTest {
             db.execSQL("INSERT INTO categories (id, name, type, monthlyBudget) VALUES (3, 'Hrana', 'EXPENSE', 250.0)")
         }
         val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
             .build()
         try {
             val category = db.categoryDao().observeByType(TransactionType.EXPENSE).first().single()
@@ -172,7 +179,7 @@ class DatabaseMigrationTest {
             db.execSQL("INSERT INTO categories (id, name, type) VALUES (1, 'Hrana', 'EXPENSE')")
         }
         val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
             .build()
         try {
             val repository = RoomFinanceRepository(db)
@@ -249,6 +256,68 @@ class DatabaseMigrationTest {
             repository.undoPayment(payment)
             assertEquals(LocalDate.of(2026, 10, 1), repository.reminder(reminder.id)!!.nextDueDate)
             assertTrue(repository.transactions().first().isEmpty())
+        } finally {
+            db.close()
+        }
+    }
+
+    @Test
+    fun version5KeepsItsDataAndGetsTemplates() = runBlocking {
+        createVersion(5) { db ->
+            db.execSQL("INSERT INTO categories (id, name, type, monthlyBudget, color) VALUES (1, 'Hrana', 'EXPENSE', 300.0, 2)")
+            db.execSQL(
+                "INSERT INTO transactions (id, amount, date, note, category, type) " +
+                    "VALUES (1, 2.0, '2026-11-05', 'Kava', 'Hrana', 'EXPENSE')",
+            )
+            db.execSQL("INSERT INTO goals (id, name, target, deadline, color) VALUES (1, 'More', 1500.0, NULL, NULL)")
+        }
+
+        val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+            .build()
+        try {
+            assertEquals("Kava", db.transactionDao().observeAll().first().single().note)
+            assertEquals(300.0, db.categoryDao().getAll().single().monthlyBudget!!, 0.0)
+            assertEquals("More", db.goalDao().getAll().single().name)
+            assertTrue(db.templateDao().getAll().isEmpty())
+        } finally {
+            db.close()
+        }
+    }
+
+    @Test
+    fun templatesAddTodaysTransactionAndFollowTheirCategory() = runBlocking {
+        val db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+        try {
+            val repository = RoomFinanceRepository(db)
+            repository.addCategory("Hrana", TransactionType.EXPENSE)
+            repository.addCategory("Gorivo", TransactionType.EXPENSE)
+            repository.addTemplate(Template(name = "Kava", amount = 2.0, type = TransactionType.EXPENSE, category = "Hrana", note = "Kava"))
+            repository.addTemplate(Template(name = "Gorivo", amount = 50.0, type = TransactionType.EXPENSE, category = "Gorivo", note = ""))
+            val coffee = repository.templates().first().first { it.name == "Kava" }
+
+            val day = LocalDate.of(2026, 11, 6)
+            val added = repository.useTemplate(coffee, day)
+            assertEquals(Transaction(added.id, 2.0, day, "Kava", "Hrana", TransactionType.EXPENSE), repository.transactions().first().single())
+            // Used once, so it now comes first.
+            assertEquals(listOf("Kava" to 1, "Gorivo" to 0), repository.templates().first().map { it.name to it.uses })
+
+            val food = repository.categories(TransactionType.EXPENSE).first().first { it.name == "Hrana" }
+            repository.updateCategory(food, "Hrana i piće", color = null)
+            assertEquals("Hrana i piće", repository.templates().first().first { it.name == "Kava" }.category)
+
+            // A backup keeps them.
+            val snapshot = repository.snapshot()
+            assertEquals(2, snapshot.templates.size)
+            repository.replaceAll(FinanceData())
+            assertTrue(repository.templates().first().isEmpty())
+            repository.replaceAll(snapshot)
+            assertEquals(snapshot.templates.toSet(), repository.templates().first().toSet())
+
+            repository.deleteTemplate(repository.templates().first().first { it.name == "Gorivo" })
+            assertEquals(listOf("Kava"), repository.templates().first().map { it.name })
         } finally {
             db.close()
         }

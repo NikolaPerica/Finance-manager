@@ -22,6 +22,9 @@ The interface is in Croatian; amounts are in euros unless another currency is ch
 - **Receipt scanning:** take a photo of a receipt or pick one from the gallery. The total,
   date and shop are read on the phone (ML Kit text recognition), and a category is
   suggested from the shop.
+- **Quick add:** save what the form holds as a template ("Kava · 2,00 €"), then add it for
+  today with one tap on the dashboard, with undo. The most used come first; a long press
+  removes one.
 
 **Categories**
 - Your own income and expense categories, each with one of eight colours.
@@ -53,8 +56,8 @@ The interface is in Croatian; amounts are in euros unless another currency is ch
 **Data**
 - **Export:** a PDF report (A4, for sharing or printing) and a CSV table that opens in Excel
   with Croatian settings, for a month, a year or all time.
-- **Backup and restore:** all data and the settings in one JSON file, which can be saved to
-  Google Drive. The file is checked before anything is replaced.
+- **Backup and restore:** all data (templates included) and the settings in one JSON file,
+  which can be saved to Google Drive. The file is checked before anything is replaced.
 
 **Security and convenience**
 - Fingerprint or device PIN to open the app, and again after two minutes in the
@@ -120,7 +123,7 @@ core/domain/  …/domain/         Format.kt (money, dates, amount input)
               └── widget/       widget summary
 core/data/    …/data/           database, DAOs, migrations, FinanceRepository, settings (DataStore)
               └── backup/       JSON backup format
-              schemas/          exported Room schemas (versions 1–5)
+              schemas/          exported Room schemas (versions 1–6)
 
 app/          …/financemanager/
               ├── MainActivity.kt   single activity; app lock, widget shortcuts
@@ -139,7 +142,7 @@ app/          …/financemanager/
 
 ## Database
 
-Room database `app_database`, version 5. Amounts are euros (`REAL`), dates are ISO text
+Room database `app_database`, version 6. Amounts are euros (`REAL`), dates are ISO text
 (`yyyy-MM-dd`), and transaction types are `INCOME` or `EXPENSE`.
 
 **categories**
@@ -195,11 +198,24 @@ Room database `app_database`, version 5. Amounts are euros (`REAL`), dates are I
 | amount | REAL | positive for a deposit, negative for a withdrawal |
 | date | TEXT | |
 
+**templates**
+
+| Column | Type | |
+|---|---|---|
+| id | INTEGER, primary key | |
+| name | TEXT | what the quick-add button says |
+| amount | REAL | |
+| type | TEXT | `INCOME` / `EXPENSE` |
+| category | TEXT | category name, "" for none; follows renames like transactions |
+| note | TEXT | |
+| uses | INTEGER | how often it was used; the most used come first |
+
 Migrations, each tested on a real database built from the exported schema:
 - 1 → 2: reminders
 - 2 → 3: budgets
 - 3 → 4: category colours
 - 4 → 5: savings goals
+- 5 → 6: quick-add templates
 
 ## Building and testing
 

@@ -107,6 +107,8 @@ fun TransactionFormScreen(viewModel: TransactionFormViewModel, onBack: () -> Uni
     val resources = LocalResources.current
     val context = LocalContext.current
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
+    // The name being typed for a new template, or null while that dialog is closed.
+    var templateName by rememberSaveable { mutableStateOf<String?>(null) }
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -116,8 +118,11 @@ fun TransactionFormScreen(viewModel: TransactionFormViewModel, onBack: () -> Uni
                     currentOnBack()
                 }
                 FormEvent.Deleted -> currentOnBack()
-                is FormEvent.CategoryAdded -> snackbar.showSnackbar(resources.getString(R.string.category_added, event.name))
-                is FormEvent.ReceiptRead -> {
+                // Messages show alongside: waiting for one to time out would hold up the next
+                // event, e.g. going back after Save.
+                is FormEvent.CategoryAdded -> launch { snackbar.showSnackbar(resources.getString(R.string.category_added, event.name)) }
+                is FormEvent.TemplateSaved -> launch { snackbar.showSnackbar(resources.getString(R.string.template_saved, event.name)) }
+                is FormEvent.ReceiptRead -> launch {
                     val receipt = event.receipt
                     val found = listOfNotNull(
                         receipt.amount?.let(MoneyFormat::format),
@@ -208,6 +213,9 @@ fun TransactionFormScreen(viewModel: TransactionFormViewModel, onBack: () -> Uni
                             IconButton(onClick = { chooseSource = true }, enabled = !scanning) {
                                 Icon(painterResource(R.drawable.ic_receipt), contentDescription = stringResource(R.string.scan_receipt))
                             }
+                        }
+                        IconButton(onClick = { templateName = viewModel.suggestedTemplateName() }) {
+                            Icon(painterResource(R.drawable.ic_bookmark_add), contentDescription = stringResource(R.string.template_save))
                         }
                         if (viewModel.isEditing) {
                             IconButton(onClick = { confirmDelete = true }) {
@@ -335,6 +343,17 @@ fun TransactionFormScreen(viewModel: TransactionFormViewModel, onBack: () -> Uni
             },
         )
     }
+    templateName?.let { name ->
+        SaveTemplateDialog(
+            name = name,
+            onNameChange = { templateName = it },
+            onSave = {
+                viewModel.saveAsTemplate(name)
+                templateName = null
+            },
+            onDismiss = { templateName = null },
+        )
+    }
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
@@ -456,4 +475,29 @@ private fun CategoryField(
             }
         }
     }
+}
+
+/** Names a new quick-add template made from what the form holds. */
+@Composable
+private fun SaveTemplateDialog(name: String, onNameChange: (String) -> Unit, onSave: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(painterResource(R.drawable.ic_bookmark_add), contentDescription = null) },
+        title = { Text(stringResource(R.string.template_save_title)) },
+        text = {
+            Column {
+                Text(stringResource(R.string.template_save_message), style = MaterialTheme.typography.bodyMedium)
+                Spacer(Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = onNameChange,
+                    label = { Text(stringResource(R.string.template_name)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        },
+        confirmButton = { TextButton(onClick = onSave, enabled = name.isNotBlank()) { Text(stringResource(R.string.spremi)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.odustani)) } },
+    )
 }

@@ -2,6 +2,7 @@ package com.example.financemanager
 
 import com.example.financemanager.domain.receipt.ReceiptData
 import com.example.financemanager.model.Category
+import com.example.financemanager.model.Template
 import com.example.financemanager.model.TransactionType
 import com.example.financemanager.ui.components.CategoryNameError
 import com.example.financemanager.ui.transaction.FormEvent
@@ -44,6 +45,26 @@ class TransactionFormViewModelTest {
         assertTrue(state.amountError)
         assertTrue(state.categoryError)
         assertEquals(1, state.amountShake)
+        assertTrue(repository.transactions.value.isEmpty())
+    }
+
+    @Test
+    fun whatIsFilledInCanBeSavedAsATemplate() = runTest {
+        viewModel.saveAsTemplate("Kava")
+        // Needs an amount and a category, like saving the transaction.
+        assertTrue(viewModel.state.value.amountError)
+        assertTrue(repository.templates.value.isEmpty())
+
+        viewModel.onAmountChange("2")
+        viewModel.onCategoryChange("Hrana")
+        viewModel.onNoteChange(" kava s mlijekom ")
+        assertEquals("kava s mlijekom", viewModel.suggestedTemplateName())
+        viewModel.saveAsTemplate(" Kava ")
+
+        assertEquals(FormEvent.TemplateSaved("Kava"), viewModel.events.first())
+        val template = repository.templates.value.single()
+        assertEquals(Template(template.id, "Kava", 2.0, TransactionType.EXPENSE, "Hrana", "kava s mlijekom"), template)
+        // The transaction itself isn't saved.
         assertTrue(repository.transactions.value.isEmpty())
     }
 

@@ -3,11 +3,14 @@ package com.example.financemanager
 import com.example.financemanager.data.FinanceData
 import com.example.financemanager.data.backup.parseBackup
 import com.example.financemanager.data.backup.toBackup
+import com.example.financemanager.data.backup.toData
 import com.example.financemanager.data.backup.toJson
 import com.example.financemanager.data.backup.toSettings
 import com.example.financemanager.model.AppCurrency
 import com.example.financemanager.model.Settings
+import com.example.financemanager.model.Template
 import com.example.financemanager.model.ThemeMode
+import com.example.financemanager.model.TransactionType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -31,6 +34,17 @@ class BackupSettingsTest {
         )
         val json = empty.toBackup(createdAt, settings).toJson()
         assertEquals(settings, parseBackup(json).toSettings())
+    }
+
+    @Test
+    fun templatesGoIntoTheBackupAndComeBack() {
+        val data = empty.copy(
+            templates = listOf(
+                Template(3, "Kava", 2.0, TransactionType.EXPENSE, "Hrana", "Kava", uses = 12),
+                Template(4, "Džeparac", 20.0, TransactionType.INCOME, "", "", uses = 0),
+            ),
+        )
+        assertEquals(data, parseBackup(data.toBackup(createdAt).toJson()).toData())
     }
 
     @Test
