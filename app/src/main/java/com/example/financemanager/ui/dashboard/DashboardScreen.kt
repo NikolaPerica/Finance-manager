@@ -127,7 +127,8 @@ fun DashboardScreen(
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
-                is DashboardEvent.Added -> {
+                // Shown alongside, so a second quick add isn't held up until this message goes.
+                is DashboardEvent.Added -> launch {
                     event.budgetAlert?.let { BudgetNotifier(context).notify(it) }
                     val added = event.transaction
                     snackbar.currentSnackbarData?.dismiss()

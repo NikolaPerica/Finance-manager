@@ -118,9 +118,11 @@ fun TransactionFormScreen(viewModel: TransactionFormViewModel, onBack: () -> Uni
                     currentOnBack()
                 }
                 FormEvent.Deleted -> currentOnBack()
-                is FormEvent.CategoryAdded -> snackbar.showSnackbar(resources.getString(R.string.category_added, event.name))
-                is FormEvent.TemplateSaved -> snackbar.showSnackbar(resources.getString(R.string.template_saved, event.name))
-                is FormEvent.ReceiptRead -> {
+                // Messages show alongside: waiting for one to time out would hold up the next
+                // event, e.g. going back after Save.
+                is FormEvent.CategoryAdded -> launch { snackbar.showSnackbar(resources.getString(R.string.category_added, event.name)) }
+                is FormEvent.TemplateSaved -> launch { snackbar.showSnackbar(resources.getString(R.string.template_saved, event.name)) }
+                is FormEvent.ReceiptRead -> launch {
                     val receipt = event.receipt
                     val found = listOfNotNull(
                         receipt.amount?.let(MoneyFormat::format),
