@@ -7,6 +7,7 @@ import com.example.financemanager.model.GoalWithSaved
 import com.example.financemanager.model.PaymentPeriod
 import com.example.financemanager.model.Reminder
 import com.example.financemanager.model.SavingsGoal
+import com.example.financemanager.model.Template
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +23,7 @@ data class FinanceData(
     val reminders: List<Reminder> = emptyList(),
     val goals: List<SavingsGoal> = emptyList(),
     val contributions: List<GoalContribution> = emptyList(),
+    val templates: List<Template> = emptyList(),
 )
 
 /** Single entry point the UI uses to read and change finance data. */
@@ -39,14 +41,14 @@ interface FinanceRepository {
     suspend fun setBudget(category: Category, budget: Double?)
 
     /**
-     * Renames and recolours a category. Its transactions (and, for expenses, payment
-     * reminders) follow the new name.
+     * Renames and recolours a category. Its transactions, templates and (for expenses)
+     * payment reminders follow the new name.
      */
     suspend fun updateCategory(category: Category, name: String, color: Int?)
 
     /**
-     * Deletes a category. Its transactions and reminders move to [moveTo], or are left
-     * without a category when it is null. Moving into another category merges the two.
+     * Deletes a category. Its transactions, templates and reminders move to [moveTo], or are
+     * left without a category when it is null. Moving into another category merges the two.
      */
     suspend fun deleteCategory(category: Category, moveTo: Category?)
 
@@ -82,6 +84,17 @@ interface FinanceRepository {
 
     /** Reverts [payReminder]: removes the expense and restores the reminder. */
     suspend fun undoPayment(payment: ReminderPayment)
+
+    /** Quick-add templates, the most used first. */
+    fun templates(): Flow<List<Template>>
+    suspend fun addTemplate(template: Template)
+    suspend fun deleteTemplate(template: Template)
+
+    /**
+     * Adds the template's transaction dated [on] and counts the use. Returns the transaction
+     * as saved, so it can be deleted again to undo.
+     */
+    suspend fun useTemplate(template: Template, on: LocalDate): Transaction
 }
 
 /** The expense a payment of this reminder is recorded as. */
@@ -132,6 +145,7 @@ class RoomFinanceRepository(private val db: AppDatabase) : FinanceRepository {
 
     private suspend fun moveCategoryData(category: Category, to: String) {
         db.transactionDao().moveCategory(category.name, to, category.type)
+        db.templateDao().moveCategory(category.name, to, category.type)
         // Reminders always become expenses, so only expense categories are used there.
         if (category.type == TransactionType.EXPENSE) db.reminderDao().moveCategory(category.name, to)
     }
@@ -164,10 +178,12 @@ class RoomFinanceRepository(private val db: AppDatabase) : FinanceRepository {
             reminders = db.reminderDao().getAll(),
             goals = db.goalDao().getAll(),
             contributions = db.goalDao().getAllContributions(),
+            templates = db.templateDao().getAll(),
         )
     }
 
     override suspend fun replaceAll(data: FinanceData) = db.withTransaction {
+        db.templateDao().deleteAll()
         db.goalDao().deleteAll()
         db.reminderDao().deleteAll()
         db.transactionDao().deleteAll()
@@ -177,6 +193,7 @@ class RoomFinanceRepository(private val db: AppDatabase) : FinanceRepository {
         db.reminderDao().insertAll(data.reminders)
         db.goalDao().insertAll(data.goals)
         db.goalDao().insertAllContributions(data.contributions)
+        db.templateDao().insertAll(data.templates)
     }
 
     override fun reminders() = db.reminderDao().observeAll()
@@ -204,5 +221,22 @@ class RoomFinanceRepository(private val db: AppDatabase) : FinanceRepository {
     override suspend fun undoPayment(payment: ReminderPayment) = db.withTransaction {
         db.transactionDao().deleteById(payment.transactionId)
         db.reminderDao().upsert(payment.before)
+    }
+
+    override fun templates() = db.templateDao().observeAll()
+
+    override suspend fun addTemplate(template: Template) {
+        db.templateDao().insert(template)
+    }
+
+    override suspend fun deleteTemplate(template: Template) {
+        db.templateDao().delete(template)
+    }
+
+    override suspend fun useTemplate(template: Template, on: LocalDate) = db.withTransaction {
+        val transaction = template.toTransaction(on)
+        val id = db.transactionDao().insert(transaction)
+        db.templateDao().countUse(template.id)
+        transaction.copy(id = id)
     }
 }

@@ -10,6 +10,7 @@ import com.example.financemanager.model.GoalWithSaved
 import com.example.financemanager.model.PaymentPeriod
 import com.example.financemanager.model.Reminder
 import com.example.financemanager.model.SavingsGoal
+import com.example.financemanager.model.Template
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +25,7 @@ class FakeRepository : FinanceRepository {
     val reminders = MutableStateFlow<List<Reminder>>(emptyList())
     val goals = MutableStateFlow<List<SavingsGoal>>(emptyList())
     val contributions = MutableStateFlow<List<GoalContribution>>(emptyList())
+    val templates = MutableStateFlow<List<Template>>(emptyList())
 
     private var nextId = 1000L
 
@@ -67,6 +69,9 @@ class FakeRepository : FinanceRepository {
         transactions.update { list ->
             list.map { if (it.type == category.type && it.category == category.name) it.copy(category = to) else it }
         }
+        templates.update { list ->
+            list.map { if (it.type == category.type && it.category == category.name) it.copy(category = to) else it }
+        }
         if (category.type == TransactionType.EXPENSE) {
             reminders.update { list -> list.map { if (it.category == category.name) it.copy(category = to) else it } }
         }
@@ -101,7 +106,7 @@ class FakeRepository : FinanceRepository {
     }
 
     override suspend fun snapshot() = FinanceData(
-        categories.value, transactions.value, reminders.value, goals.value, contributions.value,
+        categories.value, transactions.value, reminders.value, goals.value, contributions.value, templates.value,
     )
 
     override suspend fun replaceAll(data: FinanceData) {
@@ -110,6 +115,7 @@ class FakeRepository : FinanceRepository {
         reminders.value = data.reminders
         goals.value = data.goals
         contributions.value = data.contributions
+        templates.value = data.templates
     }
 
     override fun reminders() = reminders
@@ -136,5 +142,23 @@ class FakeRepository : FinanceRepository {
     override suspend fun undoPayment(payment: ReminderPayment) {
         transactions.update { list -> list.filterNot { it.id == payment.transactionId } }
         saveReminder(payment.before)
+    }
+
+    override fun templates() = templates.map { list -> list.sortedWith(compareByDescending<Template> { it.uses }.thenBy { it.name.lowercase() }) }
+
+    override suspend fun addTemplate(template: Template) {
+        val saved = if (template.id == 0L) template.copy(id = nextId++) else template
+        templates.update { it + saved }
+    }
+
+    override suspend fun deleteTemplate(template: Template) {
+        templates.update { list -> list.filterNot { it.id == template.id } }
+    }
+
+    override suspend fun useTemplate(template: Template, on: LocalDate): Transaction {
+        val transaction = template.toTransaction(on).copy(id = nextId++)
+        transactions.update { it + transaction }
+        templates.update { list -> list.map { if (it.id == template.id) it.copy(uses = it.uses + 1) else it } }
+        return transaction
     }
 }

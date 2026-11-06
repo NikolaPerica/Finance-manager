@@ -7,12 +7,12 @@ import com.example.financemanager.data.SettingsRepository
 import com.example.financemanager.domain.BudgetMonths
 import com.example.financemanager.domain.amountInputText
 import com.example.financemanager.domain.budgets.BudgetAlert
-import com.example.financemanager.domain.budgets.budgetAlert
-import com.example.financemanager.domain.budgets.spentByCategory
+import com.example.financemanager.domain.budgets.budgetAlertFor
 import com.example.financemanager.domain.isValidAmountInput
 import com.example.financemanager.domain.parseAmount
 import com.example.financemanager.domain.receipt.ReceiptData
 import com.example.financemanager.model.Category
+import com.example.financemanager.model.Template
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
 import com.example.financemanager.ui.budgetMonths
@@ -59,6 +59,7 @@ sealed interface FormEvent {
     /** A receipt was read; the fields that were found have been filled in. */
     data class ReceiptRead(val receipt: ReceiptData) : FormEvent
     data class CategoryAdded(val name: String) : FormEvent
+    data class TemplateSaved(val name: String) : FormEvent
 }
 
 /** Form for a new transaction ([transactionId] null) or for editing an existing one. */
@@ -183,11 +184,39 @@ class TransactionFormViewModel(
                 category = current.category,
                 type = type,
             )
-            val alert = budgetAlertFor(transaction)
+            val alert = alertFor(transaction)
             if (existing != null) repository.updateTransaction(transaction) else repository.addTransaction(transaction)
             _events.send(FormEvent.Saved(alert))
         }
     }
+
+    /**
+     * Saves what is filled in as a quick-add template called [name]. Needs the same amount and
+     * category as saving the transaction; the form itself stays open and unsaved.
+     */
+    fun saveAsTemplate(name: String) {
+        val current = _state.value
+        val amount = parseAmount(current.amount)
+        val categoryMissing = current.category.isBlank()
+        if (amount == null || categoryMissing || name.isBlank()) {
+            _state.update {
+                it.copy(
+                    amountError = amount == null,
+                    categoryError = categoryMissing,
+                    amountShake = if (amount == null) it.amountShake + 1 else it.amountShake,
+                    categoryShake = if (categoryMissing) it.categoryShake + 1 else it.categoryShake,
+                )
+            }
+            return
+        }
+        viewModelScope.launch {
+            repository.addTemplate(Template(name = name.trim(), amount = amount, type = type, category = current.category, note = current.note.trim()))
+            _events.send(FormEvent.TemplateSaved(name.trim()))
+        }
+    }
+
+    /** A name for a new template: the note if there is one, otherwise the category. */
+    fun suggestedTemplateName(): String = _state.value.let { it.note.trim().ifBlank { it.category } }
 
     fun delete() {
         val transaction = existing ?: return
@@ -198,14 +227,11 @@ class TransactionFormViewModel(
     }
 
     /** Whether saving [transaction] pushes its category over a budget threshold this month. */
-    private suspend fun budgetAlertFor(transaction: Transaction): BudgetAlert? {
-        val months = months.first()
-        val month = months.of(today())
-        if (type != TransactionType.EXPENSE || months.of(transaction.date) != month) return null
-        val budget = repository.categories(type).first()
-            .find { it.name == transaction.category }?.monthlyBudget ?: return null
-        val others = repository.transactions().first().filter { it.id != existing?.id }
-        val before = spentByCategory(others, month, months)[transaction.category] ?: 0.0
-        return budgetAlert(transaction.category, budget, before, before + transaction.amount)
-    }
+    private suspend fun alertFor(transaction: Transaction): BudgetAlert? = budgetAlertFor(
+        transaction,
+        others = repository.transactions().first().filter { it.id != existing?.id },
+        categories = repository.categories(type).first(),
+        today = today(),
+        months = months.first(),
+    )
 }
