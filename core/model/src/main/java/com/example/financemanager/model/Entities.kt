@@ -102,3 +102,21 @@ data class GoalWithSaved(
     @Embedded val goal: SavingsGoal,
     val saved: Double,
 )
+
+/** A transaction added often, e.g. coffee for 2 €: one tap adds it again for today. */
+@Entity(tableName = "templates")
+data class Template(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    /** What the quick-add button says, e.g. "Kava". */
+    val name: String,
+    val amount: Double,
+    val type: TransactionType,
+    /** Category name, as on transactions; "" for none. */
+    val category: String,
+    val note: String,
+    /** How many times it was used; the most used come first. */
+    val uses: Int = 0,
+) {
+    /** The transaction this template adds on [date]. */
+    fun toTransaction(date: LocalDate) = Transaction(amount = amount, date = date, note = note, category = category, type = type)
+}

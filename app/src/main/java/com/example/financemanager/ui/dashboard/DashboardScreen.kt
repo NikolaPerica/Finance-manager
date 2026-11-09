@@ -3,6 +3,7 @@ package com.example.financemanager.ui.dashboard
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,12 +23,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -52,6 +56,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -63,8 +69,12 @@ import com.example.financemanager.R
 import com.example.financemanager.domain.DateFormat
 import com.example.financemanager.domain.MoneyFormat
 import com.example.financemanager.domain.budgets.BudgetSummary
+import com.example.financemanager.domain.budgets.SafeToSpend
 import com.example.financemanager.domain.insights.Insight
+import com.example.financemanager.model.Template
 import com.example.financemanager.model.Transaction
+import com.example.financemanager.model.TransactionType
+import com.example.financemanager.notifications.BudgetNotifier
 import com.example.financemanager.ui.budgets.BudgetBar
 import com.example.financemanager.ui.budgets.LevelChip
 import com.example.financemanager.ui.budgets.levelColor
@@ -111,6 +121,29 @@ fun DashboardScreen(
     val deletedText = stringResource(R.string.transaction_deleted)
     val undoText = stringResource(R.string.undo)
     val categoryColors = rememberCategoryColors(state.categories)
+    val context = LocalContext.current
+    val resources = LocalResources.current
+    // The template the user long-pressed, waiting for them to confirm its removal.
+    var removing by remember { mutableStateOf<Template?>(null) }
+
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                // Shown alongside, so a second quick add isn't held up until this message goes.
+                is DashboardEvent.Added -> launch {
+                    event.budgetAlert?.let { BudgetNotifier(context).notify(it) }
+                    val added = event.transaction
+                    snackbar.currentSnackbarData?.dismiss()
+                    val result = snackbar.showSnackbar(
+                        resources.getString(R.string.quick_add_added, added.note.ifBlank { added.category }, MoneyFormat.format(added.amount)),
+                        resources.getString(R.string.undo),
+                        duration = SnackbarDuration.Short,
+                    )
+                    if (result == SnackbarResult.ActionPerformed) viewModel.delete(added)
+                }
+            }
+        }
+    }
 
     // Intro animation plays on first open only, not when coming back from the form.
     var introPlayed by rememberSaveable { mutableStateOf(false) }
@@ -148,9 +181,19 @@ fun DashboardScreen(
                     ActionCard(false, onAddExpense, Modifier.weight(1f))
                 }
             }
+            if (state.templates.isNotEmpty()) {
+                item(key = "quickAdd") {
+                    QuickAdd(
+                        state.templates,
+                        onUse = viewModel::useTemplate,
+                        onRemove = { removing = it },
+                        modifier = Modifier.contentWidth().animateItem().staggeredEntrance(3, playIntro),
+                    )
+                }
+            }
             if (!state.isLoading) {
                 item(key = "budget") {
-                    BudgetCard(state.budget, onOpenBudgets, Modifier.contentWidth().staggeredEntrance(3, playIntro))
+                    BudgetCard(state.budget, state.safeToSpend, onOpenBudgets, Modifier.contentWidth().staggeredEntrance(3, playIntro))
                 }
             }
             if (state.insights.isNotEmpty()) {
@@ -243,6 +286,28 @@ fun DashboardScreen(
                 }
             }
         }
+    }
+
+    removing?.let { template ->
+        val removedText = stringResource(R.string.template_removed)
+        val undoText = stringResource(R.string.undo)
+        AlertDialog(
+            onDismissRequest = { removing = null },
+            title = { Text(stringResource(R.string.template_remove_title)) },
+            text = { Text(stringResource(R.string.template_remove_message, template.name)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    removing = null
+                    viewModel.deleteTemplate(template)
+                    scope.launch {
+                        snackbar.currentSnackbarData?.dismiss()
+                        val result = snackbar.showSnackbar(removedText, undoText, duration = SnackbarDuration.Short)
+                        if (result == SnackbarResult.ActionPerformed) viewModel.restoreTemplate(template)
+                    }
+                }) { Text(stringResource(R.string.template_remove)) }
+            },
+            dismissButton = { TextButton(onClick = { removing = null }) { Text(stringResource(R.string.odustani)) } },
+        )
     }
 }
 
@@ -424,7 +489,7 @@ private fun ActionCard(isIncome: Boolean, onClick: () -> Unit, modifier: Modifie
 }
 
 @Composable
-private fun BudgetCard(summary: BudgetSummary?, onClick: () -> Unit, modifier: Modifier) {
+private fun BudgetCard(summary: BudgetSummary?, safe: SafeToSpend?, onClick: () -> Unit, modifier: Modifier) {
     Surface(
         onClick = onClick,
         shape = CardShape,
@@ -459,6 +524,10 @@ private fun BudgetCard(summary: BudgetSummary?, onClick: () -> Unit, modifier: M
             return@Surface
         }
         Column(Modifier.padding(16.dp)) {
+            if (safe != null) {
+                SafeToSpendToday(safe)
+                HorizontalDivider(Modifier.padding(vertical = 14.dp), color = MaterialTheme.colorScheme.outlineVariant)
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(R.string.budget_card_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                 LevelChip(summary.level)
@@ -480,6 +549,42 @@ private fun BudgetCard(summary: BudgetSummary?, onClick: () -> Unit, modifier: M
                 )
             }
         }
+    }
+}
+
+/** The one number to keep in mind today: what may still be spent without breaking the budgets. */
+@Composable
+private fun SafeToSpendToday(safe: SafeToSpend) {
+    val over = safe.today < 0
+    Text(
+        stringResource(R.string.safe_today_title),
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Text(
+        MoneyFormat.format(safe.today.coerceAtLeast(0.0)),
+        style = MaterialTheme.typography.headlineMedium,
+        color = when {
+            over || safe.dailyShare == 0.0 -> FinanceTheme.colors.expense
+            else -> MaterialTheme.colorScheme.onSurface
+        },
+    )
+    val detail = when {
+        safe.leftThisMonth < 0 -> stringResource(R.string.safe_month_over, MoneyFormat.format(-safe.leftThisMonth))
+        over -> stringResource(R.string.safe_today_over, MoneyFormat.format(-safe.today))
+        else -> pluralStringResource(R.plurals.safe_today_detail, safe.daysLeft, MoneyFormat.format(safe.dailyShare), safe.daysLeft)
+    }
+    Text(
+        detail,
+        style = MaterialTheme.typography.bodyMedium,
+        color = if (over || safe.leftThisMonth < 0) FinanceTheme.colors.expense else MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    if (safe.stillDue > 0) {
+        Text(
+            stringResource(R.string.safe_still_due, MoneyFormat.format(safe.stillDue)),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -608,6 +713,55 @@ private fun EmptyState(modifier: Modifier) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+/** Templates added with one tap, for today; a long press offers to remove one. */
+@Composable
+private fun QuickAdd(templates: List<Template>, onUse: (Template) -> Unit, onRemove: (Template) -> Unit, modifier: Modifier) {
+    Column(modifier) {
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text(stringResource(R.string.quick_add_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+            Text(
+                stringResource(R.string.quick_add_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(templates, key = { it.id }) { template ->
+                TemplateChip(template, onUse = { onUse(template) }, onRemove = { onRemove(template) }, Modifier.animateItem())
+            }
+        }
+    }
+}
+
+@Composable
+private fun TemplateChip(template: Template, onUse: () -> Unit, onRemove: () -> Unit, modifier: Modifier) {
+    val isIncome = template.type == TransactionType.INCOME
+    val shape = RoundedCornerShape(16.dp)
+    Surface(
+        shape = shape,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        modifier = modifier
+            .clip(shape)
+            .combinedClickable(
+                onClickLabel = stringResource(if (isIncome) R.string.dodaj_prihod else R.string.dodaj_rashod),
+                onLongClickLabel = stringResource(R.string.template_remove),
+                onLongClick = onRemove,
+                onClick = onUse,
+            ),
+    ) {
+        Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+            Text(template.name, style = MaterialTheme.typography.labelLarge, maxLines = 1)
+            Text(
+                MoneyFormat.signed(template.amount, isIncome),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (isIncome) FinanceTheme.colors.income else FinanceTheme.colors.expense,
             )
         }
     }

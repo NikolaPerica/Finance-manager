@@ -5,9 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.financemanager.data.FinanceRepository
 import com.example.financemanager.data.SettingsRepository
 import com.example.financemanager.domain.BudgetMonths
+import com.example.financemanager.domain.budgets.BudgetAlert
 import com.example.financemanager.domain.budgets.BudgetSummary
+import com.example.financemanager.domain.budgets.SafeToSpend
+import com.example.financemanager.domain.budgets.budgetAlertFor
 import com.example.financemanager.domain.budgets.budgetItems
 import com.example.financemanager.domain.budgets.budgetSummary
+import com.example.financemanager.domain.budgets.safeToSpend
 import com.example.financemanager.domain.goals.GoalProgress
 import com.example.financemanager.domain.goals.GoalStatus
 import com.example.financemanager.domain.goals.progress
@@ -16,15 +20,19 @@ import com.example.financemanager.domain.insights.buildInsights
 import com.example.financemanager.model.Category
 import com.example.financemanager.model.GoalWithSaved
 import com.example.financemanager.model.Reminder
+import com.example.financemanager.model.Template
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
 import com.example.financemanager.ui.budgetMonths
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -43,11 +51,15 @@ data class DashboardUiState(
     val upcoming: List<Reminder> = emptyList(),
     /** This month's totals over categories with a budget, null when none has one. */
     val budget: BudgetSummary? = null,
+    /** What may still be spent today within the budgets, null when none is set. */
+    val safeToSpend: SafeToSpend? = null,
     /** Goals still being saved for, nearest deadline first (at most a few). */
     val goals: List<GoalProgress> = emptyList(),
     val hasGoals: Boolean = false,
     /** The month-end forecast first, then the most notable other insights. */
     val insights: List<Insight> = emptyList(),
+    /** Quick-add templates, the most used first. */
+    val templates: List<Template> = emptyList(),
     val isLoading: Boolean = true,
 ) {
     val balance: Double get() = income - expense
@@ -74,19 +86,30 @@ fun summarize(
     categories = categories,
     upcoming = reminders.sortedBy { it.nextDueDate }.take(UPCOMING_COUNT),
     budget = budgetSummary(budgetItems(categories.filter { it.type == TransactionType.EXPENSE }, transactions, months.of(today), months)),
+    safeToSpend = safeToSpend(categories, transactions, reminders, today, months),
     goals = goals.map { it.progress(today) }.filter { it.status != GoalStatus.REACHED }.take(GOALS_COUNT),
     hasGoals = goals.isNotEmpty(),
     insights = buildInsights(transactions, categories, today, months).take(INSIGHTS_COUNT),
     isLoading = false,
 )
 
+sealed interface DashboardEvent {
+    /** A template added [transaction]; [budgetAlert] is set when that crossed a budget threshold. */
+    data class Added(val transaction: Transaction, val budgetAlert: BudgetAlert?) : DashboardEvent
+}
+
 @HiltViewModel
 class DashboardViewModel(
     private val repository: FinanceRepository,
-    months: Flow<BudgetMonths> = flowOf(BudgetMonths()),
+    private val months: Flow<BudgetMonths> = flowOf(BudgetMonths()),
+    private val today: () -> LocalDate = LocalDate::now,
 ) : ViewModel() {
     @Inject
-    constructor(repository: FinanceRepository, settings: SettingsRepository) : this(repository, settings.budgetMonths)
+    constructor(repository: FinanceRepository, settings: SettingsRepository) :
+        this(repository, settings.budgetMonths, LocalDate::now)
+
+    private val _events = Channel<DashboardEvent>(Channel.BUFFERED)
+    val events = _events.receiveAsFlow()
 
     private val categories = combine(
         repository.categories(TransactionType.EXPENSE),
@@ -100,8 +123,9 @@ class DashboardViewModel(
         repository.goals(),
         months,
     ) { transactions, reminders, categories, goals, months ->
-        summarize(transactions, reminders, categories, goals, months = months)
+        summarize(transactions, reminders, categories, goals, today(), months)
     }
+        .combine(repository.templates()) { state, templates -> state.copy(templates = templates) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DashboardUiState())
 
     fun delete(transaction: Transaction) {
@@ -111,5 +135,24 @@ class DashboardViewModel(
     /** Puts a just-deleted transaction back, keeping its id and position. */
     fun restore(transaction: Transaction) {
         viewModelScope.launch { repository.addTransaction(transaction) }
+    }
+
+    /** Adds the template's transaction for today; undo by deleting the transaction it reports. */
+    fun useTemplate(template: Template) {
+        viewModelScope.launch {
+            val others = repository.transactions().first()
+            val added = repository.useTemplate(template, today())
+            val categories = repository.categories(TransactionType.EXPENSE).first()
+            _events.send(DashboardEvent.Added(added, budgetAlertFor(added, others, categories, today(), months.first())))
+        }
+    }
+
+    fun deleteTemplate(template: Template) {
+        viewModelScope.launch { repository.deleteTemplate(template) }
+    }
+
+    /** Puts a just-deleted template back. */
+    fun restoreTemplate(template: Template) {
+        viewModelScope.launch { repository.addTemplate(template) }
     }
 }

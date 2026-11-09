@@ -100,6 +100,11 @@
     <string name="test_notification_text">Ovako ćete dobivati podsjetnike za plaćanje.</string>
     <string name="test_notification_sent">Probna obavijest je poslana</string>
 
+    <plurals name="safe_today_detail">
+        <item quantity="one">Dnevno %1$s · još %2$d dan</item>
+        <item quantity="few">Dnevno %1$s · još %2$d dana</item>
+        <item quantity="other">Dnevno %1$s · još %2$d dana</item>
+    </plurals>
     <plurals name="due_overdue">
         <item quantity="one">Kasni %d dan</item>
         <item quantity="few">Kasni %d dana</item>
@@ -165,7 +170,11 @@
     <string name="remove_budget">Ukloni</string>
     <string name="budget_card_title">Budžet ovaj mjesec</string>
     <string name="budget_cta">Postavite mjesečne budžete</string>
-    <string name="budget_cta_subtitle">Pratite koliko vam je ostalo po kategorijama.</string>
+    <string name="budget_cta_subtitle">Pratite koliko vam je ostalo po kategorijama i koliko danas smijete potrošiti.</string>
+    <string name="safe_today_title">Danas možete još potrošiti</string>
+    <string name="safe_today_over">Danas je potrošeno %1$s više od dnevnog dijela</string>
+    <string name="safe_month_over">Budžeti za ovaj mjesec prekoračeni su za %1$s</string>
+    <string name="safe_still_due">Uračunata su plaćanja koja još dospijevaju: %1$s</string>
     <string name="budget_channel_name">Budžeti</string>
     <string name="budget_channel_description">Upozorenja kad se kategorija približi mjesečnom budžetu ili ga prijeđe</string>
     <string name="budget_alert_warning">%1$s: iskorišteno %2$d %% budžeta</string>
@@ -344,6 +353,18 @@
     <string name="settings_security">Sigurnost</string>
     <string name="settings_lock_after">Ponovno zaključavanje</string>
     <string name="settings_lock_after_note">Koliko aplikacija smije biti u pozadini prije nego što ponovno zatraži otisak prsta ili PIN.</string>
+    <string name="quick_add_title">Brzi unos</string>
+    <string name="quick_add_hint">Dugi dodir za uklanjanje</string>
+    <string name="quick_add_added">Dodano: %1$s · %2$s</string>
+    <string name="template_remove_title">Ukloniti predložak?</string>
+    <string name="template_remove_message">Predložak „%1$s“ više neće biti u brzom unosu. Transakcije koje su njime dodane ostaju.</string>
+    <string name="template_removed">Predložak je uklonjen</string>
+    <string name="template_remove">Ukloni</string>
+    <string name="template_save">Spremi kao predložak</string>
+    <string name="template_save_title">Novi predložak</string>
+    <string name="template_save_message">Predložak sprema iznos, kategoriju i napomenu. Na početnom zaslonu tada ga jednim dodirom dodaješ za današnji dan.</string>
+    <string name="template_name">Naziv</string>
+    <string name="template_saved">Predložak „%1$s“ je spremljen</string>
     <string name="lock_after_now">Odmah</string>
     <string name="lock_after_minutes">Nakon %1$d min</string>
     <string name="settings_hide_widget">Sakrij iznose na widgetu</string>

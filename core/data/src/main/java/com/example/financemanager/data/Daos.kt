@@ -11,6 +11,7 @@ import com.example.financemanager.model.GoalContribution
 import com.example.financemanager.model.GoalWithSaved
 import com.example.financemanager.model.Reminder
 import com.example.financemanager.model.SavingsGoal
+import com.example.financemanager.model.Template
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
 import kotlinx.coroutines.flow.Flow
@@ -149,4 +150,31 @@ interface GoalDao {
 
     @Delete
     suspend fun deleteContribution(contribution: GoalContribution)
+}
+
+@Dao
+interface TemplateDao {
+    @Query("SELECT * FROM templates ORDER BY uses DESC, name COLLATE NOCASE")
+    fun observeAll(): Flow<List<Template>>
+
+    @Query("SELECT * FROM templates")
+    suspend fun getAll(): List<Template>
+
+    @Insert
+    suspend fun insertAll(templates: List<Template>)
+
+    @Query("DELETE FROM templates")
+    suspend fun deleteAll()
+
+    @Insert
+    suspend fun insert(template: Template): Long
+
+    @Delete
+    suspend fun delete(template: Template)
+
+    @Query("UPDATE templates SET uses = uses + 1 WHERE id = :id")
+    suspend fun countUse(id: Long)
+
+    @Query("UPDATE templates SET category = :to WHERE category = :from AND type = :type")
+    suspend fun moveCategory(from: String, to: String, type: TransactionType)
 }

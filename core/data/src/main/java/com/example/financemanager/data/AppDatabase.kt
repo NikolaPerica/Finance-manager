@@ -11,11 +11,12 @@ import com.example.financemanager.model.Category
 import com.example.financemanager.model.GoalContribution
 import com.example.financemanager.model.Reminder
 import com.example.financemanager.model.SavingsGoal
+import com.example.financemanager.model.Template
 import com.example.financemanager.model.Transaction
 
 @Database(
-    entities = [Category::class, Transaction::class, Reminder::class, SavingsGoal::class, GoalContribution::class],
-    version = 5,
+    entities = [Category::class, Transaction::class, Reminder::class, SavingsGoal::class, GoalContribution::class, Template::class],
+    version = 6,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -24,13 +25,14 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun transactionDao(): TransactionDao
     abstract fun reminderDao(): ReminderDao
     abstract fun goalDao(): GoalDao
+    abstract fun templateDao(): TemplateDao
 
     companion object {
         const val NAME = "app_database"
 
         fun create(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, NAME)
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                 .build()
     }
 }
@@ -90,5 +92,21 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
                 "FOREIGN KEY(`goalId`) REFERENCES `goals`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE)",
         )
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_goal_contributions_goalId` ON `goal_contributions` (`goalId`)")
+    }
+}
+
+/** Version 6 adds templates for quick-adding transactions that come up often. */
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `templates` (" +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`name` TEXT NOT NULL, " +
+                "`amount` REAL NOT NULL, " +
+                "`type` TEXT NOT NULL, " +
+                "`category` TEXT NOT NULL, " +
+                "`note` TEXT NOT NULL, " +
+                "`uses` INTEGER NOT NULL)",
+        )
     }
 }

@@ -4,6 +4,7 @@ import com.example.financemanager.domain.BudgetMonths
 import com.example.financemanager.model.Category
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
+import java.time.LocalDate
 import java.time.YearMonth
 
 /** Share of the budget from which a category is reported as getting close to its limit. */
@@ -74,4 +75,23 @@ fun budgetAlert(category: String, budget: Double, before: Double, after: Double)
     val from = budgetLevel(before, budget)
     val to = budgetLevel(after, budget)
     return if (to > from) BudgetAlert(category, to, after, budget) else null
+}
+
+/**
+ * The alert for adding [transaction] to the [others] already saved: set when it is an expense
+ * of this month that brings its category close to or over budget, otherwise null.
+ */
+fun budgetAlertFor(
+    transaction: Transaction,
+    others: List<Transaction>,
+    categories: List<Category>,
+    today: LocalDate,
+    months: BudgetMonths = BudgetMonths(),
+): BudgetAlert? {
+    val month = months.of(today)
+    if (transaction.type != TransactionType.EXPENSE || months.of(transaction.date) != month) return null
+    val budget = categories.find { it.type == TransactionType.EXPENSE && it.name == transaction.category }?.monthlyBudget
+        ?: return null
+    val before = spentByCategory(others, month, months)[transaction.category] ?: 0.0
+    return budgetAlert(transaction.category, budget, before, before + transaction.amount)
 }
