@@ -1,10 +1,12 @@
 package com.example.financemanager
 
+import com.example.financemanager.model.Category
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType.EXPENSE
 import com.example.financemanager.model.TransactionType.INCOME
 import com.example.financemanager.ui.dashboard.summarize
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import java.time.LocalDate
 
@@ -24,5 +26,16 @@ class DashboardViewModelTest {
     fun newestFirstThenByInsertionOrder() {
         val state = summarize(listOf(tx(1, 1.0, 1, INCOME), tx(2, 1.0, 3, INCOME), tx(3, 1.0, 3, EXPENSE)))
         assertEquals(listOf(3L, 2L, 1L), state.transactions.map { it.id })
+    }
+
+    @Test
+    fun safeToSpendShowsOnlyWithABudget() {
+        val transactions = listOf(tx(1, 100.0, 1, EXPENSE))
+        val today = LocalDate.of(2026, 10, 22)
+        assertNull(summarize(transactions, today = today).safeToSpend)
+
+        val budget = Category(1, "Test", EXPENSE, monthlyBudget = 200.0)
+        // 100 € left over the 10 days to the 31st.
+        assertEquals(10.0, summarize(transactions, categories = listOf(budget), today = today).safeToSpend!!.today, 0.001)
     }
 }

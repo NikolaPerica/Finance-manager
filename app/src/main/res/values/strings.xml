@@ -100,6 +100,11 @@
     <string name="test_notification_text">Ovako ćete dobivati podsjetnike za plaćanje.</string>
     <string name="test_notification_sent">Probna obavijest je poslana</string>
 
+    <plurals name="safe_today_detail">
+        <item quantity="one">Dnevno %1$s · još %2$d dan</item>
+        <item quantity="few">Dnevno %1$s · još %2$d dana</item>
+        <item quantity="other">Dnevno %1$s · još %2$d dana</item>
+    </plurals>
     <plurals name="due_overdue">
         <item quantity="one">Kasni %d dan</item>
         <item quantity="few">Kasni %d dana</item>
@@ -165,7 +170,11 @@
     <string name="remove_budget">Ukloni</string>
     <string name="budget_card_title">Budžet ovaj mjesec</string>
     <string name="budget_cta">Postavite mjesečne budžete</string>
-    <string name="budget_cta_subtitle">Pratite koliko vam je ostalo po kategorijama.</string>
+    <string name="budget_cta_subtitle">Pratite koliko vam je ostalo po kategorijama i koliko danas smijete potrošiti.</string>
+    <string name="safe_today_title">Danas možete još potrošiti</string>
+    <string name="safe_today_over">Danas je potrošeno %1$s više od dnevnog dijela</string>
+    <string name="safe_month_over">Budžeti za ovaj mjesec prekoračeni su za %1$s</string>
+    <string name="safe_still_due">Uračunata su plaćanja koja još dospijevaju: %1$s</string>
     <string name="budget_channel_name">Budžeti</string>
     <string name="budget_channel_description">Upozorenja kad se kategorija približi mjesečnom budžetu ili ga prijeđe</string>
     <string name="budget_alert_warning">%1$s: iskorišteno %2$d %% budžeta</string>

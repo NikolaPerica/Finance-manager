@@ -47,6 +47,9 @@ The interface is in Croatian; amounts are in euros unless another currency is ch
 **Planning**
 - **Monthly budgets** per expense category, with a "close to the limit" (80 %) and an
   "over budget" warning, and a notification when an expense crosses either.
+- **Safe to spend today:** on the dashboard, what is left of the budgets shared out over
+  the days left in the month, minus what was already spent today. Reminder payments still
+  due this month are set aside first.
 - **Savings goals** with an optional deadline, deposits and withdrawals, and how much to
   put aside each month to make it.
 - **Payment reminders**, one-off or recurring (monthly to yearly). A notification comes the

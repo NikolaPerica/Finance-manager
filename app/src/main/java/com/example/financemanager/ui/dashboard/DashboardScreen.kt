@@ -31,6 +31,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -68,6 +69,7 @@ import com.example.financemanager.R
 import com.example.financemanager.domain.DateFormat
 import com.example.financemanager.domain.MoneyFormat
 import com.example.financemanager.domain.budgets.BudgetSummary
+import com.example.financemanager.domain.budgets.SafeToSpend
 import com.example.financemanager.domain.insights.Insight
 import com.example.financemanager.model.Template
 import com.example.financemanager.model.Transaction
@@ -191,7 +193,7 @@ fun DashboardScreen(
             }
             if (!state.isLoading) {
                 item(key = "budget") {
-                    BudgetCard(state.budget, onOpenBudgets, Modifier.contentWidth().staggeredEntrance(3, playIntro))
+                    BudgetCard(state.budget, state.safeToSpend, onOpenBudgets, Modifier.contentWidth().staggeredEntrance(3, playIntro))
                 }
             }
             if (state.insights.isNotEmpty()) {
@@ -487,7 +489,7 @@ private fun ActionCard(isIncome: Boolean, onClick: () -> Unit, modifier: Modifie
 }
 
 @Composable
-private fun BudgetCard(summary: BudgetSummary?, onClick: () -> Unit, modifier: Modifier) {
+private fun BudgetCard(summary: BudgetSummary?, safe: SafeToSpend?, onClick: () -> Unit, modifier: Modifier) {
     Surface(
         onClick = onClick,
         shape = CardShape,
@@ -522,6 +524,10 @@ private fun BudgetCard(summary: BudgetSummary?, onClick: () -> Unit, modifier: M
             return@Surface
         }
         Column(Modifier.padding(16.dp)) {
+            if (safe != null) {
+                SafeToSpendToday(safe)
+                HorizontalDivider(Modifier.padding(vertical = 14.dp), color = MaterialTheme.colorScheme.outlineVariant)
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(R.string.budget_card_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                 LevelChip(summary.level)
@@ -543,6 +549,42 @@ private fun BudgetCard(summary: BudgetSummary?, onClick: () -> Unit, modifier: M
                 )
             }
         }
+    }
+}
+
+/** The one number to keep in mind today: what may still be spent without breaking the budgets. */
+@Composable
+private fun SafeToSpendToday(safe: SafeToSpend) {
+    val over = safe.today < 0
+    Text(
+        stringResource(R.string.safe_today_title),
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Text(
+        MoneyFormat.format(safe.today.coerceAtLeast(0.0)),
+        style = MaterialTheme.typography.headlineMedium,
+        color = when {
+            over || safe.dailyShare == 0.0 -> FinanceTheme.colors.expense
+            else -> MaterialTheme.colorScheme.onSurface
+        },
+    )
+    val detail = when {
+        safe.leftThisMonth < 0 -> stringResource(R.string.safe_month_over, MoneyFormat.format(-safe.leftThisMonth))
+        over -> stringResource(R.string.safe_today_over, MoneyFormat.format(-safe.today))
+        else -> pluralStringResource(R.plurals.safe_today_detail, safe.daysLeft, MoneyFormat.format(safe.dailyShare), safe.daysLeft)
+    }
+    Text(
+        detail,
+        style = MaterialTheme.typography.bodyMedium,
+        color = if (over || safe.leftThisMonth < 0) FinanceTheme.colors.expense else MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    if (safe.stillDue > 0) {
+        Text(
+            stringResource(R.string.safe_still_due, MoneyFormat.format(safe.stillDue)),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

@@ -7,9 +7,11 @@ import com.example.financemanager.data.SettingsRepository
 import com.example.financemanager.domain.BudgetMonths
 import com.example.financemanager.domain.budgets.BudgetAlert
 import com.example.financemanager.domain.budgets.BudgetSummary
+import com.example.financemanager.domain.budgets.SafeToSpend
 import com.example.financemanager.domain.budgets.budgetAlertFor
 import com.example.financemanager.domain.budgets.budgetItems
 import com.example.financemanager.domain.budgets.budgetSummary
+import com.example.financemanager.domain.budgets.safeToSpend
 import com.example.financemanager.domain.goals.GoalProgress
 import com.example.financemanager.domain.goals.GoalStatus
 import com.example.financemanager.domain.goals.progress
@@ -49,6 +51,8 @@ data class DashboardUiState(
     val upcoming: List<Reminder> = emptyList(),
     /** This month's totals over categories with a budget, null when none has one. */
     val budget: BudgetSummary? = null,
+    /** What may still be spent today within the budgets, null when none is set. */
+    val safeToSpend: SafeToSpend? = null,
     /** Goals still being saved for, nearest deadline first (at most a few). */
     val goals: List<GoalProgress> = emptyList(),
     val hasGoals: Boolean = false,
@@ -82,6 +86,7 @@ fun summarize(
     categories = categories,
     upcoming = reminders.sortedBy { it.nextDueDate }.take(UPCOMING_COUNT),
     budget = budgetSummary(budgetItems(categories.filter { it.type == TransactionType.EXPENSE }, transactions, months.of(today), months)),
+    safeToSpend = safeToSpend(categories, transactions, reminders, today, months),
     goals = goals.map { it.progress(today) }.filter { it.status != GoalStatus.REACHED }.take(GOALS_COUNT),
     hasGoals = goals.isNotEmpty(),
     insights = buildInsights(transactions, categories, today, months).take(INSIGHTS_COUNT),
