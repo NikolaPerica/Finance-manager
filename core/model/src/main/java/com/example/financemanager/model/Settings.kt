@@ -31,4 +31,6 @@ data class Settings(
     val lockAfterMinutes: Int = 2,
     /** The home screen widget shows dots instead of amounts, as anyone holding the phone can see it. */
     val hideWidgetAmounts: Boolean = false,
+    /** A short summary of the week arrives on Sunday evening. */
+    val weeklySummary: Boolean = true,
 )

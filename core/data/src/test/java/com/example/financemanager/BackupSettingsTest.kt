@@ -31,6 +31,7 @@ class BackupSettingsTest {
             reminderTime = LocalTime.of(7, 45),
             lockAfterMinutes = 0,
             hideWidgetAmounts = true,
+            weeklySummary = false,
         )
         val json = empty.toBackup(createdAt, settings).toJson()
         assertEquals(settings, parseBackup(json).toSettings())

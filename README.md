@@ -43,6 +43,12 @@ The interface is in Croatian; amounts are in euros unless another currency is ch
   - budgets at risk
   - unusually large expenses
   - how much was saved last month
+- **Spending calendar:** a month day by day, darker the more was spent, with the days nothing
+  was spent marked. On top: days in a row without spending and how many this month. Tap a
+  day for its transactions.
+- **Weekly summary:** on Sunday evening a notification sums up the week: what was spent, on
+  which category most, and how that compares with the four weeks before. It can be turned
+  off in the settings.
 
 **Planning**
 - **Monthly budgets** per expense category, with a "close to the limit" (80 %) and an

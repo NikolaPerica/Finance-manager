@@ -100,6 +100,11 @@
     <string name="test_notification_text">Ovako ćete dobivati podsjetnike za plaćanje.</string>
     <string name="test_notification_sent">Probna obavijest je poslana</string>
 
+    <plurals name="days_count">
+        <item quantity="one">%d dan</item>
+        <item quantity="few">%d dana</item>
+        <item quantity="other">%d dana</item>
+    </plurals>
     <plurals name="safe_today_detail">
         <item quantity="one">Dnevno %1$s · još %2$d dan</item>
         <item quantity="few">Dnevno %1$s · još %2$d dana</item>
@@ -353,6 +358,26 @@
     <string name="settings_security">Sigurnost</string>
     <string name="settings_lock_after">Ponovno zaključavanje</string>
     <string name="settings_lock_after_note">Koliko aplikacija smije biti u pozadini prije nego što ponovno zatraži otisak prsta ili PIN.</string>
+    <string name="settings_weekly_summary">Tjedni sažetak</string>
+    <string name="settings_weekly_summary_note">Nedjeljom u 20:00 stiže kratak pregled tjedna: koliko je potrošeno, na što najviše i kako to stoji prema prethodnim tjednima.</string>
+    <string name="weekly_channel_name">Tjedni sažetak</string>
+    <string name="weekly_channel_description">Pregled potrošnje u tjednu, nedjeljom navečer</string>
+    <string name="weekly_title">Tjedni sažetak</string>
+    <string name="weekly_spent">Potrošeno %1$s · najviše %2$s (%3$s)</string>
+    <string name="weekly_more">%1$d %% više nego inače</string>
+    <string name="weekly_less">%1$d %% manje nego inače</string>
+    <string name="weekly_as_usual">Otprilike kao inače</string>
+    <string name="weekly_nothing_spent">Ovaj tjedan nije bilo rashoda.</string>
+    <string name="calendar_menu">Kalendar</string>
+    <string name="calendar_title">Kalendar potrošnje</string>
+    <string name="calendar_streak">Zaredom bez trošenja, do danas</string>
+    <string name="calendar_no_spend_days">Bez trošenja u ovom mjesecu</string>
+    <string name="calendar_month_total">Potrošeno %1$s</string>
+    <string name="calendar_day_spent">%1$s, potrošeno %2$s</string>
+    <string name="calendar_day_no_spend">%1$s, bez trošenja</string>
+    <string name="calendar_legend_no_spend">Dan bez trošenja</string>
+    <string name="calendar_legend_less">Manje</string>
+    <string name="calendar_legend_more">Više</string>
     <string name="quick_add_title">Brzi unos</string>
     <string name="quick_add_hint">Dugi dodir za uklanjanje</string>
     <string name="quick_add_added">Dodano: %1$s · %2$s</string>

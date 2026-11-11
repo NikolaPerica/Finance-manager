@@ -37,6 +37,8 @@ class SettingsViewModel @Inject constructor(private val repository: SettingsRepo
 
     fun setHideWidgetAmounts(hide: Boolean) = update { it.copy(hideWidgetAmounts = hide) }
 
+    fun setWeeklySummary(on: Boolean) = update { it.copy(weeklySummary = on) }
+
     private fun update(transform: (Settings) -> Settings) {
         viewModelScope.launch { repository.update(transform) }
     }

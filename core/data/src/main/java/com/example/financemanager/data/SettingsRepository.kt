@@ -47,6 +47,7 @@ class DataStoreSettingsRepository(private val store: DataStore<Preferences>) : S
             prefs[REMINDER_MINUTE] = new.reminderTime.toSecondOfDay() / 60
             prefs[LOCK_AFTER_MINUTES] = new.lockAfterMinutes
             prefs[HIDE_WIDGET_AMOUNTS] = new.hideWidgetAmounts
+            prefs[WEEKLY_SUMMARY] = new.weeklySummary
         }
     }
 
@@ -60,6 +61,7 @@ class DataStoreSettingsRepository(private val store: DataStore<Preferences>) : S
                 ?.let { LocalTime.of(it / 60, it % 60) } ?: defaults.reminderTime,
             lockAfterMinutes = this[LOCK_AFTER_MINUTES]?.takeIf { it >= 0 } ?: defaults.lockAfterMinutes,
             hideWidgetAmounts = this[HIDE_WIDGET_AMOUNTS] ?: defaults.hideWidgetAmounts,
+            weeklySummary = this[WEEKLY_SUMMARY] ?: defaults.weeklySummary,
         )
     }
 
@@ -70,5 +72,6 @@ class DataStoreSettingsRepository(private val store: DataStore<Preferences>) : S
         val REMINDER_MINUTE = intPreferencesKey("reminder_minute")
         val LOCK_AFTER_MINUTES = intPreferencesKey("lock_after_minutes")
         val HIDE_WIDGET_AMOUNTS = booleanPreferencesKey("hide_widget_amounts")
+        val WEEKLY_SUMMARY = booleanPreferencesKey("weekly_summary")
     }
 }
