@@ -62,6 +62,8 @@ import com.example.financemanager.ui.settings.SettingsScreen
 import com.example.financemanager.ui.settings.SettingsViewModel
 import com.example.financemanager.ui.stats.StatsScreen
 import com.example.financemanager.ui.stats.StatsViewModel
+import com.example.financemanager.ui.subscriptions.SubscriptionsScreen
+import com.example.financemanager.ui.subscriptions.SubscriptionsViewModel
 import com.example.financemanager.ui.transaction.TransactionFormScreen
 import com.example.financemanager.ui.transaction.TransactionFormViewModel
 import com.example.financemanager.ui.transactions.TransactionsScreen
@@ -126,6 +128,9 @@ data object SettingsRoute
 
 @Serializable
 data object CalendarRoute
+
+@Serializable
+data object SubscriptionsRoute
 
 @Serializable
 data class GoalRoute(val id: Long)
@@ -245,6 +250,7 @@ private fun AppNavHost(
                 onOpenInsights = { navController.navigate(InsightsRoute) },
                 onOpenSettings = { navController.navigate(SettingsRoute) },
                 onOpenCalendar = { navController.navigate(CalendarRoute) },
+                onOpenSubscriptions = { navController.navigate(SubscriptionsRoute) },
                 onOpenGoal = { navController.navigate(GoalRoute(it)) },
                 onAddGoal = { navController.navigate(GoalFormRoute()) },
             )
@@ -285,6 +291,12 @@ private fun AppNavHost(
                 viewModel = hiltViewModel<CalendarViewModel>(),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
                 onOpenDay = { day -> navController.navigate(TransactionsRoute(from = day.toString(), to = day.toString())) },
+            )
+        }
+        composable<SubscriptionsRoute> {
+            SubscriptionsScreen(
+                viewModel = hiltViewModel<SubscriptionsViewModel>(),
+                onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
             )
         }
         composable<SettingsRoute> {

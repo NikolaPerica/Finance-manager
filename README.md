@@ -46,6 +46,10 @@ The interface is in Croatian; amounts are in euros unless another currency is ch
 - **Spending calendar:** a month day by day, darker the more was spent, with the days nothing
   was spent marked. On top: days in a row without spending and how many this month. Tap a
   day for its transactions.
+- **Subscriptions:** monthly costs found in the transactions themselves: the same expense (same
+  note, or same category without one), about the same amount, at least three months in a
+  row. They're listed with their monthly and yearly total, and each can become a payment
+  reminder with one tap.
 - **Weekly summary:** on Sunday evening a notification sums up the week: what was spent, on
   which category most, and how that compares with the four weeks before. It can be turned
   off in the settings.
