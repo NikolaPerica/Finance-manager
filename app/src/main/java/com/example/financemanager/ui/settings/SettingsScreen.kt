@@ -130,6 +130,13 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                         note = stringResource(R.string.settings_reminder_time_note),
                         onClick = { dialog = SettingsDialog.REMINDER_TIME },
                     )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    SwitchRow(
+                        title = stringResource(R.string.settings_weekly_summary),
+                        note = stringResource(R.string.settings_weekly_summary_note),
+                        checked = current.weeklySummary,
+                        onCheckedChange = viewModel::setWeeklySummary,
+                    )
                 }
             }
             item {

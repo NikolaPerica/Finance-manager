@@ -21,6 +21,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Daily check for payments that are due tomorrow, today or overdue.
@@ -128,7 +129,10 @@ object ReminderCheck {
     )
 }
 
-/** Runs the daily check when its alarm fires, and re-arms the alarm after a reboot, update or clock change. */
+/**
+ * Runs the daily check and the weekly summary when their alarms fire, and re-arms both after a
+ * reboot, update or clock change.
+ */
 class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
@@ -136,15 +140,23 @@ class ReminderReceiver : BroadcastReceiver() {
                 val pending = goAsync()
                 ReminderCheck.run(context) { pending.finish() }
             }
-            // Alarms are cleared on reboot; schedule() also catches up if today's check was missed.
+            ACTION_WEEKLY_SUMMARY -> {
+                val pending = goAsync()
+                WeeklySummary.run(context) { pending.finish() }
+            }
+            // Alarms are cleared on reboot; scheduling also catches up on a missed check or summary.
             else -> {
                 val pending = goAsync()
-                ReminderCheck.schedule(context) { pending.finish() }
+                val left = AtomicInteger(2)
+                val done = { if (left.decrementAndGet() == 0) pending.finish() }
+                ReminderCheck.schedule(context, done)
+                WeeklySummary.schedule(context, done)
             }
         }
     }
 
     companion object {
         const val ACTION_CHECK = "com.example.financemanager.action.CHECK_REMINDERS"
+        const val ACTION_WEEKLY_SUMMARY = "com.example.financemanager.action.WEEKLY_SUMMARY"
     }
 }

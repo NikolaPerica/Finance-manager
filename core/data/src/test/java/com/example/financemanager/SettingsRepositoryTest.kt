@@ -47,6 +47,7 @@ class SettingsRepositoryTest {
                 reminderTime = LocalTime.of(7, 30),
                 lockAfterMinutes = 0,
                 hideWidgetAmounts = true,
+                weeklySummary = false,
             )
         }
         assertEquals(
@@ -57,6 +58,7 @@ class SettingsRepositoryTest {
                 reminderTime = LocalTime.of(7, 30),
                 lockAfterMinutes = 0,
                 hideWidgetAmounts = true,
+                weeklySummary = false,
             ),
             repository.settings.first(),
         )

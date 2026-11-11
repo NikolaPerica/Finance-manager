@@ -36,6 +36,8 @@ import com.example.financemanager.model.TransactionType
 import com.example.financemanager.security.AppLock
 import com.example.financemanager.ui.budgets.BudgetsScreen
 import com.example.financemanager.ui.budgets.BudgetsViewModel
+import com.example.financemanager.ui.calendar.CalendarScreen
+import com.example.financemanager.ui.calendar.CalendarViewModel
 import com.example.financemanager.ui.categories.CategoriesScreen
 import com.example.financemanager.ui.categories.CategoriesViewModel
 import com.example.financemanager.ui.components.EmphasizedDecelerate
@@ -121,6 +123,9 @@ data object InsightsRoute
 
 @Serializable
 data object SettingsRoute
+
+@Serializable
+data object CalendarRoute
 
 @Serializable
 data class GoalRoute(val id: Long)
@@ -239,6 +244,7 @@ private fun AppNavHost(
                 onLock = onLock,
                 onOpenInsights = { navController.navigate(InsightsRoute) },
                 onOpenSettings = { navController.navigate(SettingsRoute) },
+                onOpenCalendar = { navController.navigate(CalendarRoute) },
                 onOpenGoal = { navController.navigate(GoalRoute(it)) },
                 onAddGoal = { navController.navigate(GoalFormRoute()) },
             )
@@ -272,6 +278,13 @@ private fun AppNavHost(
             InsightsScreen(
                 viewModel = hiltViewModel<InsightsViewModel>(),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
+            )
+        }
+        composable<CalendarRoute> {
+            CalendarScreen(
+                viewModel = hiltViewModel<CalendarViewModel>(),
+                onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
+                onOpenDay = { day -> navController.navigate(TransactionsRoute(from = day.toString(), to = day.toString())) },
             )
         }
         composable<SettingsRoute> {

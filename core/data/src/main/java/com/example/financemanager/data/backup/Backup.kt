@@ -66,6 +66,7 @@ data class SettingsDto(
     val reminderTime: String = Settings().reminderTime.toString(),
     val lockAfterMinutes: Int = Settings().lockAfterMinutes,
     val hideWidgetAmounts: Boolean = Settings().hideWidgetAmounts,
+    val weeklySummary: Boolean = Settings().weeklySummary,
 )
 
 @Serializable
@@ -104,7 +105,15 @@ private val json = Json {
 fun FinanceData.toBackup(createdAt: LocalDateTime = LocalDateTime.now(), settings: Settings? = null) = BackupFile(
     createdAt = createdAt.withNano(0).toString(),
     settings = settings?.let {
-        SettingsDto(it.theme.name, it.currency.name, it.monthStartDay, it.reminderTime.toString(), it.lockAfterMinutes, it.hideWidgetAmounts)
+        SettingsDto(
+            it.theme.name,
+            it.currency.name,
+            it.monthStartDay,
+            it.reminderTime.toString(),
+            it.lockAfterMinutes,
+            it.hideWidgetAmounts,
+            it.weeklySummary,
+        )
     },
     categories = categories.map { CategoryDto(it.id, it.name, it.type.name, it.monthlyBudget, it.color) },
     transactions = transactions.map { TransactionDto(it.id, it.amount, it.date.toString(), it.note, it.category, it.type.name) },
@@ -172,6 +181,7 @@ fun BackupFile.toSettings(): Settings? = settings?.let { dto ->
         reminderTime = runCatching { LocalTime.parse(dto.reminderTime) }.getOrNull() ?: defaults.reminderTime,
         lockAfterMinutes = dto.lockAfterMinutes.takeIf { it >= 0 } ?: defaults.lockAfterMinutes,
         hideWidgetAmounts = dto.hideWidgetAmounts,
+        weeklySummary = dto.weeklySummary,
     )
 }
 
