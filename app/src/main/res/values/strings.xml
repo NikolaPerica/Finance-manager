@@ -100,6 +100,11 @@
     <string name="test_notification_text">Ovako ćete dobivati podsjetnike za plaćanje.</string>
     <string name="test_notification_sent">Probna obavijest je poslana</string>
 
+    <plurals name="subscriptions_count">
+        <item quantity="one">%d trošak koji se ponavlja</item>
+        <item quantity="few">%d troška koja se ponavljaju</item>
+        <item quantity="other">%d troškova koji se ponavljaju</item>
+    </plurals>
     <plurals name="days_count">
         <item quantity="one">%d dan</item>
         <item quantity="few">%d dana</item>
@@ -368,6 +373,17 @@
     <string name="weekly_less">%1$d %% manje nego inače</string>
     <string name="weekly_as_usual">Otprilike kao inače</string>
     <string name="weekly_nothing_spent">Ovaj tjedan nije bilo rashoda.</string>
+    <string name="subscriptions_title">Pretplate</string>
+    <string name="subscriptions_monthly">%1$s mjesečno</string>
+    <string name="subscriptions_yearly">%1$s godišnje</string>
+    <string name="subscription_per_month">%1$s/mj.</string>
+    <string name="subscription_per_year">%1$s/god.</string>
+    <string name="subscription_next">Sljedeće oko %1$s</string>
+    <string name="subscription_add_reminder">Napravi podsjetnik</string>
+    <string name="subscription_has_reminder">Ima podsjetnik za plaćanje</string>
+    <string name="subscription_reminder_added">Podsjetnik za „%1$s“ je dodan</string>
+    <string name="subscriptions_about">Pretplate se prepoznaju same: isti trošak (ista napomena, a bez nje ista kategorija), otprilike istog iznosa, barem tri mjeseca zaredom, jednom mjesečno. Ono što nije plaćeno više od 40 dana smatra se otkazanim.</string>
+    <string name="subscriptions_empty">Zasad nema troškova koji se ponavljaju svaki mjesec. Pretplata se prepozna kad se isti trošak (ista napomena, a bez nje ista kategorija), otprilike istog iznosa, pojavi barem tri mjeseca zaredom.</string>
     <string name="calendar_menu">Kalendar</string>
     <string name="calendar_title">Kalendar potrošnje</string>
     <string name="calendar_streak">Zaredom bez trošenja, do danas</string>
