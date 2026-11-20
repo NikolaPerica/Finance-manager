@@ -120,3 +120,32 @@ data class Template(
     /** The transaction this template adds on [date]. */
     fun toTransaction(date: LocalDate) = Transaction(amount = amount, date = date, note = note, category = category, type = type)
 }
+
+enum class WishStatus { WAITING, BOUGHT, SKIPPED }
+
+/**
+ * Something the user would like to buy, given a few days of thought first: buying waits
+ * until [decideOn], giving it up never has to.
+ */
+@Entity(tableName = "wishes")
+data class Wish(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val name: String,
+    val price: Double,
+    /** Expense category the purchase goes under; "" for none. */
+    val category: String = "",
+    val addedOn: LocalDate,
+    /** Days to think it over. */
+    val waitDays: Int,
+    val status: WishStatus = WishStatus.WAITING,
+    /** When it was bought or given up; null while waiting. */
+    val decidedOn: LocalDate? = null,
+) {
+    val decideOn: LocalDate get() = addedOn.plusDays(waitDays.toLong())
+
+    /** Whether the time to think it over has passed on [today]. */
+    fun isReady(today: LocalDate): Boolean = !today.isBefore(decideOn)
+
+    /** The expense recorded when it is bought on [date]. */
+    fun toExpense(date: LocalDate) = Transaction(amount = price, date = date, note = name, category = category, type = TransactionType.EXPENSE)
+}

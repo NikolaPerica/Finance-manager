@@ -9,6 +9,7 @@ import com.example.financemanager.notifications.ReminderCheck
 import com.example.financemanager.notifications.ReminderNotifier
 import com.example.financemanager.notifications.WeeklySummary
 import com.example.financemanager.notifications.WeeklySummaryNotifier
+import com.example.financemanager.notifications.WishNotifier
 import com.example.financemanager.security.AppLock
 import com.example.financemanager.widget.WidgetSync
 import dagger.hilt.android.HiltAndroidApp
@@ -41,6 +42,7 @@ class FinanceApp : Application() {
         ReminderNotifier(this).createChannel()
         BudgetNotifier(this).createChannel()
         WeeklySummaryNotifier(this).createChannel()
+        WishNotifier(this).createChannel()
         ReminderCheck.schedule(this)
         WeeklySummary.schedule(this)
         WidgetSync.startIfPlaced(this)

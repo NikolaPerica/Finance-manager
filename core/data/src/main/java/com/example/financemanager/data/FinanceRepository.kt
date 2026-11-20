@@ -10,6 +10,8 @@ import com.example.financemanager.model.SavingsGoal
 import com.example.financemanager.model.Template
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
+import com.example.financemanager.model.Wish
+import com.example.financemanager.model.WishStatus
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -24,6 +26,7 @@ data class FinanceData(
     val goals: List<SavingsGoal> = emptyList(),
     val contributions: List<GoalContribution> = emptyList(),
     val templates: List<Template> = emptyList(),
+    val wishes: List<Wish> = emptyList(),
 )
 
 /** Single entry point the UI uses to read and change finance data. */
@@ -95,6 +98,19 @@ interface FinanceRepository {
      * as saved, so it can be deleted again to undo.
      */
     suspend fun useTemplate(template: Template, on: LocalDate): Transaction
+
+    /** The wish list, newest first. */
+    fun wishes(): Flow<List<Wish>>
+
+    /** Inserts a new wish or updates an existing one. */
+    suspend fun saveWish(wish: Wish)
+    suspend fun deleteWish(wish: Wish)
+
+    /** Marks the wish bought on [on] and records the purchase as an expense; returns that expense. */
+    suspend fun buyWish(wish: Wish, on: LocalDate): Transaction
+
+    /** Marks the wish given up on [on]; with [goalId], its price goes into that savings goal. */
+    suspend fun skipWish(wish: Wish, on: LocalDate, goalId: Long?)
 }
 
 /** The expense a payment of this reminder is recorded as. */
@@ -146,6 +162,7 @@ class RoomFinanceRepository(private val db: AppDatabase) : FinanceRepository {
     private suspend fun moveCategoryData(category: Category, to: String) {
         db.transactionDao().moveCategory(category.name, to, category.type)
         db.templateDao().moveCategory(category.name, to, category.type)
+        if (category.type == TransactionType.EXPENSE) db.wishDao().moveCategory(category.name, to)
         // Reminders always become expenses, so only expense categories are used there.
         if (category.type == TransactionType.EXPENSE) db.reminderDao().moveCategory(category.name, to)
     }
@@ -179,11 +196,13 @@ class RoomFinanceRepository(private val db: AppDatabase) : FinanceRepository {
             goals = db.goalDao().getAll(),
             contributions = db.goalDao().getAllContributions(),
             templates = db.templateDao().getAll(),
+            wishes = db.wishDao().getAll(),
         )
     }
 
     override suspend fun replaceAll(data: FinanceData) = db.withTransaction {
         db.templateDao().deleteAll()
+        db.wishDao().deleteAll()
         db.goalDao().deleteAll()
         db.reminderDao().deleteAll()
         db.transactionDao().deleteAll()
@@ -194,6 +213,7 @@ class RoomFinanceRepository(private val db: AppDatabase) : FinanceRepository {
         db.goalDao().insertAll(data.goals)
         db.goalDao().insertAllContributions(data.contributions)
         db.templateDao().insertAll(data.templates)
+        db.wishDao().insertAll(data.wishes)
     }
 
     override fun reminders() = db.reminderDao().observeAll()
@@ -238,5 +258,28 @@ class RoomFinanceRepository(private val db: AppDatabase) : FinanceRepository {
         val id = db.transactionDao().insert(transaction)
         db.templateDao().countUse(template.id)
         transaction.copy(id = id)
+    }
+
+    override fun wishes() = db.wishDao().observeAll()
+
+    override suspend fun saveWish(wish: Wish) {
+        db.wishDao().upsert(wish)
+    }
+
+    override suspend fun deleteWish(wish: Wish) {
+        db.wishDao().delete(wish)
+    }
+
+    override suspend fun buyWish(wish: Wish, on: LocalDate) = db.withTransaction {
+        val expense = wish.toExpense(on)
+        val id = db.transactionDao().insert(expense)
+        db.wishDao().upsert(wish.copy(status = WishStatus.BOUGHT, decidedOn = on))
+        expense.copy(id = id)
+    }
+
+    override suspend fun skipWish(wish: Wish, on: LocalDate, goalId: Long?) = db.withTransaction {
+        db.wishDao().upsert(wish.copy(status = WishStatus.SKIPPED, decidedOn = on))
+        if (goalId != null) db.goalDao().insertContribution(GoalContribution(goalId = goalId, amount = wish.price, date = on))
+        Unit
     }
 }

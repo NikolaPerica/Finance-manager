@@ -12,6 +12,8 @@ import com.example.financemanager.model.Template
 import com.example.financemanager.model.ThemeMode
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
+import com.example.financemanager.model.Wish
+import com.example.financemanager.model.WishStatus
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -42,7 +44,20 @@ data class BackupFile(
     val goals: List<GoalDto> = emptyList(),
     @SerialName("goalContributions") val contributions: List<ContributionDto> = emptyList(),
     val templates: List<TemplateDto> = emptyList(),
+    val wishes: List<WishDto> = emptyList(),
     val settings: SettingsDto? = null,
+)
+
+@Serializable
+data class WishDto(
+    val id: Long,
+    val name: String,
+    val price: Double,
+    val category: String = "",
+    val addedOn: String,
+    val waitDays: Int,
+    val status: String,
+    val decidedOn: String? = null,
 )
 
 @Serializable
@@ -123,6 +138,9 @@ fun FinanceData.toBackup(createdAt: LocalDateTime = LocalDateTime.now(), setting
     goals = goals.map { GoalDto(it.id, it.name, it.target, it.deadline?.toString(), it.color) },
     contributions = contributions.map { ContributionDto(it.id, it.goalId, it.amount, it.date.toString()) },
     templates = templates.map { TemplateDto(it.id, it.name, it.amount, it.type.name, it.category, it.note, it.uses) },
+    wishes = wishes.map {
+        WishDto(it.id, it.name, it.price, it.category, it.addedOn.toString(), it.waitDays, it.status.name, it.decidedOn?.toString())
+    },
 )
 
 fun BackupFile.toJson(): String = json.encodeToString(BackupFile.serializer(), this)
@@ -159,6 +177,18 @@ fun BackupFile.toData(): FinanceData = try {
         },
         templates = templates.map {
             Template(it.id, it.name, it.amount, TransactionType.valueOf(it.type), it.category, it.note, it.uses)
+        },
+        wishes = wishes.map {
+            Wish(
+                it.id,
+                it.name,
+                it.price,
+                it.category,
+                LocalDate.parse(it.addedOn),
+                it.waitDays,
+                WishStatus.valueOf(it.status),
+                it.decidedOn?.let(LocalDate::parse),
+            )
         },
     )
 } catch (e: InvalidBackupException) {

@@ -14,6 +14,7 @@ import com.example.financemanager.model.SavingsGoal
 import com.example.financemanager.model.Template
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
+import com.example.financemanager.model.Wish
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -177,4 +178,28 @@ interface TemplateDao {
 
     @Query("UPDATE templates SET category = :to WHERE category = :from AND type = :type")
     suspend fun moveCategory(from: String, to: String, type: TransactionType)
+}
+
+@Dao
+interface WishDao {
+    @Query("SELECT * FROM wishes ORDER BY addedOn DESC, id DESC")
+    fun observeAll(): Flow<List<Wish>>
+
+    @Query("SELECT * FROM wishes")
+    suspend fun getAll(): List<Wish>
+
+    @Insert
+    suspend fun insertAll(wishes: List<Wish>)
+
+    @Query("DELETE FROM wishes")
+    suspend fun deleteAll()
+
+    @Upsert
+    suspend fun upsert(wish: Wish)
+
+    @Delete
+    suspend fun delete(wish: Wish)
+
+    @Query("UPDATE wishes SET category = :to WHERE category = :from")
+    suspend fun moveCategory(from: String, to: String)
 }

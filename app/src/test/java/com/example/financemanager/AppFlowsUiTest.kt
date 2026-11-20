@@ -126,6 +126,7 @@ class AppFlowsUiTest {
             "Uvidi" to "Uvidi",
             "Kalendar" to "Kalendar potrošnje",
             "Pretplate" to "Pretplate",
+            "Lista želja" to "Lista želja",
             "Izvoz i kopija" to "Izvoz i sigurnosna kopija",
             "Postavke" to "Postavke",
         ).forEach { (entry, title) ->

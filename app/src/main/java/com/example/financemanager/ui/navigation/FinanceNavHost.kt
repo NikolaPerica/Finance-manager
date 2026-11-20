@@ -68,6 +68,8 @@ import com.example.financemanager.ui.transaction.TransactionFormScreen
 import com.example.financemanager.ui.transaction.TransactionFormViewModel
 import com.example.financemanager.ui.transactions.TransactionsScreen
 import com.example.financemanager.ui.transactions.TransactionsViewModel
+import com.example.financemanager.ui.wishes.WishlistScreen
+import com.example.financemanager.ui.wishes.WishlistViewModel
 import java.time.LocalDate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -131,6 +133,9 @@ data object CalendarRoute
 
 @Serializable
 data object SubscriptionsRoute
+
+@Serializable
+data object WishlistRoute
 
 @Serializable
 data class GoalRoute(val id: Long)
@@ -251,6 +256,7 @@ private fun AppNavHost(
                 onOpenSettings = { navController.navigate(SettingsRoute) },
                 onOpenCalendar = { navController.navigate(CalendarRoute) },
                 onOpenSubscriptions = { navController.navigate(SubscriptionsRoute) },
+                onOpenWishlist = { navController.navigate(WishlistRoute) },
                 onOpenGoal = { navController.navigate(GoalRoute(it)) },
                 onAddGoal = { navController.navigate(GoalFormRoute()) },
             )
@@ -296,6 +302,12 @@ private fun AppNavHost(
         composable<SubscriptionsRoute> {
             SubscriptionsScreen(
                 viewModel = hiltViewModel<SubscriptionsViewModel>(),
+                onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
+            )
+        }
+        composable<WishlistRoute> {
+            WishlistScreen(
+                viewModel = hiltViewModel<WishlistViewModel>(),
                 onBack = { navController.popBackStack(DashboardRoute, inclusive = false) },
             )
         }

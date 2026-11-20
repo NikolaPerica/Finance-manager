@@ -12,6 +12,7 @@ import com.example.financemanager.data.MIGRATION_2_3
 import com.example.financemanager.data.MIGRATION_3_4
 import com.example.financemanager.data.MIGRATION_4_5
 import com.example.financemanager.data.MIGRATION_5_6
+import com.example.financemanager.data.MIGRATION_6_7
 import com.example.financemanager.data.RoomFinanceRepository
 import com.example.financemanager.model.Category
 import com.example.financemanager.model.GoalContribution
@@ -21,6 +22,8 @@ import com.example.financemanager.model.SavingsGoal
 import com.example.financemanager.model.Template
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
+import com.example.financemanager.model.Wish
+import com.example.financemanager.model.WishStatus
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -70,7 +73,7 @@ class DatabaseMigrationTest {
 
         // Room checks the migrated tables against the current schema when it opens.
         val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
             .build()
         try {
             val transaction = db.transactionDao().observeAll().first().single()
@@ -99,7 +102,7 @@ class DatabaseMigrationTest {
         }
 
         val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
             .build()
         try {
             val repository = RoomFinanceRepository(db)
@@ -122,7 +125,7 @@ class DatabaseMigrationTest {
             db.execSQL("INSERT INTO categories (id, name, type, monthlyBudget) VALUES (3, 'Hrana', 'EXPENSE', 250.0)")
         }
         val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
             .build()
         try {
             val category = db.categoryDao().observeByType(TransactionType.EXPENSE).first().single()
@@ -179,7 +182,7 @@ class DatabaseMigrationTest {
             db.execSQL("INSERT INTO categories (id, name, type) VALUES (1, 'Hrana', 'EXPENSE')")
         }
         val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
             .build()
         try {
             val repository = RoomFinanceRepository(db)
@@ -273,7 +276,7 @@ class DatabaseMigrationTest {
         }
 
         val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
             .build()
         try {
             assertEquals("Kava", db.transactionDao().observeAll().first().single().note)
@@ -318,6 +321,63 @@ class DatabaseMigrationTest {
 
             repository.deleteTemplate(repository.templates().first().first { it.name == "Gorivo" })
             assertEquals(listOf("Kava"), repository.templates().first().map { it.name })
+        } finally {
+            db.close()
+        }
+    }
+
+    @Test
+    fun version6KeepsItsDataAndGetsTheWishList() = runBlocking {
+        createVersion(6) { db ->
+            db.execSQL(
+                "INSERT INTO transactions (id, amount, date, note, category, type) " +
+                    "VALUES (1, 2.0, '2026-11-05', 'Kava', 'Hrana', 'EXPENSE')",
+            )
+            db.execSQL("INSERT INTO templates (id, name, amount, type, category, note, uses) VALUES (1, 'Kava', 2.0, 'EXPENSE', 'Hrana', 'Kava', 3)")
+        }
+
+        val db = Room.databaseBuilder(context, AppDatabase::class.java, DB)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+            .build()
+        try {
+            assertEquals("Kava", db.transactionDao().observeAll().first().single().note)
+            assertEquals(3, db.templateDao().getAll().single().uses)
+            assertTrue(db.wishDao().getAll().isEmpty())
+        } finally {
+            db.close()
+        }
+    }
+
+    @Test
+    fun wishesAreBoughtOrGivenUp() = runBlocking {
+        val db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+        try {
+            val repository = RoomFinanceRepository(db)
+            repository.addCategory("Tehnika", TransactionType.EXPENSE)
+            val day = LocalDate.of(2026, 11, 20)
+            repository.saveWish(Wish(name = "Slušalice", price = 120.0, category = "Tehnika", addedOn = day.minusDays(3), waitDays = 2))
+            repository.saveWish(Wish(name = "Tenisice", price = 90.0, addedOn = day.minusDays(1), waitDays = 3))
+            val goalId = repository.saveGoal(SavingsGoal(name = "More", target = 1000.0))
+            val (shoes, headphones) = repository.wishes().first().sortedBy { it.price }
+
+            val expense = repository.buyWish(headphones, day)
+            assertEquals(Transaction(expense.id, 120.0, day, "Slušalice", "Tehnika", TransactionType.EXPENSE), repository.transactions().first().single())
+            assertEquals(WishStatus.BOUGHT to day, repository.wishes().first().first { it.name == "Slušalice" }.let { it.status to it.decidedOn })
+
+            repository.skipWish(shoes, day, goalId)
+            assertEquals(WishStatus.SKIPPED, repository.wishes().first().first { it.name == "Tenisice" }.status)
+            assertEquals(90.0, repository.goals().first().single().saved, 0.0)
+
+            // They follow the category, and a backup keeps them.
+            val tech = repository.categories(TransactionType.EXPENSE).first().single()
+            repository.updateCategory(tech, "Elektronika", color = null)
+            assertEquals("Elektronika", repository.wishes().first().first { it.name == "Slušalice" }.category)
+            val snapshot = repository.snapshot()
+            repository.replaceAll(FinanceData())
+            repository.replaceAll(snapshot)
+            assertEquals(snapshot.wishes.toSet(), repository.wishes().first().toSet())
         } finally {
             db.close()
         }
