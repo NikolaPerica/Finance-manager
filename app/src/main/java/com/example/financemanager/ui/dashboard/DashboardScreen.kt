@@ -116,6 +116,7 @@ fun DashboardScreen(
     onOpenSettings: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenSubscriptions: () -> Unit,
+    onOpenWishlist: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
@@ -169,7 +170,7 @@ fun DashboardScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             item(key = "header") {
-                Header(onOpenStats, onOpenCategories, onOpenBudgets, onOpenGoals, onOpenReminders, onOpenExport, onLock, onOpenInsights, onOpenSettings, onOpenCalendar, onOpenSubscriptions, Modifier.contentWidth().staggeredEntrance(0, playIntro))
+                Header(onOpenStats, onOpenCategories, onOpenBudgets, onOpenGoals, onOpenReminders, onOpenExport, onLock, onOpenInsights, onOpenSettings, onOpenCalendar, onOpenSubscriptions, onOpenWishlist, Modifier.contentWidth().staggeredEntrance(0, playIntro))
             }
             item(key = "balance") {
                 BalanceCard(state, Modifier.contentWidth().padding(top = 8.dp).staggeredEntrance(1, playIntro))
@@ -329,6 +330,7 @@ private fun Header(
     onOpenSettings: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenSubscriptions: () -> Unit,
+    onOpenWishlist: () -> Unit,
     modifier: Modifier,
 ) {
     val greeting = when (LocalTime.now().hour) {
@@ -360,6 +362,7 @@ private fun Header(
                     Triple(R.string.insights_title, R.drawable.ic_lightbulb, onOpenInsights),
                     Triple(R.string.calendar_menu, R.drawable.ic_calendar, onOpenCalendar),
                     Triple(R.string.subscriptions_title, R.drawable.ic_repeat, onOpenSubscriptions),
+                    Triple(R.string.wishes_title, R.drawable.ic_hourglass, onOpenWishlist),
                     Triple(R.string.export_menu, R.drawable.ic_file_download, onOpenExport),
                     Triple(R.string.settings_title, R.drawable.ic_settings, onOpenSettings),
                     Triple(R.string.lock_now, R.drawable.ic_lock, onLock),

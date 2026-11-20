@@ -11,9 +11,12 @@ import com.example.financemanager.model.Settings
 import com.example.financemanager.model.Template
 import com.example.financemanager.model.ThemeMode
 import com.example.financemanager.model.TransactionType
+import com.example.financemanager.model.Wish
+import com.example.financemanager.model.WishStatus
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
@@ -43,6 +46,17 @@ class BackupSettingsTest {
             templates = listOf(
                 Template(3, "Kava", 2.0, TransactionType.EXPENSE, "Hrana", "Kava", uses = 12),
                 Template(4, "Džeparac", 20.0, TransactionType.INCOME, "", "", uses = 0),
+            ),
+        )
+        assertEquals(data, parseBackup(data.toBackup(createdAt).toJson()).toData())
+    }
+
+    @Test
+    fun wishesGoIntoTheBackupAndComeBack() {
+        val data = empty.copy(
+            wishes = listOf(
+                Wish(1, "Slušalice", 120.0, "Tehnika", LocalDate.of(2026, 11, 10), 2, WishStatus.WAITING),
+                Wish(2, "Tenisice", 90.0, "", LocalDate.of(2026, 11, 1), 3, WishStatus.SKIPPED, LocalDate.of(2026, 11, 4)),
             ),
         )
         assertEquals(data, parseBackup(data.toBackup(createdAt).toJson()).toData())

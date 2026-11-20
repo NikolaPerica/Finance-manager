@@ -9,7 +9,9 @@ import androidx.core.content.edit
 import com.example.financemanager.di.appEntryPoint
 import com.example.financemanager.model.Settings
 import com.example.financemanager.domain.reminders.DueStatus
+import com.example.financemanager.domain.wishes.readyToDecide
 import com.example.financemanager.model.Reminder
+import com.example.financemanager.model.WishStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -28,13 +30,15 @@ import java.util.concurrent.atomic.AtomicInteger
  *
  * An alarm fires at the time chosen in the settings. If that was missed (phone off, app force-stopped),
  * the next app start or reboot catches up. The check also runs right after the user
- * turns notifications on. Each reminder is announced at most once a day.
+ * turns notifications on. Each reminder is announced at most once a day. The same check
+ * announces wishes whose time to think them over has passed, each once.
  */
 object ReminderCheck {
     private const val PREFS = "reminder_check"
     private const val KEY_LAST_CHECK = "last_check"
     private const val KEY_NOTIFIED_DAY = "notified_day"
     private const val KEY_NOTIFIED_IDS = "notified_ids"
+    private const val KEY_WISHES_ANNOUNCED = "wishes_announced"
 
     private val mutex = Mutex()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -117,6 +121,14 @@ object ReminderCheck {
             putString(KEY_NOTIFIED_DAY, today.toString())
             putStringSet(KEY_NOTIFIED_IDS, (notified + due.map { it.first.id }).map(Long::toString).toSet())
         }
+
+        // Wishes whose time to think it over has passed, each announced once.
+        val wishes = context.appEntryPoint().repository().wishes().first()
+        val announced = prefs.getStringSet(KEY_WISHES_ANNOUNCED, emptySet()).orEmpty()
+        val ready = readyToDecide(wishes, today).filter { it.id.toString() !in announced }
+        WishNotifier(context).notify(ready)
+        val waiting = wishes.filter { it.status == WishStatus.WAITING }.map { it.id.toString() }.toSet()
+        prefs.edit { putStringSet(KEY_WISHES_ANNOUNCED, (announced + ready.map { it.id.toString() }).intersect(waiting)) }
     }
 
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)

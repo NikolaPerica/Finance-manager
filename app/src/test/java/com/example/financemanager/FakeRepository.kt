@@ -13,6 +13,8 @@ import com.example.financemanager.model.SavingsGoal
 import com.example.financemanager.model.Template
 import com.example.financemanager.model.Transaction
 import com.example.financemanager.model.TransactionType
+import com.example.financemanager.model.Wish
+import com.example.financemanager.model.WishStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
@@ -26,6 +28,7 @@ class FakeRepository : FinanceRepository {
     val goals = MutableStateFlow<List<SavingsGoal>>(emptyList())
     val contributions = MutableStateFlow<List<GoalContribution>>(emptyList())
     val templates = MutableStateFlow<List<Template>>(emptyList())
+    val wishes = MutableStateFlow<List<Wish>>(emptyList())
 
     private var nextId = 1000L
 
@@ -73,6 +76,9 @@ class FakeRepository : FinanceRepository {
             list.map { if (it.type == category.type && it.category == category.name) it.copy(category = to) else it }
         }
         if (category.type == TransactionType.EXPENSE) {
+            wishes.update { list -> list.map { if (it.category == category.name) it.copy(category = to) else it } }
+        }
+        if (category.type == TransactionType.EXPENSE) {
             reminders.update { list -> list.map { if (it.category == category.name) it.copy(category = to) else it } }
         }
     }
@@ -106,7 +112,7 @@ class FakeRepository : FinanceRepository {
     }
 
     override suspend fun snapshot() = FinanceData(
-        categories.value, transactions.value, reminders.value, goals.value, contributions.value, templates.value,
+        categories.value, transactions.value, reminders.value, goals.value, contributions.value, templates.value, wishes.value,
     )
 
     override suspend fun replaceAll(data: FinanceData) {
@@ -116,6 +122,7 @@ class FakeRepository : FinanceRepository {
         goals.value = data.goals
         contributions.value = data.contributions
         templates.value = data.templates
+        wishes.value = data.wishes
     }
 
     override fun reminders() = reminders
@@ -160,5 +167,28 @@ class FakeRepository : FinanceRepository {
         transactions.update { it + transaction }
         templates.update { list -> list.map { if (it.id == template.id) it.copy(uses = it.uses + 1) else it } }
         return transaction
+    }
+
+    override fun wishes() = wishes
+
+    override suspend fun saveWish(wish: Wish) {
+        val saved = if (wish.id == 0L) wish.copy(id = nextId++) else wish
+        wishes.update { list -> list.filterNot { it.id == saved.id } + saved }
+    }
+
+    override suspend fun deleteWish(wish: Wish) {
+        wishes.update { list -> list.filterNot { it.id == wish.id } }
+    }
+
+    override suspend fun buyWish(wish: Wish, on: LocalDate): Transaction {
+        val expense = wish.toExpense(on).copy(id = nextId++)
+        transactions.update { it + expense }
+        saveWish(wish.copy(status = WishStatus.BOUGHT, decidedOn = on))
+        return expense
+    }
+
+    override suspend fun skipWish(wish: Wish, on: LocalDate, goalId: Long?) {
+        saveWish(wish.copy(status = WishStatus.SKIPPED, decidedOn = on))
+        if (goalId != null) addContribution(GoalContribution(goalId = goalId, amount = wish.price, date = on))
     }
 }

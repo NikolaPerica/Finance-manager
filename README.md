@@ -62,6 +62,10 @@ The interface is in Croatian; amounts are in euros unless another currency is ch
   due this month are set aside first.
 - **Savings goals** with an optional deadline, deposits and withdrawals, and how much to
   put aside each month to make it.
+- **Wish list:** write down something you want to buy and wait one to three days. Only then
+  can "Kupljeno" record the expense; giving up is always possible and the amount can go
+  straight into a savings goal. A notification says when the time to think is over, and
+  the list shows how much was saved by giving up.
 - **Payment reminders**, one-off or recurring (monthly to yearly). A notification comes the
   day before, on the day, and while overdue. "Plati" records the expense and moves the
   reminder to its next date.
@@ -130,13 +134,14 @@ core/domain/  …/domain/         Format.kt (money, dates, amount input)
               ├── stats/        statistics periods and totals
               ├── transactions/ search and filters
               ├── reminders/    due status
+              ├── wishes/       wish list split and totals
               ├── BudgetMonths  months that start on a chosen day
               ├── receipt/      reading totals, dates and shops from receipt text
               ├── export/       CSV and report data
               └── widget/       widget summary
 core/data/    …/data/           database, DAOs, migrations, FinanceRepository, settings (DataStore)
               └── backup/       JSON backup format
-              schemas/          exported Room schemas (versions 1–6)
+              schemas/          exported Room schemas (versions 1–7)
 
 app/          …/financemanager/
               ├── MainActivity.kt   single activity; app lock, widget shortcuts
@@ -155,7 +160,7 @@ app/          …/financemanager/
 
 ## Database
 
-Room database `app_database`, version 6. Amounts are euros (`REAL`), dates are ISO text
+Room database `app_database`, version 7. Amounts are euros (`REAL`), dates are ISO text
 (`yyyy-MM-dd`), and transaction types are `INCOME` or `EXPENSE`.
 
 **categories**
@@ -223,12 +228,26 @@ Room database `app_database`, version 6. Amounts are euros (`REAL`), dates are I
 | note | TEXT | |
 | uses | INTEGER | how often it was used; the most used come first |
 
+**wishes**
+
+| Column | Type | |
+|---|---|---|
+| id | INTEGER, primary key | |
+| name | TEXT | |
+| price | REAL | |
+| category | TEXT | expense category, "" for none; follows renames |
+| addedOn | TEXT | |
+| waitDays | INTEGER | days to think it over (1–3) |
+| status | TEXT | `WAITING`, `BOUGHT`, `SKIPPED` |
+| decidedOn | TEXT, nullable | |
+
 Migrations, each tested on a real database built from the exported schema:
 - 1 → 2: reminders
 - 2 → 3: budgets
 - 3 → 4: category colours
 - 4 → 5: savings goals
 - 5 → 6: quick-add templates
+- 6 → 7: wish list
 
 ## Building and testing
 
